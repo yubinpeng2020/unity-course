@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>数字产品设计（Unity 引擎技术）— 先知课堂</title>
+<style>
+:root{
+--bg-primary:#0A0E27;--bg-secondary:#0D1430;--bg-card:rgba(17,24,39,0.95);
+--bg-input:#0B1020;--border:rgba(255,255,255,0.06);
+--text:#E8EAED;--text-muted:#9AA0A6;
+--accent:#00D4AA;--accent2:#4FC3F7;--accent-dim:rgba(0,212,170,0.08);
+--orange:#F59E0B;--blue:#818CF8;
+--green:#22C55E;--green-bg:rgba(34,197,94,0.08);--green-border:rgba(34,197,94,0.3);
+--font-size:16px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{min-height:100%;font-family:'Inter','PingFang SC','Microsoft YaHei',sans-serif;background:linear-gradient(180deg,var(--bg-primary),var(--bg-secondary));color:var(--text);line-height:1.6;font-size:var(--font-size)}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.02)}
+::-webkit-scrollbar-thumb{background:rgba(0,212,170,0.2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,212,170,0.4)}
+
+.hero{text-align:center;padding:64px 24px 40px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(0,212,170,0.06),transparent 70%);pointer-events:none}
+.hero-badge{display:inline-block;background:var(--accent-dim);border:1px solid rgba(0,212,170,0.2);color:var(--accent);padding:5px 16px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:1px;margin-bottom:20px}
+.hero h1{font-size:34px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px;margin-bottom:12px}
+.hero p{color:var(--text-muted);font-size:15px;max-width:560px;margin:0 auto;line-height:1.8}
+.hero-meta{display:flex;justify-content:center;gap:32px;margin-top:24px;flex-wrap:wrap}
+.hero-meta span{font-size:13px;color:var(--text-muted)}
+.hero-meta strong{color:var(--accent2);font-weight:600}
+
+.catalog{max-width:1080px;margin:0 auto;padding:16px 24px 80px}
+.catalog-section{margin-bottom:36px}
+.section-title{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid rgba(0,212,170,0.15)}
+.section-title .num{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;letter-spacing:0}
+.section-desc{font-size:13px;color:var(--text-muted);margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.card-link{display:block;text-decoration:none;color:inherit;background:linear-gradient(135deg,var(--bg-card),rgba(13,20,48,0.85));border:1px solid var(--border);border-radius:14px;padding:20px 22px;transition:all .3s;position:relative;overflow:hidden}
+.card-link::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0;transition:opacity .3s}
+.card-link:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 8px 28px rgba(0,212,170,0.12);transform:translateY(-3px)}
+.card-link:hover::before{opacity:1}
+.card-link .tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(0,212,170,0.15);padding:2px 8px;border-radius:5px;margin-bottom:10px}
+.card-link h3{font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px;line-height:1.4}
+.card-link:hover h3{color:var(--accent)}
+.card-link p{font-size:13px;color:var(--text-muted);line-height:1.6}
+.card-link .arrow{position:absolute;right:20px;bottom:20px;font-size:18px;color:var(--text-muted);transition:all .3s}
+.card-link:hover .arrow{color:var(--accent);transform:translateX(4px)}
+
+.footer{text-align:center;padding:32px 24px;color:var(--text-muted);font-size:12px;border-top:1px solid var(--border);margin-top:40px}
+.footer a{color:var(--accent2);text-decoration:none}
+.footer a:hover{color:var(--accent)}
+
+@media(max-width:640px){
+.hero{padding:40px 16px 28px}
+.hero h1{font-size:26px}
+.grid{grid-template-columns:1fr}
+.catalog{padding:12px 16px 60px}
+.section-title{flex-wrap:wrap;gap:6px 10px}
+.section-desc{width:100%;margin-left:0;margin-top:4px}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">🏫 汕头职业技术学院 · 电子信息学院</div>
+  <h1>数字产品设计（Unity 引擎技术）</h1>
+  <p>2026 级课程 · Unity 2022 LTS 交互式课件 · 从引擎操作到 FPS 完整项目</p>
+  <div class="hero-meta">
+    <span>📚 共 <strong>34</strong> 个课件</span>
+    <span>🧑‍🏫 授课教师 <strong>彭堉斌</strong></span>
+    <span>🎮 项目：第一人称射击（FPS）完整关卡</span>
+  </div>
+</div>
+
+<div class="catalog">
+
+  <!-- 引擎基础 -->
+  <div class="catalog-section">
+    <div class="section-title">
+      <span class="num">1</span>
+      引擎基础
+      <span class="section-desc">安装 · 界面 · 场景 · 物体操作 · 材质</span>
+    </div>
+    <div class="grid">
+      <a class="card-link" href="课件1_认识Unity与课程介绍.html">
+        <span class="tag">课件 01</span>
+        <h3>认识 Unity 与课程介绍</h3>
+        <p>课程定位、学习目标、Unity 应用领域与课程项目概览。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件2_注册与安装软件.html">
+        <span class="tag">课件 02</span>
+        <h3>注册与安装软件</h3>
+        <p>Unity Hub 安装、unity.cn 账号注册、个人版许可证激活流程。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件3_Unity引擎概览.html">
+        <span class="tag">课件 03</span>
+        <h3>Unity 引擎概览</h3>
+        <p>Scene、Game、Hierarchy、Inspector、Project 五大窗口与基本操作。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件4_场景与物体.html">
+        <span class="tag">课件 04</span>
+        <h3>场景与物体</h3>
+        <p>场景文件、游戏对象、组件概念、父子关系与本地/世界坐标。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件5_移动视野与物体.html">
+        <span class="tag">课件 05</span>
+        <h3>移动视野与物体</h3>
+        <p>视图漫游、选中物体、移动工具、坐标系与精确变换输入。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件6_旋转缩放多选.html">
+        <span class="tag">课件 06</span>
+        <h3>旋转缩放多选</h3>
+        <p>旋转/缩放工具、多选、对齐、枢轴与组合操作技巧。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件7_网格与材质.html">
+        <span class="tag">课件 07</span>
+        <h3>网格与材质</h3>
+        <p>Mesh、Material、Shader、贴图导入、Skybox 与免费资源下载。</p>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- C# 与脚本入门 -->
+  <div class="catalog-section">
+    <div class="section-title">
+      <span class="num">2</span>
+      C# 与脚本入门
+      <span class="section-desc">语法 · 导入模型 · 生命周期 · 移动控制</span>
+    </div>
+    <div class="grid">
+      <a class="card-link" href="课件8_C#核心语法.html">
+        <span class="tag">课件 08</span>
+        <h3>C# 核心语法</h3>
+        <p>变量、数据类型、if / switch 分支、for / while 循环与方法。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件9_Fbx导入与脚本入门.html">
+        <span class="tag">课件 09</span>
+        <h3>Fbx 导入与脚本入门</h3>
+        <p>导入 FBX 模型、修改材质、添加脚本、生命周期与 Transform 运动。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件10_键盘控制移动.html">
+        <span class="tag">课件 10</span>
+        <h3>键盘控制移动</h3>
+        <p>Input.GetKey / GetAxis、二维与三维移动、轴线设置与代码优化。</p>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- 脚本进阶与物理 -->
+  <div class="catalog-section">
+    <div class="section-title">
+      <span class="num">3</span>
+      脚本进阶与物理
+      <span class="section-desc">访问对象 · 刚体 · 受力 · 主控 · 打包</span>
+    </div>
+    <div class="grid">
+      <a class="card-link" href="课件11_变量类型与可见性.html">
+        <span class="tag">课件 11</span>
+        <h3>变量类型与可见性</h3>
+        <p>public / private、SerializeField、静态变量与 Inspector 暴露。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件12_访问其他游戏对象.html">
+        <span class="tag">课件 12</span>
+        <h3>访问其他游戏对象</h3>
+        <p>Find、GetComponent、Tag、拖拽引用与对象间通信。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件13_刚体与碰撞体.html">
+        <span class="tag">课件 13</span>
+        <h3>刚体与碰撞体</h3>
+        <p>Rigidbody、Collider、物理运动、碰撞检测与触发器。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件14_受力运动.html">
+        <span class="tag">课件 14</span>
+        <h3>受力运动</h3>
+        <p>AddForce、ForceMode、跳跃手感与角色移动物理。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件15_主控脚本与随机生成.html">
+        <span class="tag">课件 15</span>
+        <h3>主控脚本与随机生成</h3>
+        <p>单例模式、主控逻辑、随机位置生成与场景管理。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件16_中文显示与打包.html">
+        <span class="tag">课件 16</span>
+        <h3>中文显示与打包</h3>
+        <p>TextMeshPro 中文字体、Build Settings、平台切换与打包输出。</p>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- FPS 核心玩法 -->
+  <div class="catalog-section">
+    <div class="section-title">
+      <span class="num">4</span>
+      FPS 核心玩法
+      <span class="section-desc">玩家控制 · 武器 · 射击 · 跳跃 · 场景美化</span>
+    </div>
+    <div class="grid">
+      <a class="card-link" href="课件17_FPS场景玩家武器.html">
+        <span class="tag">课件 17</span>
+        <h3>FPS 场景玩家武器</h3>
+        <p>FPS 控制器搭建、摄像机、武器模型与视角跟随。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件18_移动射击.html">
+        <span class="tag">课件 18</span>
+        <h3>移动射击</h3>
+        <p>射线检测 Raycast、射击逻辑、敌人受击与伤害传递。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件19_跳跃与穿墙.html">
+        <span class="tag">课件 19</span>
+        <h3>跳跃与穿墙</h3>
+        <p>跳跃实现、碰撞体边界、刚体插值与防穿墙处理。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件20_场地美化与免费资源.html">
+        <span class="tag">课件 20</span>
+        <h3>场地美化与免费资源</h3>
+        <p>Poly Haven 资源、材质细节、灯光布置与场景氛围。</p>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- 敌人 AI 与动画 -->
+  <div class="catalog-section">
+    <div class="section-title">
+      <span class="num">5</span>
+      敌人 AI 与动画
+      <span class="section-desc">跟踪 · 巡逻 · NavMesh · 动画状态机</span>
+    </div>
+    <div class="grid">
+      <a class="card-link" href="课件21_敌人简易跟踪.html">
+        <span class="tag">课件 21</span>
+        <h3>敌人简易跟踪</h3>
+        <p>敌人面向玩家、简单追击逻辑与距离判断。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件22_AI敌人巡逻.html">
+        <span class="tag">课件 22</span>
+        <h3>AI 敌人巡逻</h3>
+        <p>NavMesh 烘焙、巡逻点、状态切换与寻路移动。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件23_敌人动画切换.html">
+        <span class="tag">课件 23</span>
+        <h3>敌人动画切换</h3>
+        <p>Animator 状态机、动画参数与移动/攻击切换。</p>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- 游戏系统 -->
+  <div class="catalog-section">
+    <div class="section-title">
+      <span class="num">6</span>
+      游戏系统
+      <span class="section-desc">启动页 · 血条 · 死亡 · 孵化器 · 粒子</span>
+    </div>
+    <div class="grid">
+      <a class="card-link" href="课件24_启动页面.html">
+        <span class="tag">课件 24</span>
+        <h3>启动页面</h3>
+        <p>开始菜单 UI、按钮事件、场景加载与游戏启动流程。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件25_玩家血条与被接触攻击.html">
+        <span class="tag">课件 25</span>
+        <h3>玩家血条与被接触攻击</h3>
+        <p>UI 血条、碰撞伤害、扣血反馈与生命值管理。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件26_死亡与游戏管理器.html">
+        <span class="tag">课件 26</span>
+        <h3>死亡与游戏管理器</h3>
+        <p>玩家死亡、GameManager、状态控制与游戏结束。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件27_消灭敌人与孵化器.html">
+        <span class="tag">课件 27</span>
+        <h3>消灭敌人与孵化器</h3>
+        <p>敌人死亡处理、孵化器、对象复用与波次生成。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件28_粒子系统与随机生成.html">
+        <span class="tag">课件 28</span>
+        <h3>粒子系统与随机生成</h3>
+        <p>Particle System 特效、随机生成与场景氛围增强。</p>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- 物品与剧情任务 -->
+  <div class="catalog-section">
+    <div class="section-title">
+      <span class="num">7</span>
+      物品与剧情任务
+      <span class="section-desc">拾取 · 换枪 · 动画层 · NPC 对话 · 任务队列</span>
+    </div>
+    <div class="grid">
+      <a class="card-link" href="课件29_拾取物品.html">
+        <span class="tag">课件 29</span>
+        <h3>拾取物品</h3>
+        <p>触发器拾取、道具数据、背包 UI 与交互反馈。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件30_更换枪械.html">
+        <span class="tag">课件 30</span>
+        <h3>更换枪械</h3>
+        <p>武器切换、不同枪械数据、动画与射击逻辑。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件31_修改动画状态机.html">
+        <span class="tag">课件 31</span>
+        <h3>修改动画状态机</h3>
+        <p>动画层、Avatar Mask、混合树与参数驱动换枪动画。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件32_NPC对话.html">
+        <span class="tag">课件 32</span>
+        <h3>NPC 对话</h3>
+        <p>对话系统、UI 对话框、逐字显示与交互触发。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件33_NPC对话进阶.html">
+        <span class="tag">课件 33</span>
+        <h3>NPC 对话进阶</h3>
+        <p>分支对话、选项按钮、任务触发与条件判断。</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="card-link" href="课件34_任务队列.html">
+        <span class="tag">课件 34</span>
+        <h3>任务队列</h3>
+        <p>任务目标、进度追踪、完成判定与奖励反馈。</p>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>© 2026 汕头职业技术学院 · 电子信息学院 · 彭堉斌</p>
+  <p style="margin-top:6px;">课程：数字产品设计（Unity 虚拟现实引擎技术）</p>
+</div>
+
+</body>
+</html>

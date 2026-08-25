@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>课件3_Unity引擎概览 — C#先知课堂</title>
+<link rel="stylesheet" href="vendor/atom-one-dark.min.css">
+<script src="vendor/highlight.min.js"></script>
+<style>
+/* ===== 色彩变量 ===== */
+:root{
+--bg-primary:#0A0E27;--bg-secondary:#0D1430;--bg-card:rgba(17,24,39,0.95);
+--bg-input:#0B1020;--border:rgba(255,255,255,0.06);
+--text:#E8EAED;--text-muted:#9AA0A6;
+--accent:#00D4AA;--accent2:#4FC3F7;--accent-dim:rgba(0,212,170,0.08);
+--orange:#F59E0B;--blue:#818CF8;
+--green:#22C55E;--green-bg:rgba(34,197,94,0.08);--green-border:rgba(34,197,94,0.3);
+--red:#EF4444;--red-bg:rgba(239,68,68,0.08);--red-border:rgba(239,68,68,0.3);
+--yellow:#F59E0B;--purple:#C084FC;--teal:#86EFAC;--teal-border:rgba(34,197,94,0.3);
+--font-size:16px;
+}
+.light{
+--bg-primary:#ffffff;--bg-secondary:#f6f8fa;--bg-card:#f6f8fa;--bg-input:#ffffff;
+--border:#d0d7de;--text:#24292f;--text-muted:#656d76;
+--accent:#0969da;--accent2:#0550ae;--accent-dim:rgba(9,105,218,0.08);
+--orange:#cf222e;--blue:#0550ae;
+--green:#1a7f37;--green-bg:#eefdf2;--green-border:#86d9a0;
+--red:#cf222e;--red-bg:#ffebe9;--red-border:#fdaeb7;
+--yellow:#9a6700;--purple:#8250df;--teal:#0550ae;--teal-border:#4ac26b;
+}
+body.font-xs{--font-size:12px}body.font-sm{--font-size:14px}body.font-md{--font-size:16px}body.font-lg{--font-size:19px}body.font-xl{--font-size:22px}
+
+/* ===== 全局 ===== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microsoft YaHei',sans-serif;background:linear-gradient(180deg,var(--bg-primary),var(--bg-secondary));color:var(--text);line-height:1.6;font-size:var(--font-size)}
+.container{display:flex;height:100vh}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.02)}
+::-webkit-scrollbar-thumb{background:rgba(0,212,170,0.2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,212,170,0.4)}
+
+/* ===== 侧边栏 ===== */
+.sidebar{width:260px;min-width:260px;height:100vh;background:linear-gradient(180deg,rgba(10,14,39,0.98),rgba(13,20,48,0.95));border-right:1px solid var(--border);overflow-y:auto;padding:12px 0;flex-shrink:0;backdrop-filter:blur(10px);position:relative;z-index:10}
+.sidebar-title{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-size:16px;font-weight:700;padding:0 14px 10px;border-bottom:1px solid rgba(0,212,170,0.15);margin-bottom:6px}
+.nav-link{display:flex;align-items:center;color:var(--text-muted);text-decoration:none;padding:8px 14px;font-size:12px;border-left:3px solid transparent;transition:all .2s}
+.nav-link:hover{color:var(--accent);background:var(--accent-dim);border-left-color:rgba(0,212,170,0.4)}
+.nav-link.active{color:#fff!important;background:linear-gradient(90deg,rgba(0,212,170,0.18),transparent);border-left:3px solid var(--accent);font-weight:600}
+.nav-status{width:7px;height:7px;border-radius:50%;margin-right:7px;flex-shrink:0;background:rgba(255,255,255,0.1);transition:all .3s}
+.nav-status.seen{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,0.5)}
+
+/* ===== Header ===== */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header-bar{display:flex;align-items:center;gap:16px;padding:10px 24px;background:rgba(10,14,39,0.95);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;position:relative;z-index:5}
+.progress-wrap{flex:1;min-width:200px;display:flex;align-items:center;gap:12px}
+.progress-bar{flex:1;height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,0.3)}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .5s ease;width:0;box-shadow:0 0 8px rgba(0,212,170,0.4)}
+.progress-text{font-size:11px;color:var(--text-muted);white-space:nowrap}
+.header-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .25s;white-space:nowrap}
+.header-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 8px rgba(0,212,170,0.1);transform:translateY(-1px)}
+.header-dropdown{position:relative;display:inline-block}
+.dropdown-menu{display:none;position:absolute;top:100%;right:0;margin-top:6px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;min-width:180px;z-index:100;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.dropdown-menu.show{display:block}
+.dropdown-item{display:block;padding:10px 16px;color:var(--text);font-size:13px;text-decoration:none;transition:background .2s;cursor:pointer;white-space:nowrap}
+.dropdown-item:hover{background:var(--accent-dim);color:var(--accent)}
+.dropdown-item:not(:last-child){border-bottom:1px solid var(--border)}}
+
+/* ===== 幻灯片 ===== */
+.slides-container{flex:1;position:relative !important;overflow:hidden}
+#mainArea .slides-container{position:relative !important;overflow:hidden !important}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transform:translateX(30px);transition:opacity .35s,transform .35s;pointer-events:none;overflow-y:auto}
+.slide::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:.6;z-index:10}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto;z-index:1}
+.slide-inner{max-width:920px;margin:0 auto;padding:56px 48px 80px}
+
+/* 标题 */
+.slide-inner h1{color:#fff;font-size:26px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid rgba(0,212,170,0.2);letter-spacing:-0.3px}
+.slide-inner h2{color:var(--accent2);font-size:20px;margin:28px 0 14px;font-weight:600}
+.slide-inner h3{color:var(--accent);font-size:calc(var(--font-size) * 1.06);margin:20px 0 10px;font-weight:600;padding-left:10px;border-left:3px solid var(--accent)}
+.slide-inner h3.h-example{color:var(--accent2);border-left-color:var(--accent2)}
+.slide-inner h3.h-practice{color:var(--orange);border-left-color:var(--orange)}
+.slide-inner p{color:var(--text);margin-bottom:10px;line-height:1.85}
+.slide-inner ul,.slide-inner ol{margin-left:22px;margin-bottom:14px}
+.slide-inner li{color:#CBD5E1;margin-bottom:6px;line-height:1.75}
+
+/* 内联代码 */
+.slide-inner strong{color:var(--accent2);font-weight:700}
+.slide-inner em{color:var(--orange);font-style:normal;font-weight:500}
+.slide-inner code{background:rgba(0,212,170,0.08);color:var(--accent);padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:90%;border:1px solid rgba(0,212,170,0.15);font-weight:600}
+
+/* 表格 */
+.slide-inner table{width:100%;border-collapse:collapse;font-size:calc(var(--font-size) * 0.94);margin:12px 0;border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.slide-inner table td,.slide-inner table th{padding:8px 14px;border:1px solid var(--border);text-align:left}
+.slide-inner table th{background:linear-gradient(135deg,rgba(17,24,39,0.9),rgba(15,23,41,0.9));color:var(--accent);font-weight:600;font-size:calc(var(--font-size) * 1.0);text-transform:uppercase;letter-spacing:.5px}
+.slide-inner table tr:nth-child(odd){background:rgba(255,255,255,0.015)}
+.slide-inner table tr:hover{background:var(--accent-dim)}
+
+/* 链接 */
+.slide-inner a{color:var(--accent2);text-decoration:underline;text-decoration-color:rgba(79,195,247,0.3);text-underline-offset:3px;transition:all .2s}
+.slide-inner a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+
+/* ===== 卡片 ===== */
+.card,.homework-card,.ok-box,.prompt-box{margin:10px 0;border-radius:12px;transition:all .3s}
+.card{background:linear-gradient(135deg,var(--bg-card),rgba(13,20,48,0.85));border:1px solid var(--border);padding:14px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.2);overflow:hidden}
+.card .card-img{float:right;max-width:200px;max-height:250px;margin:0 0 8px 16px;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 标题+图片+列表 类型的卡片：确定性两栏（左文右图），不依赖 float 环绕 */
+.card.side-card{display:flex;align-items:flex-start;gap:18px;overflow:hidden}
+.card.side-card .side-body{flex:1;min-width:0}
+.card.side-card .side-body h3{margin-top:0}
+.card.side-card .card-img{float:none;flex:0 0 auto;max-width:200px;max-height:250px;margin:0;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.card.side-card .side-body ul,.card.side-card .side-body ol{margin:8px 0 0;padding-left:22px}
+.card.side-card .side-body ul li,.card.side-card .side-body ol li{margin:4px 0}
+.card table .card-img{float:none;max-width:280px;max-height:none;margin:4px auto;display:block;border-radius:4px}
+.card table .card-img-sm{float:none;max-width:100px;max-height:none;margin:4px 0;display:inline-block;border-radius:4px}
+.card-img{display:block;max-width:100%;margin:16px auto;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 小图（报错截图等）控制在 1/3 宽度 */
+.card-img.small{max-width:33%!important}
+/* 表格单元格内图片（发展四时代等）：小图居中，破图自动隐藏 */
+.slide-inner table td img.card-img,.slide-inner table th img.card-img{display:block;max-width:150px;max-height:105px;width:auto;height:auto;margin:6px auto;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+.slide-inner table td img.card-img-sm,.slide-inner table th img.card-img-sm{display:block;max-width:96px;max-height:66px;margin:4px auto;border-radius:4px}
+/* 竞赛照片三图并排 */
+.contest-row{display:flex;gap:12px;justify-content:center;margin:16px 0;flex-wrap:wrap}
+.contest-row img{flex:1;min-width:0;max-width:280px;max-height:200px;object-fit:cover;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer}
+.card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.12);transform:translateY(-1px)}
+.card h3{margin-top:0}
+
+/* 代码块 */
+.prompt-box{background:var(--bg-input);border:1px solid rgba(0,212,170,0.2);border-left:3px solid var(--accent);overflow:hidden;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03)}
+.code-toolbar{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.04)}
+.code-lang{font-size:10px;color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.copy-btn{background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2);color:var(--accent);padding:3px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-family:inherit;transition:all .2s}
+.copy-btn:hover{background:rgba(0,212,170,0.2);border-color:var(--accent)}
+.copy-btn.copied{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.prompt-box pre{background:transparent;padding:12px 16px;margin:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;overflow-x:auto}
+.prompt-box pre code{background:transparent;padding:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;font-family:'JetBrains Mono','Menlo','Monaco',monospace;color:#E2E8F0;border:none}
+
+/* ok-box / homework-card */
+.homework-card{background:linear-gradient(135deg,rgba(0,212,170,0.06),var(--bg-card));border:1px solid var(--teal-border);padding:14px 18px}
+.homework-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(0,212,170,0.08)}
+.homework-card h3{color:var(--teal)}
+.ok-box{background:linear-gradient(135deg,rgba(34,197,94,0.06),var(--bg-card));border:1px solid var(--green-border);padding:14px 18px}
+.ok-box:hover{border-color:var(--green);box-shadow:0 8px 24px rgba(34,197,94,0.08)}
+.ok-box ul,.ok-box ol{margin:6px 0;padding-left:1.5em}
+.ok-box li{margin:3px 0;line-height:1.7}
+
+/* 高亮标记 */
+.markable li,.markable p{cursor:pointer;transition:all .15s;border-radius:3px;padding:1px 3px}
+.markable li.marked,.markable p.marked{background:rgba(192,132,252,.12);border-left:3px solid var(--purple);padding-left:8px}
+
+/* ===== 折叠面板 ===== */
+.fold-toggle{display:inline-flex;align-items:center;gap:6px;background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:calc(var(--font-size) * 1.06);font-family:inherit;transition:all .2s;margin:8px 0;user-select:none}
+.fold-toggle:hover{background:rgba(0,212,170,0.15);box-shadow:0 2px 8px rgba(0,212,170,0.15)}
+.fold-toggle .arrow{display:inline-block;transition:transform .3s;font-size:10px}
+.fold-toggle.open .arrow{transform:rotate(90deg)}
+.fold-content{max-height:0;overflow:hidden;transition:max-height .4s ease;opacity:0}
+.fold-content.show{max-height:3000px;opacity:1}
+/* 提示折叠 绿色 */
+.fold-toggle.hint{color:var(--green);border-color:var(--green-border);background:var(--green-bg)}
+.fold-toggle.hint:hover{background:rgba(34,197,94,0.12)}
+/* 答案折叠 紫色 */
+.fold-toggle.solution{color:var(--purple);border-color:rgba(192,132,252,0.4);background:rgba(192,132,252,0.08)}
+.fold-toggle.solution:hover{background:rgba(192,132,252,0.15)}
+/* 问答折叠 橙色 */
+.fold-toggle.qa{color:var(--orange);border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.08)}
+.fold-toggle.qa:hover{background:rgba(245,158,11,0.15)}
+/* 填空代码 */
+.code-blank{color:var(--orange);background:rgba(245,158,11,0.1);padding:2px 6px;border-radius:4px;font-weight:600}
+
+/* ===== 导航按钮 ===== */
+.nav-buttons{position:fixed;bottom:24px;right:32px;display:flex;gap:8px;z-index:100}
+.nav-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:10px 22px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:500;transition:all .25s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 4px 16px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
+.progress-dots{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:100}
+.progress-dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:all .3s;cursor:pointer}
+.progress-dot:hover{background:var(--accent2)}
+.progress-dot.active{background:var(--accent);transform:scale(1.4);box-shadow:0 0 8px rgba(0,212,170,0.5)}
+
+/* ===== 搜索 ===== */
+.search-panel{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:300;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.search-panel.open{right:0}
+.search-panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.search-panel-header span{font-size:15px;font-weight:600;color:var(--text)}
+.search-panel-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.search-panel-close:hover{color:var(--text);background:var(--accent-dim)}
+
+/* ===== 课件目录 ===== */
+.catalog-panel{position:fixed;top:0;right:-320px;width:320px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:298;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.catalog-panel.open{right:0}
+.catalog-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.catalog-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.catalog-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.catalog-list{flex:1;overflow-y:auto;padding:8px 0}
+.catalog-item{display:flex;align-items:center;gap:10px;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.catalog-item:hover{background:var(--accent-dim);border-left-color:var(--accent)}
+.catalog-item.current{color:var(--accent)!important;background:var(--accent-dim);border-left-color:var(--accent);font-weight:600}
+.catalog-num{color:var(--accent);font-size:11px;font-weight:700;min-width:40px;white-space:nowrap}
+.search-input{width:100%;padding:14px 18px;background:var(--bg-input);border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:15px;outline:none;flex-shrink:0}
+.search-input::placeholder{color:var(--text-muted)}
+.search-results{flex:1;overflow-y:auto;padding:8px 0}
+.search-item{display:block;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.search-item:hover,.search-item.focus{background:var(--accent-dim);border-left-color:var(--accent)}
+.help-overlay{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:299;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.help-overlay.open{right:0}
+.help-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.help-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.help-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.help-body{flex:1;overflow-y:auto;padding:16px 22px 24px}
+.help-body h3{color:var(--accent);font-size:14px;margin:16px 0 8px;padding-left:0;border-left:none}
+.help-body p{font-size:13px;color:var(--text-muted);margin-bottom:8px}
+.help-body table{font-size:13px}
+.help-body table td{padding:4px 12px 4px 0}
+.help-body table td:first-child{white-space:nowrap;padding-right:16px}
+.search-item mark{background:rgba(0,212,170,0.2);color:var(--accent);border-radius:2px;padding:0 3px}
+
+/* ===== Toast ===== */
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:400;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);padding:16px 28px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.toast.show{opacity:1}
+
+/* ===== 浅色覆盖 ===== */
+.light body,.light html{background:var(--bg-primary)!important}
+.light .sidebar{background:var(--bg-secondary)!important;border-right-color:var(--border)!important}
+.light .sidebar-title{-webkit-text-fill-color:var(--text);font-weight:600}
+.light .goal-card,.light .card{background:var(--bg-card)!important;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.light .homework-card{background:var(--accent-dim)!important}
+.light .ok-box{background:var(--green-bg)!important;border-color:var(--green-border)!important;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.light .header-bar{background:var(--bg-secondary)!important;backdrop-filter:none!important}
+.light .slide-inner table th{background:var(--bg-input)!important;color:var(--text)!important}
+.light .slide-inner h1{color:var(--text)!important}
+.light .slide-inner h2{color:var(--accent)!important}
+.light .slide-inner h3{color:var(--accent2)!important}
+.light .slide-inner li,.light .slide-inner p{color:var(--text)!important}
+.light .nav-link.active{color:var(--accent)!important;background:var(--accent-dim)!important}
+.light .progress-fill{box-shadow:none!important}
+.light .cover{background:radial-gradient(ellipse at 30% 20%,rgba(9,105,218,0.08),transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(5,80,174,0.06),transparent 55%),var(--bg-primary)!important}
+.light .cover-tag{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-label{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-text{color:var(--text)!important}
+.light .cover-sub{color:var(--text-muted)!important}
+.light .end-thanks{background:var(--bg-card);border-color:rgba(9,105,218,0.15)}
+.light .end-title{color:var(--accent)!important}
+.light .prompt-box pre code{color:var(--text)!important}
+.light .code-toolbar{background:rgba(0,0,0,0.05)}
+/* 深色主题下注释颜色调亮（原atom-one-dark太暗） */
+.hljs-comment,.hljs-meta{color:#8b949e!important}
+
+/* ===== 封面 ===== */
+.cover{display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;height:100vh;box-sizing:border-box;background:radial-gradient(ellipse at 30% 20%,rgba(0,212,170,0.18) 0%,transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(79,195,247,0.12) 0%,transparent 55%),linear-gradient(180deg,#0A0E27 0%,#0D1430 100%);position:relative;overflow:hidden}
+.cover.active{display:flex!important}
+.cover::after{content:'';position:absolute;top:-120px;right:-120px;width:400px;height:400px;background:radial-gradient(circle,rgba(0,212,170,0.08),transparent 70%);border-radius:50%;pointer-events:none}
+.cover-tag{display:inline-block;font-size:14px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);border-radius:20px;padding:8px 22px;margin-bottom:24px;letter-spacing:2px}
+.cover h1{font-size:52px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;letter-spacing:-1px;border:none;line-height:1.2;max-width:800px}
+.cover-sub{font-size:16px;color:var(--text-muted);margin-bottom:40px;max-width:650px;line-height:1.8}
+.cover-meta{font-size:14px;color:#6B7280;line-height:2.2;display:flex;flex-direction:column;gap:8px;align-items:center}
+.cover-meta-row{display:flex;align-items:center;gap:8px}
+.cover-meta-label{font-size:13px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.3);border-radius:6px;padding:3px 12px}
+.cover-meta-text{font-size:16px;color:#CBD5E1}
+
+/* ===== 结束页 ===== */
+.end-page{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:100%;box-sizing:border-box;max-width:920px;margin:0 auto;padding:36px 48px}
+.end-page h2{text-align:center;border-bottom:none;margin-bottom:32px}
+.end-thanks{display:flex;align-items:center;justify-content:center;gap:60px;flex-wrap:wrap;padding:60px 56px;border:2px solid rgba(0,212,170,0.3);border-radius:16px;background:linear-gradient(135deg,rgba(0,212,170,0.06),rgba(17,24,39,0.95))}
+.end-left{flex:1;min-width:200px;text-align:center}
+.end-right{flex:0 0 auto;text-align:center;padding-left:24px;border-left:1px solid rgba(0,212,170,0.2)}
+.end-icon{font-size:48px;margin-bottom:16px}
+.end-title{font-size:24px;color:var(--accent);font-weight:700;margin-bottom:20px}
+.end-sub{font-size:18px;color:var(--text-muted)}
+.end-contact{margin-top:16px;font-size:13px;color:var(--text-muted);line-height:1.7}
+.end-right img{width:120px;height:120px;border-radius:10px;margin-bottom:10px;border:2px solid var(--border);transition:transform .2s}
+.end-right img:hover{transform:scale(1.05)}
+.end-right p{font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5}
+.end-link{display:inline-block;color:var(--accent);text-decoration:none;font-size:13px;border:1px solid rgba(0,212,170,0.3);padding:8px 16px;border-radius:8px;transition:all .25s;white-space:nowrap}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+.end-next-link{display:inline-block;margin-top:20px;color:var(--accent2);text-decoration:none;font-size:15px;font-weight:600;padding:10px 24px;border:2px solid var(--accent2);border-radius:10px;transition:all .25s}
+.end-next-link:hover{background:rgba(79,195,247,0.1);box-shadow:0 4px 20px rgba(79,195,247,0.2);transform:translateY(-2px)}
+/* 二维码放大 */
+.qr-zoom-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;cursor:pointer}
+.qr-zoom-overlay.show{display:flex}
+.qr-zoom-overlay img{max-width:80vw;max-height:80vh;border-radius:12px;box-shadow:0 8px 32px rgba(0,212,170,0.2)}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+
+/* ===== 学习目标 ===== */
+.goal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:8px}
+.goal-card{background:linear-gradient(135deg,var(--bg-card),var(--bg-secondary));border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:14px;transition:all .3s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.goal-card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.goal-icon{font-size:28px;flex-shrink:0;transition:transform .3s}
+.goal-card:hover .goal-icon{transform:scale(1.15)}
+.goal-text{font-size:calc(var(--font-size) * 1.05);color:var(--text);line-height:1.6}
+
+/* 侧边栏 - 特殊链接（无序号） */
+.nav-special{font-style:italic;color:var(--accent2)!important}
+/* 导航标签 */
+.nav-badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:6px;font-weight:600;vertical-align:1px}
+.nav-badge.practice{color:var(--accent2);background:rgba(79,195,247,0.12);border:1px solid rgba(79,195,247,0.25)}
+.nav-badge.comprehensive{color:var(--purple);background:rgba(192,132,252,0.12);border:1px solid rgba(192,132,252,0.25)}
+.nav-badge.homework{color:var(--orange);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25)}
+
+/* ===== 响应式 ===== */
+/* ===== 移动端 header 精简按钮 ===== */
+.mobile-info{display:none;font-size:13px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.mobile-info .mi-lesson{color:var(--accent);font-weight:600}
+.mobile-info .mi-sep{margin:0 4px;color:var(--text-muted);opacity:0.5}
+.mobile-info .mi-page{color:var(--text)}
+.mobile-more{display:none;position:relative}
+.mobile-more-menu{display:none;position:absolute;top:100%;right:0;margin-top:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:4px 0;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:50;min-width:160px}
+.mobile-more-menu.open{display:block}
+.mobile-more-menu .mm-item{display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--text);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.mobile-more-menu .mm-item:hover{background:var(--accent-dim);color:var(--accent)}
+@media(max-width:768px){.sidebar{display:none}.slide-inner{padding:18px 18px 80px}.cover{padding-left:40px;padding-right:40px}.cover h1{font-size:32px}.nav-buttons{right:12px;bottom:12px}.header-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap}.header-btn[onclick="toggleTheme()"]{padding:6px 6px}.progress-wrap{display:none}.header-dropdown{display:none}.header-btn[onclick^="changeFont"]{display:none}.header-btn[onclick="openSearch()"]{display:none}.header-btn[onclick="toggleHelp()"]{display:none}.mobile-info{display:flex;align-items:center;gap:2px}.mi-page{display:none}.mobile-more{display:inline-block}.slides-container{min-height:calc(100vh - 54px)}}
+</style>
+</head>
+<body>
+<div class="container">
+<nav class="sidebar">
+    <div class="sidebar-title">📘 课件3_Unity引擎概览</div>
+    <a href="#" class="nav-link nav-special" data-page="1"><span class="nav-status"></span>封面</a>
+<a href="#" class="nav-link" data-page="2"><span class="nav-status"></span>1. 学习目标 </a>
+<a href="#" class="nav-link" data-page="3"><span class="nav-status"></span>2. 创建项目 </a>
+<a href="#" class="nav-link" data-page="4"><span class="nav-status"></span>3. 打开已有项目 </a>
+<a href="#" class="nav-link" data-page="5"><span class="nav-status"></span>4. 界面全是英文看不懂？→ 切中文 </a>
+<a href="#" class="nav-link" data-page="6"><span class="nav-status"></span>5. 创建项目时报错 H0007 </a>
+<a href="#" class="nav-link" data-page="7"><span class="nav-status"></span>6. 编辑器界面区域总览 </a>
+<a href="#" class="nav-link" data-page="8"><span class="nav-status"></span>7. 菜单栏概览 </a>
+<a href="#" class="nav-link" data-page="9"><span class="nav-status"></span>8. Project / Hierarchy / Inspector 三视图 </a>
+<a href="#" class="nav-link" data-page="10"><span class="nav-status"></span>9. Scene 场景视图 · Game 游戏视图 · 播放调试 </a>
+<a href="#" class="nav-link" data-page="11"><span class="nav-status"></span>10. 场景视图详解（变换工具 · 坐标系 · 显示开关） </a>
+<a href="#" class="nav-link" data-page="12"><span class="nav-status"></span>11. 课堂练习 — 创建你的工程 <span class="nav-badge practice">练习</span></a>
+<a href="#" class="nav-link nav-special" data-page="13"><span class="nav-status"></span>结束页</a>
+
+</nav>
+<div class="main-area" id="mainArea">
+    <div class="header-bar">
+        <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <span class="progress-text" id="progressText">0 / 13</span>
+        </div>
+        <div class="mobile-info" id="mobileInfo" onclick="mobileInfoTap()" style="cursor:pointer"><span class="mi-lesson"></span><span class="mi-sep">·</span><span class="mi-page"></span></div>
+        <button class="header-btn" id="themeBtn" onclick="toggleTheme()">🌙 深色</button>
+        <div class="header-dropdown">
+          <button class="header-btn" id="ideBtn">💻 在线编辑器 ▾</button>
+          <div class="dropdown-menu" id="ideMenu">
+            <a href="#" class="dropdown-item" data-url="https://www.runoob.com/try/runcode.php?filename=helloworld&type=csharp">菜鸟教程</a>
+            <a href="#" class="dropdown-item" data-url="https://www.tutorialspoint.com/compilers/online-csharp-compiler.htm">Tutorialspoint（支持输入）</a>
+            <a href="#" class="dropdown-item" data-url="https://dotnetfiddle.net/">DotNetFiddle</a>
+          </div>
+        </div>
+        <button class="header-btn" onclick="changeFont(-1)">A-</button>
+        <button class="header-btn" onclick="changeFont(1)">A+</button>
+        <button class="header-btn" onclick="openSearch()">🔍</button>
+        <button class="header-btn" onclick="toggleHelp()" title="使用帮助">❓</button>
+        <button class="header-btn" onclick="toggleCatalog()" title="课件目录">📚</button>
+        <div class="mobile-more">
+          <button class="header-btn" onclick="toggleMobileMore()" title="更多">☰</button>
+          <div class="mobile-more-menu" id="mobileMoreMenu">
+            <div class="mm-item" onclick="mobileAction('ide')">💻 在线编辑器</div>
+            <div class="mm-item" onclick="mobileAction('fontDown')">🔤 A- 缩小字号</div>
+            <div class="mm-item" onclick="mobileAction('fontUp')">🔤 A+ 放大字号</div>
+            <div class="mm-item" onclick="mobileAction('search')">🔍 搜索</div>
+            <div class="mm-item" onclick="mobileAction('help')">❓ 使用帮助</div>
+          </div>
+        </div>
+    </div>
+    <div class="slides-container"><div class="cover" data-page="1">
+    <div class="cover-tag">数字产品设计实训</div>
+    <h1>Unity 引擎概览</h1>
+    <div class="cover-sub">认识 Unity 编辑器界面，学会创建项目、切换中文、理解菜单栏与六大视图，掌握场景视图的坐标系与常用工具</div>
+    <div class="cover-meta">
+        <div class="cover-meta-row"><span class="cover-meta-label">授课教师</span><span class="cover-meta-text">彭堉斌</span></div>
+        <div class="cover-meta-row"><span class="cover-meta-label">学校</span><span class="cover-meta-text">汕头职业技术学院</span></div>
+    </div>
+</div>
+<div class="slide" data-page="2"><div class="slide-inner">
+<h1>学习目标</h1>
+<div class="goal-grid"><div class="goal-card"><span class="goal-icon">🎯</span><span class="goal-text">能创建并打开一个 Unity 工程（纯英文路径），遇到 H0007 报错能按步骤修复</span></div><div class="goal-card"><span class="goal-icon">🔍</span><span class="goal-text">能将 Unity 编辑器切换为简体中文界面</span></div><div class="goal-card"><span class="goal-icon">📝</span><span class="goal-text">认识菜单栏六大菜单（File（文件）/ Edit（编辑）/ Assets（资源）/ GameObject（游戏对象）/ Component（组件）/ Window（窗口））的作用</span></div><div class="goal-card"><span class="goal-icon">💻</span><span class="goal-text">能说出六大视图（Scene / Game / Hierarchy / Project / Inspector / 工具栏）各自的作用</span></div><div class="goal-card"><span class="goal-icon">✅</span><span class="goal-text">理解左手坐标系与 Gizmo 导航器，掌握场景视图的变换工具、Gizmo 坐标系工具与显示开关，会用播放工具（运行 / 暂停 / 单帧）测试游戏</span></div></div>
+
+</div></div>
+<div class="slide" data-page="3"><div class="slide-inner markable">
+<h1>创建项目</h1>
+<div class="ok-box">每次上课打开实训室电脑，都要重新创建或打开项目。</div><div class="card side-card"><div class="side-body"><h3>① 打开新建项目窗口</h3><ul><li>打开 Unity Hub，点击「项目」→「新项目」</li></ul></div><img src="images/课件3/p3_newproject_1.png" alt="新建项目入口" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card side-card"><div class="side-body"><h3>② 选择模板与设置路径</h3><ul><li>选择模板（课程统一使用 <strong>3D Core</strong>）</li><li>设置<strong>项目名称</strong>与<strong>存放位置</strong></li><li>⚠️ 路径必须是 <mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">纯英文</mark>（中文或空格会导致后续打包、脚本报错）</li></ul></div><img src="images/课件3/p3_newproject_2.png" alt="选择模板与路径" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card side-card"><div class="side-body"><h3>③ 创建项目</h3><ul><li>点击「创建项目」，等待进度条完成</li><li>💡 黄色报警信息一般可忽略，不影响使用</li></ul></div><img src="images/课件3/p3_newproject_3.png" alt="创建项目" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><img src="images/课件3/p3_newproject_done.png" alt="项目工程界面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="ok-box"><mark style="background:rgba(239,68,68,.16);color:#f87171;padding:1px 5px;border-radius:4px;font-weight:600">如果关闭这个界面，怎么重新打开呢？</mark></div>
+</div></div>
+<div class="slide" data-page="4"><div class="slide-inner markable">
+<h1>打开已有项目</h1>
+<div class="ok-box">每次重启实训室电脑，都会重新安装 Unity Hub。安装好后，需要在 Unity Hub 中重新打开之前创建的项目。</div><div class="card side-card"><div class="side-body"><h3>① 点击「项目」→「打开」</h3><ul><li>启动 Unity Hub，点击左侧「项目」→ 点击右上角「打开」</li></ul></div><img src="images/课件3/p4_open_1.png" alt="项目-打开" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card side-card"><div class="side-body"><h3>② 选择项目文件夹</h3><ul><li>找到并选中之前创建的项目文件夹（如 <code>My Project</code>），点击「打开」</li><li>首次打开某项目会加载初始界面（Project 视图 + 场景），这就是工作起点</li></ul></div><img src="images/课件3/p4_open_2.png" alt="选择项目文件夹" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><img src="images/课件3/p4_open_done.png" alt="打开后的项目界面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="ok-box"><mark style="background:rgba(239,68,68,.16);color:#f87171;padding:1px 5px;border-radius:4px;font-weight:600">都是英文，看不懂？怎么办？</mark></div>
+</div></div>
+<div class="slide" data-page="5"><div class="slide-inner markable">
+<h1>界面全是英文看不懂？→ 切中文</h1>
+<div class="ok-box">课程统一使用 <mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">简体中文</mark> 界面，避免中英混看。后续截图均基于中文界面。<br>两种方法，取决于编辑器是怎么安装的。</div><div class="card"><h3>① 方法一：通过 Unity Hub 在线安装时勾选模块</h3><ul><li>适用场景：照着课件2「<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">安装 LTS 编辑器（在线安装）</mark>」操作</li><li><strong>第一步</strong>：在「安装」页面，点击编辑器右侧的设置按钮（⚙️），点击「<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">添加模块</mark>」</li><li><strong>第二步</strong>：勾选「<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">简体中文</mark>」，点击「安装」</li></ul><div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:12px 0 0"><img src="images/课件3/p5_language_1.png" alt="安装时勾选中文模块" style="flex:1;min-width:0;max-width:48%;border-radius:8px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer" onclick="zoomQR(this)" onerror="this.style.display='none'"><img src="images/课件3/p5_language_2.png" alt="设置编辑器语言" style="flex:1;min-width:0;max-width:48%;border-radius:8px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer" onclick="zoomQR(this)" onerror="this.style.display='none'"></div></div><div class="card"><h3>② 方法二：本地已有编辑器，手动放置语言包</h3><ul><li>适用场景：<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">本地安装包</mark> 安装的编辑器（课件2「<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">安装 LTS 编辑器（本地安装包）</mark>」）；或安装时忘了勾选中文</li><li><strong>第一步</strong>：在 Unity Hub 编译器配置页面，点击编译器右侧的设置图标 → 「在Finder中显示」</li><li><strong>第二步</strong>：将老师提供的 <code>zh-hans.po</code>，放到 Unity 编译器安装目录下的 <code>Editor/Data/Localization/</code> 文件夹中，重新打开编辑器即生效</li></ul><div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:12px 0 0"><img src="images/课件3/p5_language_3.png" alt="放置语言包到Localization目录" style="flex:1;min-width:0;max-width:48%;border-radius:8px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer" onclick="zoomQR(this)" onerror="this.style.display='none'"><img src="images/课件3/p5_language_4.png" alt="重启编辑器生效" style="flex:1;min-width:0;max-width:48%;border-radius:8px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer" onclick="zoomQR(this)" onerror="this.style.display='none'"></div></div>
+</div></div>
+<div class="slide" data-page="6"><div class="slide-inner markable">
+<h1>创建项目时报错 H0007</h1>
+<div class="ok-box">每次打开实训室电脑，配置好编译器后，创建或打开项目都会报错 H0007。这是实训室环境必遇的问题，按下面步骤修复即可。</div><img src="images/课件3/p6_h0007_error.png" alt="H0007 报错截图" class="card-img small" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card side-card"><div class="side-body"><h3>① 打开编译器所在文件夹</h3><ul><li>在 Unity Hub 编译器配置页面，点击编译器右侧的设置图标（⚙️）→「在资源管理器中显示」</li><li>可以看到打开了 <code>Unity 2022.3.xx/Editor</code> 文件夹</li></ul></div><img src="images/课件3/p6_h0007_1.png" alt="打开编译器文件夹" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card side-card"><div class="side-body"><h3>② 打开终端</h3><ul><li>在 <code>Editor</code> 文件夹的地址栏输入 <code>cmd</code>，回车打开命令行</li></ul></div><img src="images/课件3/p6_h0007_2.png" alt="打开终端" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card side-card"><div class="side-body"><h3>③ 在终端执行修复命令</h3><ul><li>在命令行中输入以下指令并回车：</li></ul></div><img src="images/课件3/p6_h0007_3.png" alt="执行修复命令" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><pre class="plain-box"><code>  hasp_update.exe u unity-sl.v2c</code></pre><div class="card"><ul><li>执行完毕，即可正常创建 / 打开项目</li></ul></div><div class="ok-box">💡 这个命令需要在每次重启实训室电脑，设置编译器后执行一次，后续打开同一项目不再报错。</div>
+</div></div>
+<div class="slide" data-page="7"><div class="slide-inner markable">
+<h1>编辑器界面区域总览</h1>
+<div class="card"><p>在深入菜单和视图之前，先看一眼整个编辑器的布局——知道各个区域在哪，后面才好找。</p></div><img src="images/课件3/p7_interface_overview.png" alt="Unity 编辑器区域总览" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><p>Unity 编辑器默认布局分为五大区域：</p></div><div class="card"><table><tr><th>位置</th><th>区域</th><th>作用</th></tr><tr><td>顶部</td><td><strong>菜单栏 + 工具栏</strong></td><td>菜单操作入口，变换工具、播放控制</td></tr><tr><td>中左</td><td><strong>Hierarchy 层级视图</strong></td><td>场景中所有物体的列表</td></tr><tr><td>中央</td><td><strong>Scene 场景视图</strong></td><td>3D 世界主舞台，布置和编辑物体</td></tr><tr><td>左下</td><td><strong>Project 项目视图</strong></td><td>所有资源文件的仓库</td></tr><tr><td>右侧</td><td><strong>Inspector 检视视图</strong></td><td>查看/修改选中物体的属性</td></tr></table></div><div class="ok-box">💡 记忆口诀：Scene 是&quot;世界&quot;，Hierarchy 是&quot;目录&quot;，Project 是&quot;仓库&quot;，Inspector 是&quot;属性面板&quot;。</div>
+</div></div>
+<div class="slide" data-page="8"><div class="slide-inner markable">
+<h1>菜单栏概览</h1>
+<div class="card"><p>Unity 顶部菜单栏共有六大菜单，覆盖从文件到组件的全部操作：</p></div><img src="images/课件3/p8_menubar.png" alt="菜单栏六大菜单" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><table><tr><th>菜单</th><th>英文</th><th>主要作用</th></tr><tr><td>文件</td><td>File</td><td>打开/保存场景、项目，创建游戏</td></tr><tr><td>编辑</td><td>Edit</td><td>复制粘贴、撤销，修改 Unity 部分属性设置（含快捷键）</td></tr><tr><td>资源</td><td>Assets</td><td>资源的创建、导入、导出与同步</td></tr><tr><td>游戏对象</td><td>GameObject</td><td>创建、显示游戏对象，建立父子关系</td></tr><tr><td>组件</td><td>Component</td><td>为游戏对象添加新组件或属性</td></tr><tr><td>窗口</td><td>Window</td><td>显示特定视图（项目/层级/检视等），管理布局</td></tr></table></div><div class="card side-card"><div class="side-body"><h3>File（文件）</h3><p>管理场景和项目文件：新建/打开/保存场景，创建新项目，以及最终的打包发布。</p></div><img src="images/课件3/p8_menu_file.png" alt="File 菜单" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card"><table><tr><th>常用功能</th><th>说明</th></tr><tr><td>New Scene</td><td>新建场景</td></tr><tr><td>Open Scene</td><td>打开已有场景</td></tr><tr><td>Save / Save As</td><td>保存当前场景（<code>Ctrl+S</code>）</td></tr><tr><td>New Project</td><td>创建新项目</td></tr><tr><td>Build Settings</td><td>打包发布设置</td></tr></table></div><div class="card side-card"><div class="side-body"><h3>Edit（编辑）</h3><p>通用编辑操作和编辑器全局设置：撤销/重做、复制/粘贴、删除/复制物体，以及修改偏好设置。</p></div><img src="images/课件3/p8_menu_edit.png" alt="Edit 菜单" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card"><table><tr><th>常用功能</th><th>说明</th></tr><tr><td>Undo / Redo</td><td>撤销 / 重做（<code>Ctrl+Z</code> / <code>Ctrl+Y</code>）</td></tr><tr><td>Cut / Copy / Paste</td><td>剪切 / 复制 / 粘贴</td></tr><tr><td>Duplicate</td><td>复制物体（<code>Ctrl+D</code>）</td></tr><tr><td>Delete</td><td>删除物体</td></tr><tr><td>Preferences</td><td>编辑器偏好设置</td></tr></table></div><div class="card"><p>💡 强烈建议掌握常用操作的<strong>键盘快捷键</strong>，能大幅提升编辑效率。</p></div><div class="card side-card"><div class="side-body"><h3>Assets（资源）</h3><p>项目资源管理中心：创建脚本/材质/文件夹，导入外部资源包，导出项目资源。对应磁盘上的 Assets 文件夹。</p></div><img src="images/课件3/p8_menu_assets.png" alt="Assets 菜单" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card"><table><tr><th>常用功能</th><th>说明</th></tr><tr><td>Create</td><td>创建资源（脚本、材质、文件夹等）</td></tr><tr><td>Import Package</td><td>导入资源包</td></tr><tr><td>Export Package</td><td>导出资源包</td></tr></table></div><div class="card side-card"><div class="side-body"><h3>GameObject（游戏对象）</h3><p>场景中所有物体的创建入口：3D 基础物体（Cube/Sphere 等）、光源、音频、UI 元素、空物体等。搭场景从这里开始。</p></div><img src="images/课件3/p8_menu_gameobject.png" alt="GameObject 菜单" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card"><table><tr><th>常用功能</th><th>说明</th></tr><tr><td>3D Object（3D对象）</td><td>创建 3D 物体（Cube/Sphere/Capsule 等）</td></tr><tr><td>Light（光源）</td><td>创建光源</td></tr><tr><td>Audio（音频）</td><td>创建音频源</td></tr><tr><td>UI（用户界面）</td><td>创建 UI 元素（按钮、文本等）</td></tr><tr><td>Create Empty（创建空物体）</td><td>创建空物体</td></tr></table></div><div class="card side-card"><div class="side-body"><h3>Component（组件）</h3><p>给游戏对象赋予行为：物理（Rigidbody/Collider）、渲染（Mesh Renderer）、自定义脚本——决定对象&quot;能做什么&quot;。</p></div><img src="images/课件3/p8_menu_component.png" alt="Component 菜单" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card"><table><tr><th>常用功能</th><th>说明</th></tr><tr><td>Physics（物理）</td><td>物理组件（Rigidbody、Collider 等）</td></tr><tr><td>Rendering（渲染）</td><td>渲染组件（Mesh Renderer 等）</td></tr><tr><td>Scripts</td><td>挂载自定义脚本</td></tr></table></div><div class="card"><p>💡 记住：<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">GameObject 是&quot;东西&quot;，Component 是&quot;东西拥有的能力&quot;</mark>。一个 Cube 加上 Rigidbody 组件，才会受重力掉落。</p></div><div class="card side-card"><div class="side-body"><h3>Window（窗口）</h3><p>打开和管理编辑器各类视图面板：场景/游戏/层级/项目/检视/控制台，以及窗口布局的保存和重置。</p></div><img src="images/课件3/p8_menu_window.png" alt="Window 菜单" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card"><table><tr><th>常用功能</th><th>说明</th></tr><tr><td>Scene / Game</td><td>场景 / 游戏视图</td></tr><tr><td>Hierarchy / Project</td><td>层级 / 项目视图</td></tr><tr><td>Inspector</td><td>检视视图</td></tr><tr><td>Console</td><td>控制台（调试信息）</td></tr><tr><td>Layouts</td><td>窗口布局管理（重置布局）</td></tr></table></div><img src="images/课件3/更换布局.gif" alt="拖拽视图演示" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="ok-box">各视图空间可拉伸 / 拖拽改变位置，<mark style="background:rgba(239,68,68,.16);color:#f87171;padding:1px 5px;border-radius:4px;font-weight:600">玩乱了怎么办？</mark></div><div class="card side-card"><div class="side-body"><h3>重置布局</h3><ul><li>点击顶部菜单「<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">窗口（Window）</mark>」→「<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">布局（Layouts）</mark>」→「<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">默认（Default）</mark>」，即可恢复默认布局</li></ul></div><img src="images/课件3/p8_reset_layout.png" alt="重置布局" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div>
+</div></div>
+<div class="slide" data-page="9"><div class="slide-inner markable">
+<h1>Project / Hierarchy / Inspector 三视图</h1>
+<img src="images/课件3/p9_threeviews_overview.png" alt="三视图位置标注" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card side-card"><div class="side-body"><h3>① Project（项目视图）— 软件左下角</h3><ul><li>包含整个工程所有可用资源（模型、脚本等）</li><li>对应磁盘上的 <code>Assets</code> 文件夹，所有资源以目录方式组织，Unity 只认这个文件夹</li></ul></div><img src="images/课件3/p9_project.png" alt="项目视图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card side-card"><div class="side-body"><h3>② Hierarchy（层级视图）— 软件左上角</h3><ul><li>显示当前场景中的每个游戏对象（摄像机、灯光、模型…）</li><li>相当于 <mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">Photoshop 的&quot;图层&quot;</mark>概念：每个层可包含对象，其下可嵌套子对象，不断嵌套</li><li>可在层级窗口把对象拖到另一个对象内，建立<strong>父子化（Parenting）</strong></li></ul></div><img src="images/课件3/p9_hierarchy.png" alt="层级视图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card side-card"><div class="side-body"><h3>③ Inspector（检视视图）— 右侧</h3><ul><li><mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">本质就是&quot;属性面板&quot;</mark>：显示当前所选游戏对象 / 资源的属性与信息</li><li>选中游戏对象 → 编辑位置 / 旋转 / 缩放等属性</li><li>选中资源文件 → 修改导入设置（如贴图类型、压缩格式等）</li></ul></div><img src="images/课件3/p9_inspector.png" alt="检视视图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div>
+</div></div>
+<div class="slide" data-page="10"><div class="slide-inner markable">
+<h1>Scene 场景视图 · Game 游戏视图 · 播放调试</h1>
+<img src="images/课件3/p10_game_intro.png" alt="游戏界面截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><p>游戏场景是怎么开发出来的？先在 <strong>Scene（场景视图）</strong> 中把对象（模型、灯光、特效等）布置进来，设置它们的位置、大小、旋转等信息，组成一幕画面。一个 Scene 只能组合出一幕画面，多幕画面则需要由多个场景构成——<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">如战斗场景、欢迎场景、设置场景等</mark>，组合起来就是一个完整的游戏。</p></div><img src="images/课件3/p10_scene_game_label.png" alt="Scene 与 Game 视图区域标注" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card side-card"><div class="side-body"><h3>Scene（场景视图）</h3><p>是游戏场景设计的主编辑区域，所有对象在这里布置（位置 / 大小 / 旋转），组成一幕画面。</p><p><strong>一个 Scene 场景 = 一个独立的空间</strong>，场景文件是 <code>Assets</code> 下的 <code>.unity</code> 文件（如 <code>SampleScene.unity</code>）。</p><p>游戏可以由多个场景组成，通过脚本实现<strong>场景切换（地图切换）</strong>（如战斗场景、欢迎场景、设置场景等）。</p></div><img src="images/课件3/p10_scene.png" alt="Scene 场景视图界面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><img src="images/课件3/p10_scene_view.png" alt="Scene 场景视图截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card side-card"><div class="side-body"><h3>Game（游戏视图）</h3><p>是游戏运行时的显示窗口，对 Scene 的修改会实时同步过来。Scene 和 Game 是同一个窗口区域的两个 tab，可以切换查看。</p></div><img src="images/课件3/p10_game.png" alt="Game 游戏视图界面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><img src="images/课件3/p10_game_view.png" alt="Game 游戏视图截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><h3>Game 视图常见控件</h3><p>Game 视图顶部常见控件：</p><ul><li><strong>Simulator 模拟设备</strong>：模拟不同设备运行（默认安卓），快速预览多端表现</li><li><strong>Free Aspect 自由比例</strong>：控制显示比例 / 分辨率适配</li><li><strong>缩放</strong>：控制画面缩放倍数</li><li><strong>Play Focused 运行聚焦</strong>：运行时让游戏视图抢占焦点，操作更流畅</li><li><strong>设备模拟 / 喇叭 / Gizmos / 状态栏</strong>：分别控制模拟环境、音频、辅助调试信息、实时状态（FPS / 渲染耗时 / 内存）</li></ul></div><div class="card"><h3>播放工具</h3><p>（工具栏中央）：<code>▶ 运行</code> / <code>⏸ 暂停</code> / <code>⏭ 单帧</code>，用于编辑器内测试游戏。点 ▶ 运行后，Game 视图实时显示游戏画面。</p></div><img src="images/课件3/p10_play_tools.png" alt="播放工具" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><h3>控制台（Console）与状态栏</h3><p>两个很有用的调试工具：</p><ul><li>状态栏在编辑器底部（通常是一条灰线）</li><li>脚本里用 <code>Debug.Log()</code> 向控制台输出信息，有助于调试和修复错误</li></ul></div><img src="images/课件3/p10_console.png" alt="控制台" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="ok-box">💡 写完脚本跑不起来？第一反应是看 Console 的红字报错，而不是猜。</div>
+</div></div>
+<div class="slide" data-page="11"><div class="slide-inner markable">
+<h1>场景视图详解（变换工具 · 坐标系 · 显示开关）</h1>
+<div class="card"><h3>变换工具</h3><p><strong>变换工具（工具栏左侧）</strong>：查看 / 移动 / 旋转 / 缩放 / 矩形 / 变换组件，用来控制和操作场景及游戏对象，主要应用于 Scene 场景视图。</p></div><div class="contest-row"><img src="images/课件3/p11_transform.png" alt="变换工具栏" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:10%;height:auto;max-height:none;object-fit:contain" onerror="this.style.display='none'"><div class="card" style="flex:1"><table><tr><th>名称</th><th>快捷键</th><th>作用</th></tr><tr><td><span style="color:#4FC3F7">查看工具 View</span></td><td><code>Q</code></td><td>平移 / 旋转摄像机视野</td></tr><tr><td>移动工具 Move</td><td><code>W</code></td><td>移动选中的物体</td></tr><tr><td>旋转工具 Rotate</td><td><code>E</code></td><td>旋转物体</td></tr><tr><td>缩放工具 Scale</td><td><code>R</code></td><td>缩放物体</td></tr><tr><td>矩形工具 Rect</td><td><code>T</code></td><td>2D / UI 元素排版</td></tr><tr><td>变换组件按钮</td><td><code>Y</code></td><td>移动/旋转/缩放游戏对象</td></tr></table></div></div><div class="card side-card"><div class="side-body"><h3>Gizmo 坐标系工具</h3><p>（Scene 视图右上角）：</p><ul><li><strong>Center / Pivot（中心 / 轴心）</strong>：改变游戏对象的轴心点——Center（中心）为包围盒中心，Pivot（轴心）为物体自身轴心</li><li><strong>Global / Local（全局 / 本地）</strong>：改变坐标参考——Global（全局）为世界坐标，Local（本地）为自身坐标</li></ul></div><img src="images/课件3/p13_transform_gizmo.png" alt="变换工具与 Gizmo 坐标系" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card side-card"><div class="side-body"><h3>Gizmo 导航器</h3><p>Scene 视图右上角的 <strong>3D 坐标轴指示器</strong>，显示游戏世界的坐标系（左手系）：</p><ul><li>原点 <strong>(0, 0, 0)</strong>：世界坐标中心</li><li><strong>Y 轴</strong>：上下（向上为 +Y）</li><li><strong>X / Z 轴</strong>：东西南北（水平方向）</li><li>左手系约定：<strong>X 向右</strong>、<strong>Y 向上</strong>、<strong>Z 向里（朝屏幕内）</strong>，以后写 <code>transform.position</code>、做移动旋转都依赖它</li></ul></div><img src="images/课件3/p11_gizmo_navigator.png" alt="左手坐标系示意图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><img src="images/课件3/p12_scene_coord.gif" alt="场景视图与左手坐标系" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><h3>2D / 3D 切换</h3><p><strong>2D 按钮</strong>：控制场景以 2D 还是 3D 方式显示，默认未选中是 3D；选中后场景以 2D 显示，摄像机视图变成平行视图。</p></div><img src="images/课件3/p11_2d3d.png" alt="2D 切换按钮" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><button class="fold-toggle qa no-answer" style="cursor:default;opacity:.85">❓ 切换了 2D 显示后，Gizmo 导航器会消失——因为它只属于 3D 视图。</button><div class="card"><h3>渲染模式</h3><p><strong>渲染模式下拉框</strong>：选择场景的显示方式——实体方式 / Wireframe（线框）等，其它显示方式可以在引擎中试试。</p></div><img src="images/课件3/p11_render_mode.png" alt="渲染模式下拉框" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><h3>光线按钮</h3><p><strong>光线按钮</strong>：控制场景是否显示真实角度的光线效果，不影响真实游戏的光线。</p></div><img src="images/课件3/p11_light.png" alt="光线按钮" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><h3>音频按钮</h3><p><strong>音频按钮</strong>：控制场景中是否播放音频，不影响游戏实际运行效果。</p></div><img src="images/课件3/p11_audio.png" alt="音频按钮" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card side-card"><div class="side-body"><h3>可见性与效果控制</h3><p>控制其它物体在场景中是否显示（只针对场景视图，不影响游戏运行效果）：</p><ul><li><strong>Skybox 天空盒</strong>：控制场景是否显示天空盒</li><li><strong>Fog 雾效</strong>：控制场景是否显示雾效果</li><li><strong>Flare 镜头光晕</strong>：控制是否显示&quot;镜头光晕&quot;效果</li><li><strong>Always Refresh 始终刷新</strong>：勾选后场景视图更&quot;积极&quot;地自动刷新画面</li><li><strong>Post Processing 后期处理</strong>：控制是否显示&quot;后期处理&quot;效果</li><li><strong>Particle Systems 粒子系统</strong>：控制是否显示粒子系统效果</li></ul></div><img src="images/课件3/p11_visibility.png" alt="可见性与效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card"><h3>Gizmos（可视化辅助）</h3><ul><li><strong>3D 图标</strong>：控制各类 3D 辅助图标的显示（变换 / 光源 / 相机 gizmos）</li><li><strong>淡化小工具</strong>：未被选中对象的辅助 gizmos 图标显示强度</li><li><strong>选择轮廓</strong>：选中对象的突出轮廓效果</li><li><strong>选择线</strong>：对象之间特定的选择关联线条</li><li><strong>地形调试警告</strong>：地形问题 / 不合理设置的调试警告</li></ul></div><img src="images/课件3/p14_scene_options.png" alt="场景视图显示开关" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><h3>放大显示</h3><p><strong>放大显示</strong>：快捷放大某区域查看细节。</p></div><img src="images/课件3/p11_zoom.png" alt="放大显示" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+</div></div>
+<div class="slide" data-page="12"><div class="slide-inner markable">
+<h1>课堂练习 — 创建你的工程</h1>
+<div class="card"><h3>要求</h3><ol><li>用 Unity Hub <strong>新建一个 3D 工程</strong>（纯英文路径，命名为 <code>MyUnityLab</code>），将编辑器切换为<strong>简体中文界面</strong></li><li>点击 <code>▶ 运行</code>，观察 Game 视图与 Scene 视图的同步变化，再点 <code>⏸ 暂停</code></li></ol></div>
+<div class="ok-box">⚠️ <strong>重要提醒</strong>：这个工程是后续所有作业的<strong>工作台</strong>，请保存在自己的文件夹里，下次上课直接打开接着做。</div>
+</div></div>
+<div class="slide" data-page="13"><div class="slide-inner end-page">
+
+<div class="end-thanks">
+    <div class="end-left">
+        <div class="end-icon">💪</div>
+        <div class="end-title">感谢各位同学的参与!</div>
+        <div class="end-sub">祝大家学习进步</div>
+    </div>
+    <div class="end-right">
+        <img src="images/tencent-docs-qrcode.png" alt="腾讯文档二维码" onerror="this.style.display='none'" onclick="zoomQR(this)" style="cursor:pointer">
+        <p>扫码查看作业完成情况</p>
+        <a href="https://docs.qq.com/sheet/DV2tKZ2pSTUNwUFpX?tab=bo2p4o" target="_blank" class="end-link">📊 查看作业完成情况文档</a>
+    </div>
+</div>
+<a href="课件4_场景与物体.html" class="end-next-link">📖 下一节：课件4 · 场景与物体 →</a>
+</div></div>
+</div>
+</div>
+</div>
+
+<div class="search-panel" id="searchPanel">
+    <div class="search-panel-header">
+        <span>🔍 全局搜索</span>
+        <button class="search-panel-close" onclick="closeSearch()">✕</button>
+    </div>
+    <input class="search-input" id="searchInput" placeholder="输入关键词搜索..." oninput="doSearch()" autocomplete="off">
+    <div class="search-results" id="searchResults"></div>
+</div>
+
+<div class="help-overlay" id="helpOverlay">
+    <div class="help-header"><span>📖 使用帮助</span><button class="help-close-btn" onclick="closeHelp()">✕</button></div>
+    <div class="help-body">
+            <h3>⌨️ 快捷键</h3>
+            <table><tr><td><code>Ctrl+K</code></td><td>打开搜索</td></tr><tr><td><code>← →</code></td><td>上一页 / 下一页</td></tr><tr><td><code>Esc</code></td><td>关闭弹窗</td></tr></table>
+            <h3>🎯 导航</h3>
+            <p>左侧边栏点击切换页面；底部圆点快速跳转；进度条显示学习完成度。</p>
+            <h3>💻 在线编辑器</h3>
+            <p>顶部「在线编辑器」下拉提供菜鸟教程、Tutorialspoint、DotNetFiddle 三个在线 C# 编译器。</p>
+            <h3>🌙 主题与字号</h3>
+            <p>深色/浅色切换；A- / A+ 调整字号；刷新后保留设置。</p>
+            <h3>🔍 搜索</h3>
+            <p>支持中英文关键词，匹配结果高亮显示，点击跳转到对应页面。</p>
+        </div>
+</div>
+
+<div class="catalog-panel" id="catalogPanel">
+    <div class="catalog-header">
+        <span>📚 课件目录</span>
+        <button class="catalog-close-btn" onclick="closeCatalog()">✕</button>
+    </div>
+    <div class="catalog-list" id="catalogList"></div>
+</div>
+
+<div class="qr-zoom-overlay" id="qrZoom" onclick="closeZoom()">
+    <img id="qrZoomImg" src="" alt="二维码放大">
+</div>
+
+<div class="nav-buttons">
+    <button class="nav-btn" id="prevBtn" onclick="goSlide(-1)">◀ 上一页</button>
+    <button class="nav-btn" id="nextBtn" onclick="goSlide(1)">下一页 ▶</button>
+</div>
+<div class="progress-dots" id="progressDots"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+window.__CATALOG__ = [{"file": "课件1_认识Unity与课程介绍.html", "label": "课件1 · 认识Unity与课程介绍"}, {"file": "课件2_注册与安装软件.html", "label": "课件2 · 注册与安装软件"}, {"file": "课件3_Unity引擎概览.html", "label": "课件3 · Unity引擎概览"}, {"file": "课件4_场景与物体.html", "label": "课件4 · 场景与物体"}, {"file": "课件5_移动视野与物体.html", "label": "课件5 · 移动视野与物体"}, {"file": "课件6_旋转缩放多选.html", "label": "课件6 · 旋转缩放多选"}, {"file": "课件7_网格与材质.html", "label": "课件7 · 网格与材质"}, {"file": "课件8_C#核心语法.html", "label": "课件8 · C#核心语法"}, {"file": "课件9_Fbx导入与脚本入门.html", "label": "课件9 · Fbx导入与脚本入门"}, {"file": "课件10_键盘控制移动.html", "label": "课件10 · 键盘控制移动"}, {"file": "课件11_变量类型与可见性.html", "label": "课件11 · 变量类型与可见性"}, {"file": "课件12_访问其他游戏对象.html", "label": "课件12 · 访问其他游戏对象"}, {"file": "课件13_刚体与碰撞体.html", "label": "课件13 · 刚体与碰撞体"}, {"file": "课件14_受力运动.html", "label": "课件14 · 受力运动"}, {"file": "课件15_主控脚本与随机生成.html", "label": "课件15 · 主控脚本与随机生成"}, {"file": "课件16_中文显示与打包.html", "label": "课件16 · 中文显示与打包"}, {"file": "课件17_FPS场景玩家武器.html", "label": "课件17 · FPS场景玩家武器"}, {"file": "课件18_移动射击.html", "label": "课件18 · 移动射击"}, {"file": "课件19_跳跃与穿墙.html", "label": "课件19 · 跳跃与穿墙"}, {"file": "课件20_场地美化与免费资源.html", "label": "课件20 · 场地美化与免费资源"}, {"file": "课件21_敌人简易跟踪.html", "label": "课件21 · 敌人简易跟踪"}, {"file": "课件22_AI敌人巡逻.html", "label": "课件22 · AI敌人巡逻"}, {"file": "课件23_敌人动画切换.html", "label": "课件23 · 敌人动画切换"}, {"file": "课件24_启动页面.html", "label": "课件24 · 启动页面"}, {"file": "课件25_玩家血条与被接触攻击.html", "label": "课件25 · 玩家血条与被接触攻击"}, {"file": "课件26_死亡与游戏管理器.html", "label": "课件26 · 死亡与游戏管理器"}, {"file": "课件27_消灭敌人与孵化器.html", "label": "课件27 · 消灭敌人与孵化器"}, {"file": "课件28_粒子系统与随机生成.html", "label": "课件28 · 粒子系统与随机生成"}, {"file": "课件29_拾取物品.html", "label": "课件29 · 拾取物品"}, {"file": "课件30_更换枪械.html", "label": "课件30 · 更换枪械"}, {"file": "课件31_修改动画状态机.html", "label": "课件31 · 修改动画状态机"}, {"file": "课件32_NPC对话.html", "label": "课件32 · NPC对话"}, {"file": "课件33_NPC对话进阶.html", "label": "课件33 · NPC对话进阶"}, {"file": "课件34_任务队列.html", "label": "课件34 · 任务队列"}];
+let LESSON_LABEL='';(function(){
+  let cur=window.location.pathname.split('/').pop();
+  let items=window.__CATALOG__||[];
+  for(let i=0;i<items.length;i++){if(items[i].file===cur){LESSON_LABEL=items[i].label;break}}
+  if(!LESSON_LABEL)LESSON_LABEL=document.title.split(' — ')[0]||'';
+})();
+
+// ========== 移动端 "更多" 菜单 ==========
+function toggleMobileMore(){document.getElementById('mobileMoreMenu').classList.toggle('open')}
+function mobileAction(act){
+  document.getElementById('mobileMoreMenu').classList.remove('open');
+  if(act==='ide'){let m=document.getElementById('ideMenu');if(m)m.classList.add('show')}
+  else if(act==='fontDown')changeFont(-1);
+  else if(act==='fontUp')changeFont(1);
+  else if(act==='search')openSearch();
+  else if(act==='help')toggleHelp();
+}
+document.addEventListener('click',function(e){
+  let mm=document.getElementById('mobileMoreMenu');
+  if(mm&&mm.classList.contains('open')&&!e.target.closest('.mobile-more'))mm.classList.remove('open');
+});
+// 点击移动端信息条跳转下一页
+function mobileInfoTap(){goSlide(1)}
+
+// ========== localStorage ==========
+const LS=(k,d)=>localStorage.getItem(k)||d;
+const LSset=(k,v)=>localStorage.setItem(k,v);
+
+// ========== 主题 ==========
+// ========== 在线编辑器下拉 ==========
+document.addEventListener('DOMContentLoaded',function(){
+    var ideBtn=document.getElementById('ideBtn');
+    if(ideBtn){
+        ideBtn.onclick=function(e){
+            e.stopPropagation();
+            document.getElementById('ideMenu').classList.toggle('show');
+        };
+    }
+    document.querySelectorAll('.dropdown-item').forEach(function(el){
+        el.onclick=function(e){
+            e.preventDefault();
+            window.open(this.dataset.url,'_blank');
+            document.getElementById('ideMenu').classList.remove('show');
+        };
+    });
+    document.addEventListener('click',function(){
+        document.getElementById('ideMenu').classList.remove('show');
+    });
+});
+
+// ========== 主题 ==========
+if(LS('theme','dark')==='light')document.body.classList.add('light');
+function toggleTheme(){
+    const il=document.body.classList.toggle('light');
+    LSset('theme',il?'light':'dark');
+    document.getElementById('themeBtn').textContent=il?'☀️浅色':'🌙深色';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('themeBtn').textContent=document.body.classList.contains('light')?'☀️浅色':'🌙深色';
+    let mi=document.getElementById('mobileInfo');
+    if(mi){
+        mi.querySelector('.mi-lesson').textContent=LESSON_LABEL;
+        mi.querySelector('.mi-page').textContent='第1页 / 共'+total+'页';
+    }
+});
+
+// ========== 字号 ==========
+const FONT_SIZES=['xs','sm','md','lg','xl'];
+let fontIdx=FONT_SIZES.indexOf(LS('font','md'));
+if(fontIdx<0)fontIdx=2;
+if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+function changeFont(d){
+    document.body.classList.remove('font-'+FONT_SIZES[fontIdx]);
+    fontIdx=Math.max(0,Math.min(FONT_SIZES.length-1,fontIdx+d));
+    if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+    LSset('font',FONT_SIZES[fontIdx]);
+}
+
+// ========== 幻灯片 ==========
+let slides=document.querySelectorAll('.slide,.cover'),
+    navLinks=document.querySelectorAll('.nav-link'),
+    curr=0,total=13,contentTotal=11;
+
+// 进度圆点
+// 侧边栏点击
+navLinks.forEach((l,i)=>l.addEventListener('click',e=>{e.preventDefault();showSlide(i);}));
+let dotsHtml='';
+for(let i=0;i<total;i++)dotsHtml+=`<span class="progress-dot" data-idx="${i}" onclick="showSlide(${i})"></span>`;
+document.getElementById('progressDots').innerHTML=dotsHtml;
+let dots=document.querySelectorAll('.progress-dot');
+
+function showSlide(idx){
+    if(idx<0||idx>=total)return;
+    slides.forEach((s,i)=>s.classList.toggle('active',i===idx));
+    navLinks.forEach((l,i)=>l.classList.toggle('active',i===idx));
+    dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
+    curr=idx;
+    let cp=Math.max(0,Math.min(idx,contentTotal));
+    document.getElementById('progressFill').style.width=(cp/contentTotal*100)+'%';
+    document.getElementById('progressText').textContent=cp+' / '+contentTotal;
+    let mi=document.getElementById('mobileInfo');
+    if(mi){
+        mi.querySelector('.mi-lesson').textContent=LESSON_LABEL;
+        mi.querySelector('.mi-page').textContent='第'+(idx+1)+'页 / 共'+total+'页';
+    }
+    document.getElementById('mainArea').scrollTop=0;
+    document.querySelectorAll('.nav-status')[idx]?.classList.add('seen');
+    updateNav();
+}
+function goSlide(d){ showSlide(curr+d); }
+function updateNav(){
+    document.getElementById('prevBtn').disabled=curr===0;
+    document.getElementById('nextBtn').disabled=curr===total-1;
+    LSset('page_'+window.location.pathname.split('/').pop(), curr);
+}
+
+// 键盘
+document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')goSlide(1);
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')goSlide(-1);
+    if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openSearch();}
+    if(e.key==='Escape'){closeSearch();closeHelp();closeZoom();closeCatalog();}
+});
+
+// ========== 搜索 ==========
+function openSearch(){document.getElementById('searchPanel').classList.add('open');document.getElementById('searchInput').focus();document.getElementById('searchInput').value='';document.getElementById('searchResults').innerHTML=''}
+function closeSearch(){document.getElementById('searchPanel').classList.remove('open')}
+function toggleHelp(){document.getElementById('helpOverlay').classList.toggle('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+// 课件目录
+function toggleCatalog(){
+    let p=document.getElementById('catalogPanel');
+    if(!p.classList.contains('open')){loadCatalog();p.classList.add('open')}else{p.classList.remove('open')}
+}
+function closeCatalog(){document.getElementById('catalogPanel').classList.remove('open')}
+function loadCatalog(){
+    let c=document.getElementById('catalogList');
+    if(c.children.length>0)return;
+    let current=window.location.pathname.split('/').pop();
+    let items=window.__CATALOG__||[];
+    if(!items.length){c.innerHTML='<div class="catalog-item" style="color:var(--text-muted)">暂无课件</div>';return}
+    items.forEach(item=>{
+        let a=document.createElement('a');a.className='catalog-item';a.href=encodeURIComponent(item.file);
+        if(item.file===current)a.classList.add('current');
+        a.innerHTML=`<span class="catalog-num">${item.label.split(' · ')[0]}</span><span>${item.label.split(' · ').slice(1).join(' · ')||item.label}</span>`;
+        c.appendChild(a);
+    });
+}
+function zoomQR(img){document.getElementById('qrZoomImg').src=img.src;document.getElementById('qrZoom').classList.add('show')}
+function closeZoom(){document.getElementById('qrZoom').classList.remove('show')}
+function doSearch(){
+    let q=document.getElementById('searchInput').value,qLower=q.toLowerCase(),c=document.getElementById('searchResults');
+    c.innerHTML='';if(q.length<2)return;
+    let r=[];
+    slides.forEach((s,i)=>{
+        let raw=s.textContent,lower=raw.toLowerCase(),idx=lower.indexOf(qLower);
+        if(idx<0)return;
+        let start=Math.max(0,idx-15),end=Math.min(raw.length,idx+q.length+30);
+        let ex=raw.substring(start,end);
+        if(start>0)ex='...'+ex;
+        if(end<raw.length)ex=ex+'...';
+        // 高亮匹配词
+        let re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+        ex=ex.replace(re,'<mark>$1</mark>');
+        r.push({idx:i,excerpt:ex,slide:s});
+    });
+    r.slice(0,20).forEach(x=>{
+        let a=document.createElement('a');a.className='search-item';a.href='#';
+        let title=navLinks[x.idx]?.textContent.replace(/^\d+\.\s*/,'')||('页面'+(x.idx+1));
+        a.innerHTML=`<div class="sr-lesson">${x.idx+1}. ${title}</div><div class="sr-text">${x.excerpt}</div>`;
+        a.onclick=e=>{e.preventDefault();showSlide(x.idx);closeSearch();};
+        c.appendChild(a);
+    });
+}
+
+// ========== 复制 ==========
+function copyCode(cid,btn){
+    let code=document.getElementById(cid).textContent;
+    navigator.clipboard.writeText(code).then(()=>{
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    }).catch(()=>{
+        // fallback
+        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
+        document.execCommand('copy');document.body.removeChild(ta);
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    });
+}
+
+// ========== 初始化 ==========
+hljs.highlightAll();
+// 折叠面板
+function toggleFold(btn){
+    btn.classList.toggle('open');
+    let content=btn.nextElementSibling;
+    if(!content||!content.classList.contains('fold-content')) content=content.nextElementSibling;
+    if(content&&content.classList.contains('fold-content')) content.classList.toggle('show');
+}
+let savedPage=parseInt(LS('page_'+window.location.pathname.split('/').pop(),'0'));
+if(savedPage>0&&savedPage<total)showSlide(savedPage);else showSlide(0);
+</script>
+</body>
+</html>

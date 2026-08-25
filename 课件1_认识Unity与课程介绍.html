@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>课件1_认识Unity与课程介绍 — C#先知课堂</title>
+<link rel="stylesheet" href="vendor/atom-one-dark.min.css">
+<script src="vendor/highlight.min.js"></script>
+<style>
+/* ===== 色彩变量 ===== */
+:root{
+--bg-primary:#0A0E27;--bg-secondary:#0D1430;--bg-card:rgba(17,24,39,0.95);
+--bg-input:#0B1020;--border:rgba(255,255,255,0.06);
+--text:#E8EAED;--text-muted:#9AA0A6;
+--accent:#00D4AA;--accent2:#4FC3F7;--accent-dim:rgba(0,212,170,0.08);
+--orange:#F59E0B;--blue:#818CF8;
+--green:#22C55E;--green-bg:rgba(34,197,94,0.08);--green-border:rgba(34,197,94,0.3);
+--red:#EF4444;--red-bg:rgba(239,68,68,0.08);--red-border:rgba(239,68,68,0.3);
+--yellow:#F59E0B;--purple:#C084FC;--teal:#86EFAC;--teal-border:rgba(34,197,94,0.3);
+--font-size:16px;
+}
+.light{
+--bg-primary:#ffffff;--bg-secondary:#f6f8fa;--bg-card:#f6f8fa;--bg-input:#ffffff;
+--border:#d0d7de;--text:#24292f;--text-muted:#656d76;
+--accent:#0969da;--accent2:#0550ae;--accent-dim:rgba(9,105,218,0.08);
+--orange:#cf222e;--blue:#0550ae;
+--green:#1a7f37;--green-bg:#eefdf2;--green-border:#86d9a0;
+--red:#cf222e;--red-bg:#ffebe9;--red-border:#fdaeb7;
+--yellow:#9a6700;--purple:#8250df;--teal:#0550ae;--teal-border:#4ac26b;
+}
+body.font-xs{--font-size:12px}body.font-sm{--font-size:14px}body.font-md{--font-size:16px}body.font-lg{--font-size:19px}body.font-xl{--font-size:22px}
+
+/* ===== 全局 ===== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microsoft YaHei',sans-serif;background:linear-gradient(180deg,var(--bg-primary),var(--bg-secondary));color:var(--text);line-height:1.6;font-size:var(--font-size)}
+.container{display:flex;height:100vh}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.02)}
+::-webkit-scrollbar-thumb{background:rgba(0,212,170,0.2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,212,170,0.4)}
+
+/* ===== 侧边栏 ===== */
+.sidebar{width:260px;min-width:260px;height:100vh;background:linear-gradient(180deg,rgba(10,14,39,0.98),rgba(13,20,48,0.95));border-right:1px solid var(--border);overflow-y:auto;padding:12px 0;flex-shrink:0;backdrop-filter:blur(10px);position:relative;z-index:10}
+.sidebar-title{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-size:16px;font-weight:700;padding:0 14px 10px;border-bottom:1px solid rgba(0,212,170,0.15);margin-bottom:6px}
+.nav-link{display:flex;align-items:center;color:var(--text-muted);text-decoration:none;padding:8px 14px;font-size:12px;border-left:3px solid transparent;transition:all .2s}
+.nav-link:hover{color:var(--accent);background:var(--accent-dim);border-left-color:rgba(0,212,170,0.4)}
+.nav-link.active{color:#fff!important;background:linear-gradient(90deg,rgba(0,212,170,0.18),transparent);border-left:3px solid var(--accent);font-weight:600}
+.nav-status{width:7px;height:7px;border-radius:50%;margin-right:7px;flex-shrink:0;background:rgba(255,255,255,0.1);transition:all .3s}
+.nav-status.seen{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,0.5)}
+
+/* ===== Header ===== */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header-bar{display:flex;align-items:center;gap:16px;padding:10px 24px;background:rgba(10,14,39,0.95);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;position:relative;z-index:5}
+.progress-wrap{flex:1;min-width:200px;display:flex;align-items:center;gap:12px}
+.progress-bar{flex:1;height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,0.3)}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .5s ease;width:0;box-shadow:0 0 8px rgba(0,212,170,0.4)}
+.progress-text{font-size:11px;color:var(--text-muted);white-space:nowrap}
+.header-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .25s;white-space:nowrap}
+.header-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 8px rgba(0,212,170,0.1);transform:translateY(-1px)}
+.header-dropdown{position:relative;display:inline-block}
+.dropdown-menu{display:none;position:absolute;top:100%;right:0;margin-top:6px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;min-width:180px;z-index:100;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.dropdown-menu.show{display:block}
+.dropdown-item{display:block;padding:10px 16px;color:var(--text);font-size:13px;text-decoration:none;transition:background .2s;cursor:pointer;white-space:nowrap}
+.dropdown-item:hover{background:var(--accent-dim);color:var(--accent)}
+.dropdown-item:not(:last-child){border-bottom:1px solid var(--border)}}
+
+/* ===== 幻灯片 ===== */
+.slides-container{flex:1;position:relative !important;overflow:hidden}
+#mainArea .slides-container{position:relative !important;overflow:hidden !important}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transform:translateX(30px);transition:opacity .35s,transform .35s;pointer-events:none;overflow-y:auto}
+.slide::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:.6;z-index:10}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto;z-index:1}
+.slide-inner{max-width:920px;margin:0 auto;padding:56px 48px 80px}
+
+/* 标题 */
+.slide-inner h1{color:#fff;font-size:26px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid rgba(0,212,170,0.2);letter-spacing:-0.3px}
+.slide-inner h2{color:var(--accent2);font-size:20px;margin:28px 0 14px;font-weight:600}
+.slide-inner h3{color:var(--accent);font-size:calc(var(--font-size) * 1.06);margin:20px 0 10px;font-weight:600;padding-left:10px;border-left:3px solid var(--accent)}
+.slide-inner h3.h-example{color:var(--accent2);border-left-color:var(--accent2)}
+.slide-inner h3.h-practice{color:var(--orange);border-left-color:var(--orange)}
+.slide-inner p{color:var(--text);margin-bottom:10px;line-height:1.85}
+.slide-inner ul,.slide-inner ol{margin-left:22px;margin-bottom:14px}
+.slide-inner li{color:#CBD5E1;margin-bottom:6px;line-height:1.75}
+
+/* 内联代码 */
+.slide-inner strong{color:var(--accent2);font-weight:700}
+.slide-inner em{color:var(--orange);font-style:normal;font-weight:500}
+.slide-inner code{background:rgba(0,212,170,0.08);color:var(--accent);padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:90%;border:1px solid rgba(0,212,170,0.15);font-weight:600}
+
+/* 表格 */
+.slide-inner table{width:100%;border-collapse:collapse;font-size:calc(var(--font-size) * 0.94);margin:12px 0;border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.slide-inner table td,.slide-inner table th{padding:8px 14px;border:1px solid var(--border);text-align:left}
+.slide-inner table th{background:linear-gradient(135deg,rgba(17,24,39,0.9),rgba(15,23,41,0.9));color:var(--accent);font-weight:600;font-size:calc(var(--font-size) * 1.0);text-transform:uppercase;letter-spacing:.5px}
+.slide-inner table tr:nth-child(odd){background:rgba(255,255,255,0.015)}
+.slide-inner table tr:hover{background:var(--accent-dim)}
+
+/* 链接 */
+.slide-inner a{color:var(--accent2);text-decoration:underline;text-decoration-color:rgba(79,195,247,0.3);text-underline-offset:3px;transition:all .2s}
+.slide-inner a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+
+/* ===== 卡片 ===== */
+.card,.homework-card,.ok-box,.prompt-box{margin:10px 0;border-radius:12px;transition:all .3s}
+.card{background:linear-gradient(135deg,var(--bg-card),rgba(13,20,48,0.85));border:1px solid var(--border);padding:14px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.2);overflow:hidden}
+.card .card-img{float:right;max-width:200px;max-height:250px;margin:0 0 8px 16px;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 标题+图片+列表 类型的卡片：确定性两栏（左文右图），不依赖 float 环绕 */
+.card.side-card{display:flex;align-items:flex-start;gap:18px;overflow:hidden}
+.card.side-card .side-body{flex:1;min-width:0}
+.card.side-card .side-body h3{margin-top:0}
+.card.side-card .card-img{float:none;flex:0 0 auto;max-width:200px;max-height:250px;margin:0;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.card.side-card .side-body ul,.card.side-card .side-body ol{margin:8px 0 0;padding-left:22px}
+.card.side-card .side-body ul li,.card.side-card .side-body ol li{margin:4px 0}
+.card table .card-img{float:none;max-width:280px;max-height:none;margin:4px auto;display:block;border-radius:4px}
+.card table .card-img-sm{float:none;max-width:100px;max-height:none;margin:4px 0;display:inline-block;border-radius:4px}
+.card-img{display:block;max-width:100%;margin:16px auto;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 小图（报错截图等）控制在 1/3 宽度 */
+.card-img.small{max-width:33%!important}
+/* 表格单元格内图片（发展四时代等）：小图居中，破图自动隐藏 */
+.slide-inner table td img.card-img,.slide-inner table th img.card-img{display:block;max-width:150px;max-height:105px;width:auto;height:auto;margin:6px auto;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+.slide-inner table td img.card-img-sm,.slide-inner table th img.card-img-sm{display:block;max-width:96px;max-height:66px;margin:4px auto;border-radius:4px}
+/* 竞赛照片三图并排 */
+.contest-row{display:flex;gap:12px;justify-content:center;margin:16px 0;flex-wrap:wrap}
+.contest-row img{flex:1;min-width:0;max-width:280px;max-height:200px;object-fit:cover;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer}
+.card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.12);transform:translateY(-1px)}
+.card h3{margin-top:0}
+
+/* 代码块 */
+.prompt-box{background:var(--bg-input);border:1px solid rgba(0,212,170,0.2);border-left:3px solid var(--accent);overflow:hidden;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03)}
+.code-toolbar{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.04)}
+.code-lang{font-size:10px;color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.copy-btn{background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2);color:var(--accent);padding:3px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-family:inherit;transition:all .2s}
+.copy-btn:hover{background:rgba(0,212,170,0.2);border-color:var(--accent)}
+.copy-btn.copied{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.prompt-box pre{background:transparent;padding:12px 16px;margin:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;overflow-x:auto}
+.prompt-box pre code{background:transparent;padding:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;font-family:'JetBrains Mono','Menlo','Monaco',monospace;color:#E2E8F0;border:none}
+
+/* ok-box / homework-card */
+.homework-card{background:linear-gradient(135deg,rgba(0,212,170,0.06),var(--bg-card));border:1px solid var(--teal-border);padding:14px 18px}
+.homework-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(0,212,170,0.08)}
+.homework-card h3{color:var(--teal)}
+.ok-box{background:linear-gradient(135deg,rgba(34,197,94,0.06),var(--bg-card));border:1px solid var(--green-border);padding:14px 18px}
+.ok-box:hover{border-color:var(--green);box-shadow:0 8px 24px rgba(34,197,94,0.08)}
+.ok-box ul,.ok-box ol{margin:6px 0;padding-left:1.5em}
+.ok-box li{margin:3px 0;line-height:1.7}
+
+/* 高亮标记 */
+.markable li,.markable p{cursor:pointer;transition:all .15s;border-radius:3px;padding:1px 3px}
+.markable li.marked,.markable p.marked{background:rgba(192,132,252,.12);border-left:3px solid var(--purple);padding-left:8px}
+
+/* ===== 折叠面板 ===== */
+.fold-toggle{display:inline-flex;align-items:center;gap:6px;background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:calc(var(--font-size) * 1.06);font-family:inherit;transition:all .2s;margin:8px 0;user-select:none}
+.fold-toggle:hover{background:rgba(0,212,170,0.15);box-shadow:0 2px 8px rgba(0,212,170,0.15)}
+.fold-toggle .arrow{display:inline-block;transition:transform .3s;font-size:10px}
+.fold-toggle.open .arrow{transform:rotate(90deg)}
+.fold-content{max-height:0;overflow:hidden;transition:max-height .4s ease;opacity:0}
+.fold-content.show{max-height:3000px;opacity:1}
+/* 提示折叠 绿色 */
+.fold-toggle.hint{color:var(--green);border-color:var(--green-border);background:var(--green-bg)}
+.fold-toggle.hint:hover{background:rgba(34,197,94,0.12)}
+/* 答案折叠 紫色 */
+.fold-toggle.solution{color:var(--purple);border-color:rgba(192,132,252,0.4);background:rgba(192,132,252,0.08)}
+.fold-toggle.solution:hover{background:rgba(192,132,252,0.15)}
+/* 问答折叠 橙色 */
+.fold-toggle.qa{color:var(--orange);border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.08)}
+.fold-toggle.qa:hover{background:rgba(245,158,11,0.15)}
+/* 填空代码 */
+.code-blank{color:var(--orange);background:rgba(245,158,11,0.1);padding:2px 6px;border-radius:4px;font-weight:600}
+
+/* ===== 导航按钮 ===== */
+.nav-buttons{position:fixed;bottom:24px;right:32px;display:flex;gap:8px;z-index:100}
+.nav-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:10px 22px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:500;transition:all .25s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 4px 16px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
+.progress-dots{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:100}
+.progress-dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:all .3s;cursor:pointer}
+.progress-dot:hover{background:var(--accent2)}
+.progress-dot.active{background:var(--accent);transform:scale(1.4);box-shadow:0 0 8px rgba(0,212,170,0.5)}
+
+/* ===== 搜索 ===== */
+.search-panel{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:300;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.search-panel.open{right:0}
+.search-panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.search-panel-header span{font-size:15px;font-weight:600;color:var(--text)}
+.search-panel-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.search-panel-close:hover{color:var(--text);background:var(--accent-dim)}
+
+/* ===== 课件目录 ===== */
+.catalog-panel{position:fixed;top:0;right:-320px;width:320px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:298;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.catalog-panel.open{right:0}
+.catalog-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.catalog-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.catalog-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.catalog-list{flex:1;overflow-y:auto;padding:8px 0}
+.catalog-item{display:flex;align-items:center;gap:10px;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.catalog-item:hover{background:var(--accent-dim);border-left-color:var(--accent)}
+.catalog-item.current{color:var(--accent)!important;background:var(--accent-dim);border-left-color:var(--accent);font-weight:600}
+.catalog-num{color:var(--accent);font-size:11px;font-weight:700;min-width:40px;white-space:nowrap}
+.search-input{width:100%;padding:14px 18px;background:var(--bg-input);border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:15px;outline:none;flex-shrink:0}
+.search-input::placeholder{color:var(--text-muted)}
+.search-results{flex:1;overflow-y:auto;padding:8px 0}
+.search-item{display:block;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.search-item:hover,.search-item.focus{background:var(--accent-dim);border-left-color:var(--accent)}
+.help-overlay{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:299;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.help-overlay.open{right:0}
+.help-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.help-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.help-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.help-body{flex:1;overflow-y:auto;padding:16px 22px 24px}
+.help-body h3{color:var(--accent);font-size:14px;margin:16px 0 8px;padding-left:0;border-left:none}
+.help-body p{font-size:13px;color:var(--text-muted);margin-bottom:8px}
+.help-body table{font-size:13px}
+.help-body table td{padding:4px 12px 4px 0}
+.help-body table td:first-child{white-space:nowrap;padding-right:16px}
+.search-item mark{background:rgba(0,212,170,0.2);color:var(--accent);border-radius:2px;padding:0 3px}
+
+/* ===== Toast ===== */
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:400;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);padding:16px 28px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.toast.show{opacity:1}
+
+/* ===== 浅色覆盖 ===== */
+.light body,.light html{background:var(--bg-primary)!important}
+.light .sidebar{background:var(--bg-secondary)!important;border-right-color:var(--border)!important}
+.light .sidebar-title{-webkit-text-fill-color:var(--text);font-weight:600}
+.light .goal-card,.light .card{background:var(--bg-card)!important;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.light .homework-card{background:var(--accent-dim)!important}
+.light .ok-box{background:var(--green-bg)!important;border-color:var(--green-border)!important;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.light .header-bar{background:var(--bg-secondary)!important;backdrop-filter:none!important}
+.light .slide-inner table th{background:var(--bg-input)!important;color:var(--text)!important}
+.light .slide-inner h1{color:var(--text)!important}
+.light .slide-inner h2{color:var(--accent)!important}
+.light .slide-inner h3{color:var(--accent2)!important}
+.light .slide-inner li,.light .slide-inner p{color:var(--text)!important}
+.light .nav-link.active{color:var(--accent)!important;background:var(--accent-dim)!important}
+.light .progress-fill{box-shadow:none!important}
+.light .cover{background:radial-gradient(ellipse at 30% 20%,rgba(9,105,218,0.08),transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(5,80,174,0.06),transparent 55%),var(--bg-primary)!important}
+.light .cover-tag{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-label{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-text{color:var(--text)!important}
+.light .cover-sub{color:var(--text-muted)!important}
+.light .end-thanks{background:var(--bg-card);border-color:rgba(9,105,218,0.15)}
+.light .end-title{color:var(--accent)!important}
+.light .prompt-box pre code{color:var(--text)!important}
+.light .code-toolbar{background:rgba(0,0,0,0.05)}
+/* 深色主题下注释颜色调亮（原atom-one-dark太暗） */
+.hljs-comment,.hljs-meta{color:#8b949e!important}
+
+/* ===== 封面 ===== */
+.cover{display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;height:100vh;box-sizing:border-box;background:radial-gradient(ellipse at 30% 20%,rgba(0,212,170,0.18) 0%,transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(79,195,247,0.12) 0%,transparent 55%),linear-gradient(180deg,#0A0E27 0%,#0D1430 100%);position:relative;overflow:hidden}
+.cover.active{display:flex!important}
+.cover::after{content:'';position:absolute;top:-120px;right:-120px;width:400px;height:400px;background:radial-gradient(circle,rgba(0,212,170,0.08),transparent 70%);border-radius:50%;pointer-events:none}
+.cover-tag{display:inline-block;font-size:14px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);border-radius:20px;padding:8px 22px;margin-bottom:24px;letter-spacing:2px}
+.cover h1{font-size:52px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;letter-spacing:-1px;border:none;line-height:1.2;max-width:800px}
+.cover-sub{font-size:16px;color:var(--text-muted);margin-bottom:40px;max-width:650px;line-height:1.8}
+.cover-meta{font-size:14px;color:#6B7280;line-height:2.2;display:flex;flex-direction:column;gap:8px;align-items:center}
+.cover-meta-row{display:flex;align-items:center;gap:8px}
+.cover-meta-label{font-size:13px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.3);border-radius:6px;padding:3px 12px}
+.cover-meta-text{font-size:16px;color:#CBD5E1}
+
+/* ===== 结束页 ===== */
+.end-page{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:100%;box-sizing:border-box;max-width:920px;margin:0 auto;padding:36px 48px}
+.end-page h2{text-align:center;border-bottom:none;margin-bottom:32px}
+.end-thanks{display:flex;align-items:center;justify-content:center;gap:60px;flex-wrap:wrap;padding:60px 56px;border:2px solid rgba(0,212,170,0.3);border-radius:16px;background:linear-gradient(135deg,rgba(0,212,170,0.06),rgba(17,24,39,0.95))}
+.end-left{flex:1;min-width:200px;text-align:center}
+.end-right{flex:0 0 auto;text-align:center;padding-left:24px;border-left:1px solid rgba(0,212,170,0.2)}
+.end-icon{font-size:48px;margin-bottom:16px}
+.end-title{font-size:24px;color:var(--accent);font-weight:700;margin-bottom:20px}
+.end-sub{font-size:18px;color:var(--text-muted)}
+.end-contact{margin-top:16px;font-size:13px;color:var(--text-muted);line-height:1.7}
+.end-right img{width:120px;height:120px;border-radius:10px;margin-bottom:10px;border:2px solid var(--border);transition:transform .2s}
+.end-right img:hover{transform:scale(1.05)}
+.end-right p{font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5}
+.end-link{display:inline-block;color:var(--accent);text-decoration:none;font-size:13px;border:1px solid rgba(0,212,170,0.3);padding:8px 16px;border-radius:8px;transition:all .25s;white-space:nowrap}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+.end-next-link{display:inline-block;margin-top:20px;color:var(--accent2);text-decoration:none;font-size:15px;font-weight:600;padding:10px 24px;border:2px solid var(--accent2);border-radius:10px;transition:all .25s}
+.end-next-link:hover{background:rgba(79,195,247,0.1);box-shadow:0 4px 20px rgba(79,195,247,0.2);transform:translateY(-2px)}
+/* 二维码放大 */
+.qr-zoom-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;cursor:pointer}
+.qr-zoom-overlay.show{display:flex}
+.qr-zoom-overlay img{max-width:80vw;max-height:80vh;border-radius:12px;box-shadow:0 8px 32px rgba(0,212,170,0.2)}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+
+/* ===== 学习目标 ===== */
+.goal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:8px}
+.goal-card{background:linear-gradient(135deg,var(--bg-card),var(--bg-secondary));border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:14px;transition:all .3s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.goal-card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.goal-icon{font-size:28px;flex-shrink:0;transition:transform .3s}
+.goal-card:hover .goal-icon{transform:scale(1.15)}
+.goal-text{font-size:calc(var(--font-size) * 1.05);color:var(--text);line-height:1.6}
+
+/* 侧边栏 - 特殊链接（无序号） */
+.nav-special{font-style:italic;color:var(--accent2)!important}
+/* 导航标签 */
+.nav-badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:6px;font-weight:600;vertical-align:1px}
+.nav-badge.practice{color:var(--accent2);background:rgba(79,195,247,0.12);border:1px solid rgba(79,195,247,0.25)}
+.nav-badge.comprehensive{color:var(--purple);background:rgba(192,132,252,0.12);border:1px solid rgba(192,132,252,0.25)}
+.nav-badge.homework{color:var(--orange);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25)}
+
+/* ===== 响应式 ===== */
+@media(max-width:768px){.sidebar{display:none}.slide-inner{padding:18px 18px 80px}.cover{padding-left:40px;padding-right:40px}.cover h1{font-size:32px}.nav-buttons{right:12px;bottom:12px}.slides-container{min-height:calc(100vh - 54px)}}
+</style>
+</head>
+<body>
+<div class="container">
+<nav class="sidebar">
+    <div class="sidebar-title">📘 课件1_认识Unity与课程介绍</div>
+    <a href="#" class="nav-link nav-special" data-page="1"><span class="nav-status"></span>封面</a>
+<a href="#" class="nav-link" data-page="2"><span class="nav-status"></span>1. 教师介绍 </a>
+<a href="#" class="nav-link" data-page="3"><span class="nav-status"></span>2. 本节学习目标 </a>
+<a href="#" class="nav-link" data-page="4"><span class="nav-status"></span>3. 计算机实验室学生守则（一至五） </a>
+<a href="#" class="nav-link" data-page="5"><span class="nav-status"></span>4. 计算机实验室学生守则（六至十） </a>
+<a href="#" class="nav-link" data-page="6"><span class="nav-status"></span>5. 课程考核与要求 </a>
+<a href="#" class="nav-link" data-page="7"><span class="nav-status"></span>6. 教材与学习资源 </a>
+<a href="#" class="nav-link" data-page="8"><span class="nav-status"></span>7. 课程项目预览 </a>
+<a href="#" class="nav-link" data-page="9"><span class="nav-status"></span>8. 什么是游戏 </a>
+<a href="#" class="nav-link" data-page="10"><span class="nav-status"></span>9. 电子游戏特征与发展史 </a>
+<a href="#" class="nav-link" data-page="11"><span class="nav-status"></span>10. 电子游戏分类 </a>
+<a href="#" class="nav-link" data-page="12"><span class="nav-status"></span>11. 什么是游戏引擎 </a>
+<a href="#" class="nav-link" data-page="13"><span class="nav-status"></span>12. Unity3D 互动引擎 </a>
+<a href="#" class="nav-link" data-page="14"><span class="nav-status"></span>13. 广东省职业院校学生专业技能大赛 </a>
+<a href="#" class="nav-link nav-special" data-page="15"><span class="nav-status"></span>结束页</a>
+
+</nav>
+<div class="main-area" id="mainArea">
+    <div class="header-bar">
+        <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <span class="progress-text" id="progressText">0 / 15</span>
+        </div>
+        <button class="header-btn" id="themeBtn" onclick="toggleTheme()">🌙 深色</button>
+        <div class="header-dropdown">
+          <button class="header-btn" id="ideBtn">💻 在线编辑器 ▾</button>
+          <div class="dropdown-menu" id="ideMenu">
+            <a href="#" class="dropdown-item" data-url="https://www.runoob.com/try/runcode.php?filename=helloworld&type=csharp">菜鸟教程</a>
+            <a href="#" class="dropdown-item" data-url="https://www.tutorialspoint.com/compilers/online-csharp-compiler.htm">Tutorialspoint（支持输入）</a>
+            <a href="#" class="dropdown-item" data-url="https://dotnetfiddle.net/">DotNetFiddle</a>
+          </div>
+        </div>
+        <button class="header-btn" onclick="changeFont(-1)">A-</button>
+        <button class="header-btn" onclick="changeFont(1)">A+</button>
+        <button class="header-btn" onclick="openSearch()">🔍</button>
+        <button class="header-btn" onclick="toggleHelp()" title="使用帮助">❓</button>
+        <button class="header-btn" onclick="toggleCatalog()" title="课件目录">📚</button>
+    </div>
+    <div class="slides-container"><div class="cover" data-page="1">
+    <div class="cover-tag">数字产品设计实训</div>
+    <h1>认识 Unity 与课程介绍</h1>
+    <div class="cover-sub">本课程是数字媒体技术专业的核心实训课程，培养学生掌握 Unity 3D 引擎的编辑器操作、C# 脚本开发和游戏项目实战能力，通过&quot;小球吃食物 → 第一人称射击&quot;两个递进项目，让学生从零基础成长为能独立开发 3D 交互产品的开发者。</div>
+    <div class="cover-meta">
+        <div class="cover-meta-row"><span class="cover-meta-label">授课教师</span><span class="cover-meta-text">彭堉斌</span></div>
+        <div class="cover-meta-row"><span class="cover-meta-label">学校</span><span class="cover-meta-text">汕头职业技术学院</span></div>
+    </div>
+</div>
+<div class="slide" data-page="2"><div class="slide-inner markable">
+<h1>教师介绍</h1>
+<div class="card"><h3>🎓 教育背景</h3><ul><li><strong>本科</strong>：南方科技大学 · 通信工程</li><li><strong>硕士</strong>：哈尔滨工业大学 · 计算机技术</li></ul></div><div class="card"><h3>💼 工作经历</h3><ul><li><strong>腾讯科技</strong>（深圳）有限公司 — 客户端开发</li><li><strong>英特尔</strong>（中国）有限公司 — 技术实习</li><li><strong>南方科技大学</strong> — 教学研助理</li><li><strong>汕头职业技术学院</strong> — 专任教师（现任）</li></ul></div><div class="card"><h3>📬 联系方式</h3><ul><li>邮箱：<code>ybpeng1286@stpt.edu.cn</code></li><li>办公室：电子信息学院 · 数字媒体技术教研室</li></ul></div><div class="ok-box">教学理念：编程不是&quot;背&quot;出来的，是&quot;写&quot;出来的。有问题随时问，不要怕犯错。</div>
+</div></div>
+<div class="slide" data-page="3"><div class="slide-inner">
+<h1>本节学习目标</h1>
+<div class="goal-grid"><div class="goal-card"><span class="goal-icon">🎯</span><span class="goal-text">熟悉计算机实验室守则与课程考核要求（考勤 / 课堂作业 / 期末大作业）</span></div><div class="goal-card"><span class="goal-icon">🔍</span><span class="goal-text">认识游戏与游戏引擎，了解 Unity 的四大特点、五大功能与常见引擎</span></div><div class="goal-card"><span class="goal-icon">📝</span><span class="goal-text">理解 Unity 与 C# 的关系，建立&quot;边做游戏边学编程&quot;的学习路径</span></div><div class="goal-card"><span class="goal-icon">💻</span><span class="goal-text">了解本课程的递进项目安排（小球吃食物 → 第一人称射击 FPS）</span></div><div class="goal-card"><span class="goal-icon">✅</span><span class="goal-text">了解广东省职业院校技能大赛（数字化产品设计与开发）与 Unity 相关就业方向</span></div></div>
+
+</div></div>
+<div class="slide" data-page="4"><div class="slide-inner markable">
+<h1>计算机实验室学生守则（一至五）</h1>
+<div class="card"><h3>🚪 出入规范</h3><p>一、学生课内上机，必须按照机房上机安排表指定机房和机器；非课内上机时间，未经允许不得擅自进入机房使用机器。</p><p>二、学生上机应衣着整洁，佩带胸卡，严禁仅穿背心、短裤、拖鞋进入机房。不得迟到、早退。除与学习内容相关的教材资料外，其它物品未经许可不准带入实验室。</p><p>三、进入实验室应在门外脱鞋，不穿鞋入室，把自带鞋放于鞋架上；离开实验室时，应在实验室门外穿鞋。保持实验室整洁美观。</p></div><div class="card"><h3>💻 上机纪律</h3><p>四、服从管理人员及指导老师的安排，按编定座位上机，未经同意不准调换座位。因机器故障需要调换位置者，应由指导老师或实验室管理人员安排。</p><p>五、爱护公物。使用光驱、键盘、鼠标器等设备应轻按、轻放、轻敲。上机过程中，若设备出现故障应立即报告指导老师或实验室管理人员，以便及时维修。</p></div>
+</div></div>
+<div class="slide" data-page="5"><div class="slide-inner markable">
+<h1>计算机实验室学生守则（六至十）</h1>
+<div class="card"><h3>🛡️ 行为准则</h3><p>六、按照教学内容进行操作。严格遵守机房设备操作规程。上机时不准玩游戏、上网聊天等进行与教学内容无关的操作。上机时不准观看、传播、拷贝和制作淫秽、反动、迷信等不健康内容。上机时不准编制、运行和使用危害计算机系统和其它用户安全的程序、命令；不准更改CMOS口令和用户帐号口令；不准安装与教学内容无关的软件和内容；不准私自改变系统的软硬件设置等进行破坏性操作。对违反者造成的法律和教学事故的，将追究其责任；造成设备损坏的按价赔偿并严肃处理。</p></div><div class="card"><h3>🧹 环境卫生</h3><p>七、保持实验室安静整洁。不得喧闹、嬉戏；不得乱丢纸屑杂物、吐痰；不得吸烟、吃零食，将水、饮料带入实验室；不得在设备、桌椅、墙壁上涂写。上机结束应关闭计算机设备电源；把桌面收拾干净，把设备椅子摆放整齐；把面巾纸草稿纸等杂物丢进字纸篓。</p></div><div class="card"><h3>⚠️ 安全与处罚</h3><p>八、不得自行关闭或调节监控设备、空调设备和稳压电源；不得拆卸任何设备；一切学院财产未经同意，不准擅自拿出实验室。</p><p>九、应急安全门用于紧急情况，如火灾、自然灾害等，其它时候不得开启使用。</p><p>十、违反上述规定者，视其情节轻重，给予批评教育、警告、取消上机资格，直至交学院有关部门处理。以上《守则》希望大家共同遵守。</p></div>
+</div></div>
+<div class="slide" data-page="6"><div class="slide-inner markable">
+<h1>课程考核与要求</h1>
+<div class="card"><table><tr><th>项目</th><th>方式</th><th>说明</th></tr><tr><td>📋 考勤</td><td>学习通签到打卡</td><td>按时到课，不迟到早退</td></tr><tr><td>✍️ 课堂作业</td><td>课件上发布题目，当堂完成</td><td>每题当场验收，累计计分</td></tr><tr><td>🏗️ 期末大作业</td><td>学期末 2~3 周独立/组队完成</td><td>最后一周答辩</td></tr></table></div><div class="ok-box">三项分数合计为课程最终成绩（占比另行通知）</div><div class="card"><h3>📏 课堂纪律</h3><ul><li>练习当堂完成，不懂当场问</li><li>作业当场演示验收</li></ul></div><div class="card"><h3>🤖 AI 使用边界</h3><ul><li>允许参考 AI，但遵循四步法（下次课详述）</li><li>能向老师讲清楚 = 合格</li><li>讲不清楚 = 没学会，不算完成</li></ul></div><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ AI 写出来的代码算不算我的作业？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">算&quot;参考材料&quot;，必须能讲清楚每一行才算通过。只复制不理解的代码 = 无效。</div></div>
+</div></div>
+<div class="slide" data-page="7"><div class="slide-inner markable">
+<h1>教材与学习资源</h1>
+<div class="card side-card"><div class="side-body"><h3>📚 教材信息</h3><ul><li>教材：《Unity 3D 游戏开发案例教程（第2版）》（胡垂立 主编，中国铁道出版社）</li><li>教材链接：<a href="https://www.51eds.com/tdjy/tMaterial/searchTeachingMaterialDetail.action?teachingMaterialId=7851" target="_blank" rel="noopener">https://www.51eds.com/tdjy/tMaterial/searchTeachingMaterialDetail.action?teachingMaterialId=7851</a></li><li>涵盖：游戏概述、C# 程序语言基础、Unity 3D 游戏开发基础、基础案例、综合案例</li></ul></div><img src="images/课件1/p6_2.png" alt="教材" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card"><h3>🌐 在线资源</h3></div><div class="card"><table><tr><th>资源</th><th>网址</th><th>用途</th></tr><tr><td>Unity 官网</td><td><a href="https://unity.cn/" target="_blank" rel="noopener">https://unity.cn/</a></td><td>注册、社区、资讯</td></tr><tr><td>Unity 中文学习课堂</td><td><a href="https://learn.u3d.cn/" target="_blank" rel="noopener">https://learn.u3d.cn/</a></td><td>官方中文系统教程（入门→进阶）</td></tr><tr><td>Unity 中文文档</td><td><a href="https://docs.unity.cn/cn/current/Manual/UnityManual.html" target="_blank" rel="noopener">https://docs.unity.cn/cn/current/Manual/UnityManual.html</a></td><td>API / 手册中文查阅</td></tr><tr><td>Unity 中国资源商店</td><td><a href="https://assetstore.u3d.cn/" target="_blank" rel="noopener">https://assetstore.u3d.cn/</a></td><td>素材、插件、Demo 下载</td></tr><tr><td>Unity 引擎下载</td><td><a href="https://unity.cn/tuanjie/releases" target="_blank" rel="noopener">https://unity.cn/tuanjie/releases</a></td><td>Unity / 团结引擎编辑器下载</td></tr></table></div><div class="ok-box">💡 课后遇到不会的操作，先查 Unity 中文文档，再问 AI，最后问老师——这是最高效的学习路径。</div>
+</div></div>
+<div class="slide" data-page="8"><div class="slide-inner markable">
+<h1>课程项目预览</h1>
+<div class="ok-box">🎮 本课程将从零开始，带你完成 <strong>2 个递进游戏项目</strong>，最终做出一个完整的 FPS 游戏。</div><div class="card side-card"><div class="side-body"><h3>① 小球吃食物</h3></div><img src="images/课件1/p7_3.gif" alt="小球吃食物" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="ok-box">入门项目：物体移动 + 碰撞检测 + 计分系统</div><div class="card side-card"><div class="side-body"><h3>② 第一人称射击（FPS）</h3></div><img src="images/课件1/p9_5.gif" alt="第一人称射击" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="ok-box">综合项目：移动射击 + AI 敌人 + 血条 + 死亡 + 打包发布 —— <strong>本课程核心，课堂上逐步教学，完成即可作为最终大作业成品</strong></div>
+</div></div>
+<div class="slide" data-page="9"><div class="slide-inner markable">
+<h1>什么是游戏</h1>
+<div class="ok-box">约翰·赫伊津哈《游戏的人》（1938年）：游戏是&quot;没有明确意图、纯粹以娱乐为目的的所有活动&quot;。</div><div class="card"><p><strong>游戏的本质</strong>：以自愿自由为前提、以快乐自足为目的、具有规则的行为活动。</p></div><div class="card"><h3>🎯 游戏五共性（沃尔夫冈·克雷默）</h3></div><div class="card"><table><tr><th>共性</th><th>含义</th><th>例子</th></tr><tr><td>🤝 共同经验</td><td>玩家对规则的集体认知</td><td>象棋的&quot;楚河汉界&quot;</td></tr><tr><td>⚖️ 平等</td><td>规则对所有参与者一致约束</td><td>篮球的&quot;走步违例&quot;</td></tr><tr><td>🕊️ 自由</td><td>玩家自主决定是否参与</td><td>积木随时可停</td></tr><tr><td>🧠 主动参与</td><td>以主观意愿投入思考</td><td>《我的世界》自由建造</td></tr><tr><td>🌍 游戏世界</td><td>独立于现实的规则体系</td><td>游戏内的货币/逻辑</td></tr></table></div><div class="card"><h3>📋 游戏四要素</h3><ul><li><strong>道具与规则</strong>：物质载体与行为约束（《塞尔达》大师之剑对盖侬特效）</li><li><strong>目标</strong>：驱动玩家行为（《刺客信条》同步率）</li><li><strong>进程变化性</strong>：对抗确定性的随机设计（《炉石传说》随机卡牌）</li><li><strong>竞争性</strong>：胜负机制的情感激励（《王者荣耀》推塔胜利）</li></ul></div>
+</div></div>
+<div class="slide" data-page="10"><div class="slide-inner markable">
+<h1>电子游戏特征与发展史</h1>
+<div class="card"><h3>🔥 五特征</h3></div><div class="card"><table><tr><th>特征</th><th>说明</th></tr><tr><td>🎭 文化性</td><td>《王者荣耀》的世界观构建</td></tr><tr><td>🥽 拟态性</td><td>VR 游戏对现实的模拟</td></tr><tr><td>🎮 娱乐性</td><td>核心功能</td></tr><tr><td>💰 商业性</td><td>付费模式、IP 衍生</td></tr><tr><td>🔬 科技性</td><td>引擎技术、硬件驱动</td></tr></table></div><div class="card"><h3>📅 发展四时代</h3></div><div class="card"><table><tr><th>时代</th><th>时间</th><th>代表作</th></tr><tr><td>💡 启蒙时代</td><td>1950s-1970s</td><td><img src="images/games/era1.png" alt="图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror='this.style.display="none"'> Tennis for Two、Space War</td></tr><tr><td>🍄 任天堂时代</td><td>1980s-1990s</td><td><img src="images/games/era2.png" alt="图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror='this.style.display="none"'> 超级马里奥、塞尔达传说</td></tr><tr><td>🕹️ 3D 游戏时代</td><td>1990s-2010s</td><td><img src="images/games/era3.png" alt="图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror='this.style.display="none"'> 古墓丽影、超级马里奥 64、光环</td></tr><tr><td>📱 手机/VR 时代</td><td>2010s-</td><td><img src="images/games/era4.png" alt="图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror='this.style.display="none"'> 王者荣耀、Pokemon GO、Oculus Quest</td></tr></table></div><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 这些老游戏跟学 Unity 有什么关系？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">了解游戏发展史，才能理解 Unity 为什么能成为主流引擎——它解决了从 2D 到 3D、从单平台到跨平台的核心问题。</div></div>
+</div></div>
+<div class="slide" data-page="11"><div class="slide-inner markable">
+<h1>电子游戏分类</h1>
+<div class="ok-box">你们对游戏都不陌生，但&quot;游戏是怎么被造出来的&quot;才是本课要回答的问题。先看看你玩过的游戏都属于哪些类型——<strong>每一类，背后都对应引擎的一组核心能力</strong>。</div><div class="card"><h3>🎮 按玩法核心分类</h3></div><div class="card"><table><tr><th>类型</th><th>说明</th><th>代表游戏</th><th>对引擎能力的侧重</th></tr><tr><td>🗡️ RPG 角色扮演</td><td>剧情推进 + 角色成长</td><td>原神、崩坏：星穹铁道</td><td>动画、资源管理、剧情系统</td></tr><tr><td>⚔️ ACT 动作</td><td>操作手感与战斗反馈</td><td>永劫无间、黑神话：悟空</td><td>物理、动画、打击感</td></tr><tr><td>🏎️ 竞速 RAC</td><td>速度感与车辆操控</td><td>极品飞车、QQ飞车</td><td>物理、渲染</td></tr><tr><td>🏗️ 模拟 SIM</td><td>拟真经营 / 生活</td><td>模拟城市、动物森友会</td><td>逻辑、AI</td></tr><tr><td>🧩 冒险 AVG</td><td>解谜与叙事</td><td>塞尔达传说、原神</td><td>关卡、交互</td></tr><tr><td>🏀 体育竞技 SPG</td><td>体育规则对抗</td><td>FIFA、和平精英</td><td>物理、动画</td></tr></table></div><div class="card"><h3>🔗 游戏类型 ↔ 引擎能力</h3><ul><li><strong>RPG</strong> 需要动画系统 + 资源管理 → Unity 的 Animator、Addressables</li><li><strong>ACT</strong> 需要物理系统 + 动画 → Unity 的 Rigidbody、物理材质</li><li><strong>竞速 / 体育</strong> 需要刚体物理 + 渲染 → Unity 的 WheelCollider、URP/HDRP</li><li><strong>模拟 / 冒险</strong> 需要逻辑 + 交互 → Unity 的 C# 脚本、UI 系统</li></ul></div><div class="ok-box">💡 不管什么类型，背后都跑在同一套引擎能力上——<strong>渲染、物理、动画、交互</strong>。你学的 Unity，就是造这些游戏的&quot;工厂&quot;。下一节我们就看这台&quot;工厂&quot;到底是什么。</div>
+</div></div>
+<div class="slide" data-page="12"><div class="slide-inner markable">
+<h1>什么是游戏引擎</h1>
+<div class="ok-box">&quot;引擎&quot;（engine）最早出现在汽车领域，是汽车的动力来源，好比心脏，决定着汽车的性能和稳定性。计算机游戏也是如此——玩家体验到的剧情、关卡、美工、音乐、操作等内容，都由游戏引擎直接控制。</div><div class="engine-flow">
+<svg viewBox="0 0 760 300" width="100%" style="max-width:720px;margin:8px auto;display:block" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="engGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="55%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="outGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2dd4bf"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+    <linearGradient id="leftStroke" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="rightStroke" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2dd4bf"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="8" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowSoft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="ah" markerWidth="12" markerHeight="12" refX="8" refY="4" orient="auto">
+      <path d="M0,0 L9,4 L0,8 Z" fill="var(--text-muted)"/>
+    </marker>
+  </defs>
+  <style>
+    .ef-label{font-size:13px;fill:var(--text-muted)}
+    .ef-title{font-size:18px;font-weight:700;fill:var(--text)}
+    .ef-sub{font-size:13px;fill:var(--text-muted)}
+    .ef-out-title{font-size:18px;font-weight:700;fill:#eafdfb}
+    .ef-out-sub{font-size:13px;fill:#7fe9da}
+    .ef-eng{font-size:17px;font-weight:700;fill:#ffffff}
+    .ef-ic{font-size:12px;letter-spacing:1px;fill:var(--text-muted)}
+    .node-left{animation:slideL 0.9s cubic-bezier(.2,.7,.3,1) both}
+    .node-right{animation:slideR 0.9s cubic-bezier(.2,.7,.3,1) both}
+    @keyframes slideL{from{opacity:0;transform:translateX(-46px)}to{opacity:1;transform:none}}
+    @keyframes slideR{from{opacity:0;transform:translateX(46px)}to{opacity:1;transform:none}}
+  </style>
+
+  <!-- 输入节点：静态模型 + 脚本逻辑 -->
+  <g class="node-left">
+    <rect x="18" y="84" width="226" height="140" rx="18" fill="rgba(96,165,250,0.10)" stroke="url(#leftStroke)" stroke-width="2.5" filter="url(#glowSoft)"/>
+    <g transform="translate(131,118)" stroke="#c7d2fe" stroke-width="2" fill="none" opacity="0.95">
+      <path d="M0,-16 L15,-8 L0,0 L-15,-8 Z" fill="rgba(199,210,254,0.18)"/>
+      <path d="M-15,-8 L0,0 L0,18 L-15,10 Z" fill="rgba(199,210,254,0.08)"/>
+      <path d="M15,-8 L0,0 L0,18 L15,10 Z" fill="rgba(199,210,254,0.13)"/>
+    </g>
+    <text x="131" y="160" text-anchor="middle" class="ef-title">静态模型</text>
+    <text x="131" y="182" text-anchor="middle" class="ef-sub">&lt;/&gt; 脚本逻辑</text>
+    <text x="131" y="204" text-anchor="middle" class="ef-ic">MODEL · CODE</text>
+  </g>
+
+  <!-- 输出节点：交互体验 = 游戏 -->
+  <g class="node-right">
+    <rect x="516" y="84" width="226" height="140" rx="18" fill="url(#outGrad)" opacity="0.14" stroke="url(#rightStroke)" stroke-width="2.5" filter="url(#glowSoft)"/>
+    <g transform="translate(629,118)" stroke="#99f6e4" stroke-width="2" fill="none" opacity="0.95">
+      <rect x="-24" y="-13" width="48" height="30" rx="3" fill="rgba(153,246,228,0.14)"/>
+      <path d="M-9,17 L9,17 M0,17 L0,23 M-11,23 L11,23"/>
+    </g>
+    <text x="629" y="160" text-anchor="middle" class="ef-out-title">交互体验</text>
+    <text x="629" y="182" text-anchor="middle" class="ef-out-sub">＝ 游戏 ✨</text>
+    <text x="629" y="204" text-anchor="middle" class="ef-ic" fill="#7fe9da">PLAYABLE GAME</text>
+  </g>
+
+  <!-- 流动箭头 -->
+  <path d="M248 154 L300 154" stroke="#8b9bc4" stroke-width="3" fill="none" stroke-dasharray="10 8" marker-end="url(#ah)">
+    <animate attributeName="stroke-dashoffset" from="36" to="0" dur="0.9s" repeatCount="indefinite"/>
+  </path>
+  <path d="M460 154 L512 154" stroke="#8b9bc4" stroke-width="3" fill="none" stroke-dasharray="10 8" marker-end="url(#ah)">
+    <animate attributeName="stroke-dashoffset" from="36" to="0" dur="0.9s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- 引擎核心 -->
+  <circle cx="380" cy="154" r="74" fill="url(#engGrad)" filter="url(#glow)">
+    <animate attributeName="r" values="74;78;74" dur="2.6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="380" cy="154" r="74" fill="none" stroke="#c4b5fd" stroke-width="2" opacity="0.6">
+    <animate attributeName="opacity" values="0.2;0.85;0.2" dur="2.6s" repeatCount="indefinite"/>
+  </circle>
+  <text x="380" y="144" text-anchor="middle" font-size="40">🎮</text>
+  <text x="380" y="178" text-anchor="middle" class="ef-eng">游戏引擎</text>
+
+  <!-- 标签 -->
+  <text x="271" y="74" text-anchor="middle" class="ef-label">输入：素材与代码</text>
+  <text x="489" y="74" text-anchor="middle" class="ef-label">输出：可玩的游戏</text>
+</svg>
+</div><div class="card"><h3>⚙️ 游戏引擎的五大功能</h3></div><div class="card"><table><tr><th>功能</th><th>说明</th><th>例子</th></tr><tr><td>💡 光影效果</td><td>实时光追</td><td>《赛博朋克 2077》</td></tr><tr><td>🏃 动画系统</td><td>动作捕捉</td><td>《最后生还者》</td></tr><tr><td>🎯 物理系统</td><td>刚体模拟</td><td>Havok 引擎</td></tr><tr><td>🖥️ 渲染管线</td><td>画面输出</td><td>Unity URP/HDRP</td></tr><tr><td>🎮 人机交互</td><td>输入响应</td><td>按键映射、触屏反馈</td></tr></table></div><img src="images/课件1/engine_showcase.png" alt="游戏引擎实机画面示例" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><h3>🏆 常见游戏引擎</h3></div><div class="card"><table><tr><th>引擎</th><th>语言</th><th>特点</th><th>代表作</th></tr><tr><td><strong>Unity</strong></td><td><strong>C#</strong></td><td>跨平台、易上手</td><td>王者荣耀、原神、永劫无间</td></tr><tr><td>Unreal Engine</td><td>C++</td><td>顶级图形渲染</td><td>黑神话：悟空、和平精英</td></tr><tr><td>CryEngine</td><td>C++</td><td>开放世界</td><td>孤岛危机</td></tr><tr><td>Cocos2d-x</td><td>C++</td><td>轻量 2D 手游</td><td>—</td></tr><tr><td>Godot</td><td>GDScript</td><td>开源免费</td><td>—</td></tr></table></div><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 游戏引擎这么全能，还需要程序员吗？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">需要。引擎是工具，不是设计师。引擎提供&quot;能力&quot;，程序员决定&quot;做什么、怎么做&quot;。就像有了电饭锅，你还得知道放多少米、多少水。</div></div>
+</div></div>
+<div class="slide" data-page="13"><div class="slide-inner markable">
+<h1>Unity3D 互动引擎</h1>
+<div class="card"><h3>🎯 Unity 是什么</h3><p>Unity3D 是一款功能强大的游戏开发工具和互动内容创作平台。</p></div><a href="https://unity.cn/" target="_blank" rel="noopener"><img src="images/课件1/unity_logo.svg" alt="Unity 官网图标" class="card-img" style="cursor:pointer" onerror="this.style.display='none'"></a><img src="images/课件1/unity_editor_ui.png" alt="Unity 编辑器操作界面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><h3>✨ 四大特点</h3><ol><li><strong>完整的游戏功能</strong>：从建模到发布一站式</li><li><strong>强大的编辑器</strong>：可视化编辑 + 丰富的第三方插件</li><li><strong>简洁的 SDK</strong>：C# 接口友好，学习曲线平缓</li><li><strong>跨平台发布</strong>：Windows、Mac、Linux、Android、iOS、WebGL……</li></ol></div><img src="images/课件1/cross_platform_avalonia.svg" alt="跨平台与 Avalonia 展示" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><h3>这些大作都是 Unity 开发的：</h3></div><div class="contest-row"><img src="images/games/wzry.png" alt="王者荣耀" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><img src="images/games/yuanshen.png" alt="原神" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><img src="images/games/yjwj.png" alt="永劫无间" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card"><h3>🔗 Unity 与 C# 的关系</h3></div><div class="ok-box">🎮 Unity 管场景和渲染，C# 管逻辑和行为。</div><div class="card"><table><tr><th>Unity 负责</th><th>C# 负责</th></tr><tr><td>🏗️ 场景搭建</td><td>🏃 角色移动</td></tr><tr><td>🎯 物理引擎</td><td>🔫 射击逻辑</td></tr><tr><td>🖥️ 渲染管线</td><td>🤖 AI 行为</td></tr><tr><td>🎬 动画系统</td><td>📊 游戏规则</td></tr><tr><td>📦 资源管理</td><td>🖱️ 界面交互</td></tr></table></div><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 我 C# 还没学好，能学 Unity 吗？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">能。本课程会带你从 Unity 语境直接学习 C# 核心语法——边做游戏边学编程，不要求你先系统学过 C#。C# 是地基，Unity 是房子：地基打牢，楼才盖得高。</div></div><div class="card"><h3>🔧 学好引擎，你能干嘛？</h3></div><div class="ok-box">引擎是工厂，C# 代码 + 创意是图纸——工厂给你 4 大能力，图纸决定你做出什么。</div><div class="engine-rel">
+<svg viewBox="0 0 760 380" width="100%" style="max-width:720px;margin:8px auto;display:block" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="engGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="55%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="outGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2dd4bf"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+    <linearGradient id="leftStroke" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="rightStroke" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2dd4bf"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="8" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowSoft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="ah2" markerWidth="12" markerHeight="12" refX="8" refY="4" orient="auto">
+      <path d="M0,0 L9,4 L0,8 Z" fill="var(--text-muted)"/>
+    </marker>
+  </defs>
+  <style>
+    .er-cap-title{font-size:15px;font-weight:700;fill:var(--text)}
+    .er-cap-sub{font-size:11px;fill:var(--text-muted)}
+    .er-eng{font-size:16px;font-weight:700;fill:#ffffff}
+    .er-out-label{font-size:13px;font-weight:700;fill:#7fe9da;letter-spacing:1px}
+    .er-chip{font-size:15px;font-weight:700;fill:#eafdfb}
+    .er-cap-l{animation:slideL .8s cubic-bezier(.2,.7,.3,1) both}
+    .er-cap-r{animation:slideR .8s cubic-bezier(.2,.7,.3,1) both}
+    .er-out{animation:slideUp .8s cubic-bezier(.2,.7,.3,1) .35s both}
+    @keyframes slideL{from{opacity:0;transform:translateX(-46px)}to{opacity:1;transform:none}}
+    @keyframes slideR{from{opacity:0;transform:translateX(46px)}to{opacity:1;transform:none}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+  </style>
+
+  <!-- 能力节点：左侧 -->
+  <g class="er-cap-l" style="animation-delay:.05s">
+    <rect x="28" y="40" width="180" height="58" rx="14" fill="rgba(96,165,250,0.10)" stroke="url(#leftStroke)" stroke-width="2.5" filter="url(#glowSoft)"/>
+    <text x="118" y="70" text-anchor="middle" class="er-cap-title">实时渲染</text>
+    <text x="118" y="89" text-anchor="middle" class="er-cap-sub">精美画面</text>
+  </g>
+  <g class="er-cap-l" style="animation-delay:.2s">
+    <rect x="28" y="126" width="180" height="58" rx="14" fill="rgba(96,165,250,0.10)" stroke="url(#leftStroke)" stroke-width="2.5" filter="url(#glowSoft)"/>
+    <text x="118" y="156" text-anchor="middle" class="er-cap-title">物理系统</text>
+    <text x="118" y="175" text-anchor="middle" class="er-cap-sub">碰撞与手感</text>
+  </g>
+
+  <!-- 能力节点：右侧 -->
+  <g class="er-cap-r" style="animation-delay:.1s">
+    <rect x="552" y="40" width="180" height="58" rx="14" fill="rgba(45,212,191,0.10)" stroke="url(#rightStroke)" stroke-width="2.5" filter="url(#glowSoft)"/>
+    <text x="642" y="70" text-anchor="middle" class="er-cap-title">动画系统</text>
+    <text x="642" y="89" text-anchor="middle" class="er-cap-sub">角色动作</text>
+  </g>
+  <g class="er-cap-r" style="animation-delay:.25s">
+    <rect x="552" y="126" width="180" height="58" rx="14" fill="rgba(45,212,191,0.10)" stroke="url(#rightStroke)" stroke-width="2.5" filter="url(#glowSoft)"/>
+    <text x="642" y="156" text-anchor="middle" class="er-cap-title">跨平台</text>
+    <text x="642" y="175" text-anchor="middle" class="er-cap-sub">手机 / 电脑 / 主机</text>
+  </g>
+
+  <!-- 流动箭头：能力 → 核心 -->
+  <path d="M210 69 L300 96" stroke="#8b9bc4" stroke-width="3" fill="none" stroke-dasharray="10 8" marker-end="url(#ah2)">
+    <animate attributeName="stroke-dashoffset" from="36" to="0" dur="0.9s" repeatCount="indefinite"/>
+  </path>
+  <path d="M210 155 L306 138" stroke="#8b9bc4" stroke-width="3" fill="none" stroke-dasharray="10 8" marker-end="url(#ah2)">
+    <animate attributeName="stroke-dashoffset" from="36" to="0" dur="0.9s" repeatCount="indefinite"/>
+  </path>
+  <path d="M550 69 L460 96" stroke="#8b9bc4" stroke-width="3" fill="none" stroke-dasharray="10 8" marker-end="url(#ah2)">
+    <animate attributeName="stroke-dashoffset" from="36" to="0" dur="0.9s" repeatCount="indefinite"/>
+  </path>
+  <path d="M550 155 L454 138" stroke="#8b9bc4" stroke-width="3" fill="none" stroke-dasharray="10 8" marker-end="url(#ah2)">
+    <animate attributeName="stroke-dashoffset" from="36" to="0" dur="0.9s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- 引擎核心 -->
+  <circle cx="380" cy="106" r="66" fill="url(#engGrad)" filter="url(#glow)">
+    <animate attributeName="r" values="66;70;66" dur="2.6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="380" cy="106" r="66" fill="none" stroke="#c4b5fd" stroke-width="2" opacity="0.6">
+    <animate attributeName="opacity" values="0.2;0.85;0.2" dur="2.6s" repeatCount="indefinite"/>
+  </circle>
+  <text x="380" y="98" text-anchor="middle" font-size="36">🎮</text>
+  <text x="380" y="128" text-anchor="middle" class="er-eng">Unity 引擎</text>
+
+  <!-- 向下流动：核心 → 产出 -->
+  <path d="M380 178 L380 242" stroke="#8b9bc4" stroke-width="3.5" fill="none" stroke-dasharray="10 8" marker-end="url(#ah2)">
+    <animate attributeName="stroke-dashoffset" from="36" to="0" dur="0.9s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- 产出面板 -->
+  <g class="er-out">
+    <rect x="64" y="248" width="632" height="100" rx="20" fill="url(#outGrad)" opacity="0.14" stroke="url(#rightStroke)" stroke-width="2.5" filter="url(#glowSoft)"/>
+    <text x="380" y="276" text-anchor="middle" class="er-out-label">引擎能力 · 你能创造</text>
+    <rect x="87" y="288" width="136" height="50" rx="13" fill="rgba(255,255,255,0.06)" stroke="#5eead4" stroke-width="2"/>
+    <text x="155" y="319" text-anchor="middle" class="er-chip">🎮 游戏</text>
+    <rect x="237" y="288" width="136" height="50" rx="13" fill="rgba(255,255,255,0.06)" stroke="#5eead4" stroke-width="2"/>
+    <text x="305" y="319" text-anchor="middle" class="er-chip">🎬 影视</text>
+    <rect x="387" y="288" width="136" height="50" rx="13" fill="rgba(255,255,255,0.06)" stroke="#5eead4" stroke-width="2"/>
+    <text x="455" y="319" text-anchor="middle" class="er-chip">🏗️ 建筑</text>
+    <rect x="537" y="288" width="136" height="50" rx="13" fill="rgba(255,255,255,0.06)" stroke="#5eead4" stroke-width="2"/>
+    <text x="605" y="319" text-anchor="middle" class="er-chip">🏭 工业</text>
+  </g>
+</svg>
+</div><div class="ok-box">🚀 把 Unity 学扎实、C# 写好，上面那些游戏你也能做——本课程的 FPS 大作业，就是第一步。</div>
+</div></div>
+<div class="slide" data-page="14"><div class="slide-inner markable">
+<h1>广东省职业院校学生专业技能大赛</h1>
+<div class="ok-box">🏆 胡泽川老师（带队）与彭堉斌老师从2022年起指导学生参加<strong>广东省职业院校学生专业技能大赛</strong>，累计斩获 <strong>6 项省级奖项</strong>。学好 Unity，下一个站上领奖台的就是你！</div><div class="contest-row"><img src="images/contest/photo1.png" alt="竞赛照片1" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><img src="images/contest/photo2.png" alt="竞赛照片2" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><img src="images/contest/photo3.png" alt="竞赛照片3" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card"><h3>关于这项赛事</h3><ul><li><strong>主办方</strong>：广东省教育厅</li><li><strong>宗旨</strong>：以赛促教、以赛促学，产教融合</li><li><strong>地位</strong>：全省高职院校最具权威性、代表性的综合性竞赛</li></ul></div><div class="card"><h3>我们主攻的赛项：数字化产品设计与开发</h3></div><div class="card"><table><tr><th>考核模块</th><th>涉及技能</th></tr><tr><td>三维建模与贴图</td><td>3ds Max / Maya / Blender</td></tr><tr><td>三维动画制作</td><td>角色动画、场景动画</td></tr><tr><td>交互开发</td><td><strong>C# + Unity 引擎</strong></td></tr><tr><td>项目路演</td><td>展示与答辩</td></tr></table></div><div class="ok-box">Unity 是整个赛项的<strong>核心技术</strong>——交互逻辑、游戏机制、VR/AR 交互全要靠它实现。</div><div class="card"><h3>💼 对口就业</h3></div><div class="card"><table><tr><th>方向</th><th>岗位</th></tr><tr><td>🎮 游戏开发</td><td>Unity 客户端工程师</td></tr><tr><td>🥽 VR/AR</td><td>虚拟现实开发工程师</td></tr><tr><td>🎨 互动媒体</td><td>交互设计师</td></tr><tr><td>🏭 工业仿真</td><td>数字孪生工程师</td></tr></table></div>
+</div></div>
+<div class="slide" data-page="15"><div class="slide-inner end-page">
+
+<div class="end-thanks">
+    <div class="end-left">
+        <div class="end-icon">💪</div>
+        <div class="end-title">感谢各位同学的参与!</div>
+        <div class="end-sub">祝大家学习进步</div>
+    </div>
+    <div class="end-right">
+        <img src="images/tencent-docs-qrcode.png" alt="腾讯文档二维码" onerror="this.style.display='none'" onclick="zoomQR(this)" style="cursor:pointer">
+        <p>扫码查看作业完成情况</p>
+        <a href="https://docs.qq.com/sheet/DV2tKZ2pSTUNwUFpX?tab=bo2p4o" target="_blank" class="end-link">📊 查看作业完成情况文档</a>
+    </div>
+</div>
+<a href="课件2_注册与安装软件.html" class="end-next-link">📖 下一节：课件2 · 注册与安装软件 →</a>
+</div></div>
+</div>
+</div>
+</div>
+
+<div class="search-panel" id="searchPanel">
+    <div class="search-panel-header">
+        <span>🔍 全局搜索</span>
+        <button class="search-panel-close" onclick="closeSearch()">✕</button>
+    </div>
+    <input class="search-input" id="searchInput" placeholder="输入关键词搜索..." oninput="doSearch()" autocomplete="off">
+    <div class="search-results" id="searchResults"></div>
+</div>
+
+<div class="help-overlay" id="helpOverlay">
+    <div class="help-header"><span>📖 使用帮助</span><button class="help-close-btn" onclick="closeHelp()">✕</button></div>
+    <div class="help-body">
+            <h3>⌨️ 快捷键</h3>
+            <table><tr><td><code>Ctrl+K</code></td><td>打开搜索</td></tr><tr><td><code>← →</code></td><td>上一页 / 下一页</td></tr><tr><td><code>Esc</code></td><td>关闭弹窗</td></tr></table>
+            <h3>🎯 导航</h3>
+            <p>左侧边栏点击切换页面；底部圆点快速跳转；进度条显示学习完成度。</p>
+            <h3>💻 在线编辑器</h3>
+            <p>顶部「在线编辑器」下拉提供菜鸟教程、Tutorialspoint、DotNetFiddle 三个在线 C# 编译器。</p>
+            <h3>🌙 主题与字号</h3>
+            <p>深色/浅色切换；A- / A+ 调整字号；刷新后保留设置。</p>
+            <h3>🔍 搜索</h3>
+            <p>支持中英文关键词，匹配结果高亮显示，点击跳转到对应页面。</p>
+        </div>
+</div>
+
+<div class="catalog-panel" id="catalogPanel">
+    <div class="catalog-header">
+        <span>📚 课件目录</span>
+        <button class="catalog-close-btn" onclick="closeCatalog()">✕</button>
+    </div>
+    <div class="catalog-list" id="catalogList"></div>
+</div>
+
+<div class="qr-zoom-overlay" id="qrZoom" onclick="closeZoom()">
+    <img id="qrZoomImg" src="" alt="二维码放大">
+</div>
+
+<div class="nav-buttons">
+    <button class="nav-btn" id="prevBtn" onclick="goSlide(-1)">◀ 上一页</button>
+    <button class="nav-btn" id="nextBtn" onclick="goSlide(1)">下一页 ▶</button>
+</div>
+<div class="progress-dots" id="progressDots"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+window.__CATALOG__ = [{"file": "课件1_认识Unity与课程介绍.html", "label": "课件1 · 认识Unity与课程介绍"}, {"file": "课件2_注册与安装软件.html", "label": "课件2 · 注册与安装软件"}, {"file": "课件3_Unity引擎概览.html", "label": "课件3 · Unity引擎概览"}, {"file": "课件4_场景与物体.html", "label": "课件4 · 场景与物体"}, {"file": "课件5_移动视野与物体.html", "label": "课件5 · 移动视野与物体"}, {"file": "课件6_旋转缩放多选.html", "label": "课件6 · 旋转缩放多选"}, {"file": "课件7_网格与材质.html", "label": "课件7 · 网格与材质"}, {"file": "课件8_C#核心语法.html", "label": "课件8 · C#核心语法"}, {"file": "课件9_Fbx导入与脚本入门.html", "label": "课件9 · Fbx导入与脚本入门"}, {"file": "课件10_键盘控制移动.html", "label": "课件10 · 键盘控制移动"}, {"file": "课件11_变量类型与可见性.html", "label": "课件11 · 变量类型与可见性"}, {"file": "课件12_访问其他游戏对象.html", "label": "课件12 · 访问其他游戏对象"}, {"file": "课件13_刚体与碰撞体.html", "label": "课件13 · 刚体与碰撞体"}, {"file": "课件14_受力运动.html", "label": "课件14 · 受力运动"}, {"file": "课件15_主控脚本与随机生成.html", "label": "课件15 · 主控脚本与随机生成"}, {"file": "课件16_中文显示与打包.html", "label": "课件16 · 中文显示与打包"}, {"file": "课件17_FPS场景玩家武器.html", "label": "课件17 · FPS场景玩家武器"}, {"file": "课件18_移动射击.html", "label": "课件18 · 移动射击"}, {"file": "课件19_跳跃与穿墙.html", "label": "课件19 · 跳跃与穿墙"}, {"file": "课件20_场地美化与免费资源.html", "label": "课件20 · 场地美化与免费资源"}, {"file": "课件21_敌人简易跟踪.html", "label": "课件21 · 敌人简易跟踪"}, {"file": "课件22_AI敌人巡逻.html", "label": "课件22 · AI敌人巡逻"}, {"file": "课件23_敌人动画切换.html", "label": "课件23 · 敌人动画切换"}, {"file": "课件24_启动页面.html", "label": "课件24 · 启动页面"}, {"file": "课件25_玩家血条与被接触攻击.html", "label": "课件25 · 玩家血条与被接触攻击"}, {"file": "课件26_死亡与游戏管理器.html", "label": "课件26 · 死亡与游戏管理器"}, {"file": "课件27_消灭敌人与孵化器.html", "label": "课件27 · 消灭敌人与孵化器"}, {"file": "课件28_粒子系统与随机生成.html", "label": "课件28 · 粒子系统与随机生成"}, {"file": "课件29_拾取物品.html", "label": "课件29 · 拾取物品"}, {"file": "课件30_更换枪械.html", "label": "课件30 · 更换枪械"}, {"file": "课件31_修改动画状态机.html", "label": "课件31 · 修改动画状态机"}, {"file": "课件32_NPC对话.html", "label": "课件32 · NPC对话"}, {"file": "课件33_NPC对话进阶.html", "label": "课件33 · NPC对话进阶"}, {"file": "课件34_任务队列.html", "label": "课件34 · 任务队列"}];
+// ========== localStorage ==========
+const LS=(k,d)=>localStorage.getItem(k)||d;
+const LSset=(k,v)=>localStorage.setItem(k,v);
+
+// ========== 主题 ==========
+// ========== 在线编辑器下拉 ==========
+document.addEventListener('DOMContentLoaded',function(){
+    var ideBtn=document.getElementById('ideBtn');
+    if(ideBtn){
+        ideBtn.onclick=function(e){
+            e.stopPropagation();
+            document.getElementById('ideMenu').classList.toggle('show');
+        };
+    }
+    document.querySelectorAll('.dropdown-item').forEach(function(el){
+        el.onclick=function(e){
+            e.preventDefault();
+            window.open(this.dataset.url,'_blank');
+            document.getElementById('ideMenu').classList.remove('show');
+        };
+    });
+    document.addEventListener('click',function(){
+        document.getElementById('ideMenu').classList.remove('show');
+    });
+});
+
+// ========== 主题 ==========
+if(LS('theme','dark')==='light')document.body.classList.add('light');
+function toggleTheme(){
+    const il=document.body.classList.toggle('light');
+    LSset('theme',il?'light':'dark');
+    document.getElementById('themeBtn').textContent=il?'☀️浅色':'🌙深色';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('themeBtn').textContent=document.body.classList.contains('light')?'☀️浅色':'🌙深色';
+});
+
+// ========== 字号 ==========
+const FONT_SIZES=['xs','sm','md','lg','xl'];
+let fontIdx=FONT_SIZES.indexOf(LS('font','md'));
+if(fontIdx<0)fontIdx=2;
+if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+function changeFont(d){
+    document.body.classList.remove('font-'+FONT_SIZES[fontIdx]);
+    fontIdx=Math.max(0,Math.min(FONT_SIZES.length-1,fontIdx+d));
+    if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+    LSset('font',FONT_SIZES[fontIdx]);
+}
+
+// ========== 幻灯片 ==========
+let slides=document.querySelectorAll('.slide,.cover'),
+    navLinks=document.querySelectorAll('.nav-link'),
+    curr=0,total=15,contentTotal=13;
+
+// 进度圆点
+// 侧边栏点击
+navLinks.forEach((l,i)=>l.addEventListener('click',e=>{e.preventDefault();showSlide(i);}));
+let dotsHtml='';
+for(let i=0;i<total;i++)dotsHtml+=`<span class="progress-dot" data-idx="${i}" onclick="showSlide(${i})"></span>`;
+document.getElementById('progressDots').innerHTML=dotsHtml;
+let dots=document.querySelectorAll('.progress-dot');
+
+function showSlide(idx){
+    if(idx<0||idx>=total)return;
+    slides.forEach((s,i)=>s.classList.toggle('active',i===idx));
+    navLinks.forEach((l,i)=>l.classList.toggle('active',i===idx));
+    dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
+    curr=idx;
+    let cp=Math.max(0,Math.min(idx,contentTotal));
+    document.getElementById('progressFill').style.width=(cp/contentTotal*100)+'%';
+    document.getElementById('progressText').textContent=cp+' / '+contentTotal;
+    document.getElementById('mainArea').scrollTop=0;
+    document.querySelectorAll('.nav-status')[idx]?.classList.add('seen');
+    updateNav();
+}
+function goSlide(d){ showSlide(curr+d); }
+function updateNav(){
+    document.getElementById('prevBtn').disabled=curr===0;
+    document.getElementById('nextBtn').disabled=curr===total-1;
+    LSset('page_'+window.location.pathname.split('/').pop(), curr);
+}
+
+// 键盘
+document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')goSlide(1);
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')goSlide(-1);
+    if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openSearch();}
+    if(e.key==='Escape'){closeSearch();closeHelp();closeZoom();closeCatalog();}
+});
+
+// ========== 搜索 ==========
+function openSearch(){document.getElementById('searchPanel').classList.add('open');document.getElementById('searchInput').focus();document.getElementById('searchInput').value='';document.getElementById('searchResults').innerHTML=''}
+function closeSearch(){document.getElementById('searchPanel').classList.remove('open')}
+function toggleHelp(){document.getElementById('helpOverlay').classList.toggle('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+// 课件目录
+function toggleCatalog(){
+    let p=document.getElementById('catalogPanel');
+    if(!p.classList.contains('open')){loadCatalog();p.classList.add('open')}else{p.classList.remove('open')}
+}
+function closeCatalog(){document.getElementById('catalogPanel').classList.remove('open')}
+function loadCatalog(){
+    let c=document.getElementById('catalogList');
+    if(c.children.length>0)return;
+    let current=window.location.pathname.split('/').pop();
+    let items=window.__CATALOG__||[];
+    if(!items.length){c.innerHTML='<div class="catalog-item" style="color:var(--text-muted)">暂无课件</div>';return}
+    items.forEach(item=>{
+        let a=document.createElement('a');a.className='catalog-item';a.href=encodeURIComponent(item.file);
+        if(item.file===current)a.classList.add('current');
+        a.innerHTML=`<span class="catalog-num">${item.label.split(' · ')[0]}</span><span>${item.label.split(' · ').slice(1).join(' · ')||item.label}</span>`;
+        c.appendChild(a);
+    });
+}
+function zoomQR(img){document.getElementById('qrZoomImg').src=img.src;document.getElementById('qrZoom').classList.add('show')}
+function closeZoom(){document.getElementById('qrZoom').classList.remove('show')}
+function doSearch(){
+    let q=document.getElementById('searchInput').value,qLower=q.toLowerCase(),c=document.getElementById('searchResults');
+    c.innerHTML='';if(q.length<2)return;
+    let r=[];
+    slides.forEach((s,i)=>{
+        let raw=s.textContent,lower=raw.toLowerCase(),idx=lower.indexOf(qLower);
+        if(idx<0)return;
+        let start=Math.max(0,idx-15),end=Math.min(raw.length,idx+q.length+30);
+        let ex=raw.substring(start,end);
+        if(start>0)ex='...'+ex;
+        if(end<raw.length)ex=ex+'...';
+        // 高亮匹配词
+        let re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+        ex=ex.replace(re,'<mark>$1</mark>');
+        r.push({idx:i,excerpt:ex,slide:s});
+    });
+    r.slice(0,20).forEach(x=>{
+        let a=document.createElement('a');a.className='search-item';a.href='#';
+        let title=navLinks[x.idx]?.textContent.replace(/^\d+\.\s*/,'')||('页面'+(x.idx+1));
+        a.innerHTML=`<div class="sr-lesson">${x.idx+1}. ${title}</div><div class="sr-text">${x.excerpt}</div>`;
+        a.onclick=e=>{e.preventDefault();showSlide(x.idx);closeSearch();};
+        c.appendChild(a);
+    });
+}
+
+// ========== 复制 ==========
+function copyCode(cid,btn){
+    let code=document.getElementById(cid).textContent;
+    navigator.clipboard.writeText(code).then(()=>{
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    }).catch(()=>{
+        // fallback
+        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
+        document.execCommand('copy');document.body.removeChild(ta);
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    });
+}
+
+// ========== 初始化 ==========
+hljs.highlightAll();
+// 折叠面板
+function toggleFold(btn){
+    btn.classList.toggle('open');
+    let content=btn.nextElementSibling;
+    if(!content||!content.classList.contains('fold-content')) content=content.nextElementSibling;
+    if(content&&content.classList.contains('fold-content')) content.classList.toggle('show');
+}
+let savedPage=parseInt(LS('page_'+window.location.pathname.split('/').pop(),'0'));
+if(savedPage>0&&savedPage<total)showSlide(savedPage);else showSlide(0);
+</script>
+</body>
+</html>

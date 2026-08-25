@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>课件7_网格与材质 — C#先知课堂</title>
+<link rel="stylesheet" href="vendor/atom-one-dark.min.css">
+<script src="vendor/highlight.min.js"></script>
+<style>
+/* ===== 色彩变量 ===== */
+:root{
+--bg-primary:#0A0E27;--bg-secondary:#0D1430;--bg-card:rgba(17,24,39,0.95);
+--bg-input:#0B1020;--border:rgba(255,255,255,0.06);
+--text:#E8EAED;--text-muted:#9AA0A6;
+--accent:#00D4AA;--accent2:#4FC3F7;--accent-dim:rgba(0,212,170,0.08);
+--orange:#F59E0B;--blue:#818CF8;
+--green:#22C55E;--green-bg:rgba(34,197,94,0.08);--green-border:rgba(34,197,94,0.3);
+--red:#EF4444;--red-bg:rgba(239,68,68,0.08);--red-border:rgba(239,68,68,0.3);
+--yellow:#F59E0B;--purple:#C084FC;--teal:#86EFAC;--teal-border:rgba(34,197,94,0.3);
+--font-size:16px;
+}
+.light{
+--bg-primary:#ffffff;--bg-secondary:#f6f8fa;--bg-card:#f6f8fa;--bg-input:#ffffff;
+--border:#d0d7de;--text:#24292f;--text-muted:#656d76;
+--accent:#0969da;--accent2:#0550ae;--accent-dim:rgba(9,105,218,0.08);
+--orange:#cf222e;--blue:#0550ae;
+--green:#1a7f37;--green-bg:#eefdf2;--green-border:#86d9a0;
+--red:#cf222e;--red-bg:#ffebe9;--red-border:#fdaeb7;
+--yellow:#9a6700;--purple:#8250df;--teal:#0550ae;--teal-border:#4ac26b;
+}
+body.font-xs{--font-size:12px}body.font-sm{--font-size:14px}body.font-md{--font-size:16px}body.font-lg{--font-size:19px}body.font-xl{--font-size:22px}
+
+/* ===== 全局 ===== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microsoft YaHei',sans-serif;background:linear-gradient(180deg,var(--bg-primary),var(--bg-secondary));color:var(--text);line-height:1.6;font-size:var(--font-size)}
+.container{display:flex;height:100vh}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.02)}
+::-webkit-scrollbar-thumb{background:rgba(0,212,170,0.2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,212,170,0.4)}
+
+/* ===== 侧边栏 ===== */
+.sidebar{width:260px;min-width:260px;height:100vh;background:linear-gradient(180deg,rgba(10,14,39,0.98),rgba(13,20,48,0.95));border-right:1px solid var(--border);overflow-y:auto;padding:12px 0;flex-shrink:0;backdrop-filter:blur(10px);position:relative;z-index:10}
+.sidebar-title{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-size:16px;font-weight:700;padding:0 14px 10px;border-bottom:1px solid rgba(0,212,170,0.15);margin-bottom:6px}
+.nav-link{display:flex;align-items:center;color:var(--text-muted);text-decoration:none;padding:8px 14px;font-size:12px;border-left:3px solid transparent;transition:all .2s}
+.nav-link:hover{color:var(--accent);background:var(--accent-dim);border-left-color:rgba(0,212,170,0.4)}
+.nav-link.active{color:#fff!important;background:linear-gradient(90deg,rgba(0,212,170,0.18),transparent);border-left:3px solid var(--accent);font-weight:600}
+.nav-status{width:7px;height:7px;border-radius:50%;margin-right:7px;flex-shrink:0;background:rgba(255,255,255,0.1);transition:all .3s}
+.nav-status.seen{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,0.5)}
+
+/* ===== Header ===== */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header-bar{display:flex;align-items:center;gap:16px;padding:10px 24px;background:rgba(10,14,39,0.95);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;position:relative;z-index:5}
+.progress-wrap{flex:1;min-width:200px;display:flex;align-items:center;gap:12px}
+.progress-bar{flex:1;height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,0.3)}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .5s ease;width:0;box-shadow:0 0 8px rgba(0,212,170,0.4)}
+.progress-text{font-size:11px;color:var(--text-muted);white-space:nowrap}
+.header-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .25s;white-space:nowrap}
+.header-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 8px rgba(0,212,170,0.1);transform:translateY(-1px)}
+.header-dropdown{position:relative;display:inline-block}
+.dropdown-menu{display:none;position:absolute;top:100%;right:0;margin-top:6px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;min-width:180px;z-index:100;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.dropdown-menu.show{display:block}
+.dropdown-item{display:block;padding:10px 16px;color:var(--text);font-size:13px;text-decoration:none;transition:background .2s;cursor:pointer;white-space:nowrap}
+.dropdown-item:hover{background:var(--accent-dim);color:var(--accent)}
+.dropdown-item:not(:last-child){border-bottom:1px solid var(--border)}}
+
+/* ===== 幻灯片 ===== */
+.slides-container{flex:1;position:relative !important;overflow:hidden}
+#mainArea .slides-container{position:relative !important;overflow:hidden !important}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transform:translateX(30px);transition:opacity .35s,transform .35s;pointer-events:none;overflow-y:auto}
+.slide::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:.6;z-index:10}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto;z-index:1}
+.slide-inner{max-width:920px;margin:0 auto;padding:56px 48px 80px}
+
+/* 标题 */
+.slide-inner h1{color:#fff;font-size:26px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid rgba(0,212,170,0.2);letter-spacing:-0.3px}
+.slide-inner h2{color:var(--accent2);font-size:20px;margin:28px 0 14px;font-weight:600}
+.slide-inner h3{color:var(--accent);font-size:calc(var(--font-size) * 1.06);margin:20px 0 10px;font-weight:600;padding-left:10px;border-left:3px solid var(--accent)}
+.slide-inner h3.h-example{color:var(--accent2);border-left-color:var(--accent2)}
+.slide-inner h3.h-practice{color:var(--orange);border-left-color:var(--orange)}
+.slide-inner p{color:var(--text);margin-bottom:10px;line-height:1.85}
+.slide-inner ul,.slide-inner ol{margin-left:22px;margin-bottom:14px}
+.slide-inner li{color:#CBD5E1;margin-bottom:6px;line-height:1.75}
+
+/* 内联代码 */
+.slide-inner strong{color:var(--accent2);font-weight:700}
+.slide-inner em{color:var(--orange);font-style:normal;font-weight:500}
+.slide-inner code{background:rgba(0,212,170,0.08);color:var(--accent);padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:90%;border:1px solid rgba(0,212,170,0.15);font-weight:600}
+
+/* 表格 */
+.slide-inner table{width:100%;border-collapse:collapse;font-size:calc(var(--font-size) * 0.94);margin:12px 0;border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.slide-inner table td,.slide-inner table th{padding:8px 14px;border:1px solid var(--border);text-align:left}
+.slide-inner table th{background:linear-gradient(135deg,rgba(17,24,39,0.9),rgba(15,23,41,0.9));color:var(--accent);font-weight:600;font-size:calc(var(--font-size) * 1.0);text-transform:uppercase;letter-spacing:.5px}
+.slide-inner table tr:nth-child(odd){background:rgba(255,255,255,0.015)}
+.slide-inner table tr:hover{background:var(--accent-dim)}
+
+/* 链接 */
+.slide-inner a{color:var(--accent2);text-decoration:underline;text-decoration-color:rgba(79,195,247,0.3);text-underline-offset:3px;transition:all .2s}
+.slide-inner a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+
+/* ===== 卡片 ===== */
+.card,.homework-card,.ok-box,.prompt-box{margin:10px 0;border-radius:12px;transition:all .3s}
+.card{background:linear-gradient(135deg,var(--bg-card),rgba(13,20,48,0.85));border:1px solid var(--border);padding:14px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.2);overflow:hidden}
+.card .card-img{float:right;max-width:200px;max-height:250px;margin:0 0 8px 16px;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 标题+图片+列表 类型的卡片：确定性两栏（左文右图），不依赖 float 环绕 */
+.card.side-card{display:flex;align-items:flex-start;gap:18px;overflow:hidden}
+.card.side-card .side-body{flex:1;min-width:0}
+.card.side-card .side-body h3{margin-top:0}
+.card.side-card .card-img{float:none;flex:0 0 auto;max-width:200px;max-height:250px;margin:0;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.card.side-card .side-body ul,.card.side-card .side-body ol{margin:8px 0 0;padding-left:22px}
+.card.side-card .side-body ul li,.card.side-card .side-body ol li{margin:4px 0}
+.card table .card-img{float:none;max-width:280px;max-height:none;margin:4px auto;display:block;border-radius:4px}
+.card table .card-img-sm{float:none;max-width:100px;max-height:none;margin:4px 0;display:inline-block;border-radius:4px}
+.card-img{display:block;max-width:100%;margin:16px auto;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 小图（报错截图等）控制在 1/3 宽度 */
+.card-img.small{max-width:33%!important}
+/* 表格单元格内图片（发展四时代等）：小图居中，破图自动隐藏 */
+.slide-inner table td img.card-img,.slide-inner table th img.card-img{display:block;max-width:150px;max-height:105px;width:auto;height:auto;margin:6px auto;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+.slide-inner table td img.card-img-sm,.slide-inner table th img.card-img-sm{display:block;max-width:96px;max-height:66px;margin:4px auto;border-radius:4px}
+/* 竞赛照片三图并排 */
+.contest-row{display:flex;gap:12px;justify-content:center;margin:16px 0;flex-wrap:wrap}
+.contest-row img{flex:1;min-width:0;max-width:280px;max-height:200px;object-fit:cover;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer}
+.card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.12);transform:translateY(-1px)}
+.card h3{margin-top:0}
+
+/* 代码块 */
+.prompt-box{background:var(--bg-input);border:1px solid rgba(0,212,170,0.2);border-left:3px solid var(--accent);overflow:hidden;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03)}
+.code-toolbar{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.04)}
+.code-lang{font-size:10px;color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.copy-btn{background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2);color:var(--accent);padding:3px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-family:inherit;transition:all .2s}
+.copy-btn:hover{background:rgba(0,212,170,0.2);border-color:var(--accent)}
+.copy-btn.copied{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.prompt-box pre{background:transparent;padding:12px 16px;margin:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;overflow-x:auto}
+.prompt-box pre code{background:transparent;padding:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;font-family:'JetBrains Mono','Menlo','Monaco',monospace;color:#E2E8F0;border:none}
+
+/* ok-box / homework-card */
+.homework-card{background:linear-gradient(135deg,rgba(0,212,170,0.06),var(--bg-card));border:1px solid var(--teal-border);padding:14px 18px}
+.homework-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(0,212,170,0.08)}
+.homework-card h3{color:var(--teal)}
+.ok-box{background:linear-gradient(135deg,rgba(34,197,94,0.06),var(--bg-card));border:1px solid var(--green-border);padding:14px 18px}
+.ok-box:hover{border-color:var(--green);box-shadow:0 8px 24px rgba(34,197,94,0.08)}
+.ok-box ul,.ok-box ol{margin:6px 0;padding-left:1.5em}
+.ok-box li{margin:3px 0;line-height:1.7}
+
+/* 高亮标记 */
+.markable li,.markable p{cursor:pointer;transition:all .15s;border-radius:3px;padding:1px 3px}
+.markable li.marked,.markable p.marked{background:rgba(192,132,252,.12);border-left:3px solid var(--purple);padding-left:8px}
+
+/* ===== 折叠面板 ===== */
+.fold-toggle{display:inline-flex;align-items:center;gap:6px;background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:calc(var(--font-size) * 1.06);font-family:inherit;transition:all .2s;margin:8px 0;user-select:none}
+.fold-toggle:hover{background:rgba(0,212,170,0.15);box-shadow:0 2px 8px rgba(0,212,170,0.15)}
+.fold-toggle .arrow{display:inline-block;transition:transform .3s;font-size:10px}
+.fold-toggle.open .arrow{transform:rotate(90deg)}
+.fold-content{max-height:0;overflow:hidden;transition:max-height .4s ease;opacity:0}
+.fold-content.show{max-height:3000px;opacity:1}
+/* 提示折叠 绿色 */
+.fold-toggle.hint{color:var(--green);border-color:var(--green-border);background:var(--green-bg)}
+.fold-toggle.hint:hover{background:rgba(34,197,94,0.12)}
+/* 答案折叠 紫色 */
+.fold-toggle.solution{color:var(--purple);border-color:rgba(192,132,252,0.4);background:rgba(192,132,252,0.08)}
+.fold-toggle.solution:hover{background:rgba(192,132,252,0.15)}
+/* 问答折叠 橙色 */
+.fold-toggle.qa{color:var(--orange);border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.08)}
+.fold-toggle.qa:hover{background:rgba(245,158,11,0.15)}
+/* 填空代码 */
+.code-blank{color:var(--orange);background:rgba(245,158,11,0.1);padding:2px 6px;border-radius:4px;font-weight:600}
+
+/* ===== 导航按钮 ===== */
+.nav-buttons{position:fixed;bottom:24px;right:32px;display:flex;gap:8px;z-index:100}
+.nav-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:10px 22px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:500;transition:all .25s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 4px 16px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
+.progress-dots{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:100}
+.progress-dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:all .3s;cursor:pointer}
+.progress-dot:hover{background:var(--accent2)}
+.progress-dot.active{background:var(--accent);transform:scale(1.4);box-shadow:0 0 8px rgba(0,212,170,0.5)}
+
+/* ===== 搜索 ===== */
+.search-panel{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:300;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.search-panel.open{right:0}
+.search-panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.search-panel-header span{font-size:15px;font-weight:600;color:var(--text)}
+.search-panel-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.search-panel-close:hover{color:var(--text);background:var(--accent-dim)}
+
+/* ===== 课件目录 ===== */
+.catalog-panel{position:fixed;top:0;right:-320px;width:320px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:298;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.catalog-panel.open{right:0}
+.catalog-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.catalog-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.catalog-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.catalog-list{flex:1;overflow-y:auto;padding:8px 0}
+.catalog-item{display:flex;align-items:center;gap:10px;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.catalog-item:hover{background:var(--accent-dim);border-left-color:var(--accent)}
+.catalog-item.current{color:var(--accent)!important;background:var(--accent-dim);border-left-color:var(--accent);font-weight:600}
+.catalog-num{color:var(--accent);font-size:11px;font-weight:700;min-width:40px;white-space:nowrap}
+.search-input{width:100%;padding:14px 18px;background:var(--bg-input);border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:15px;outline:none;flex-shrink:0}
+.search-input::placeholder{color:var(--text-muted)}
+.search-results{flex:1;overflow-y:auto;padding:8px 0}
+.search-item{display:block;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.search-item:hover,.search-item.focus{background:var(--accent-dim);border-left-color:var(--accent)}
+.help-overlay{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:299;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.help-overlay.open{right:0}
+.help-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.help-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.help-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.help-body{flex:1;overflow-y:auto;padding:16px 22px 24px}
+.help-body h3{color:var(--accent);font-size:14px;margin:16px 0 8px;padding-left:0;border-left:none}
+.help-body p{font-size:13px;color:var(--text-muted);margin-bottom:8px}
+.help-body table{font-size:13px}
+.help-body table td{padding:4px 12px 4px 0}
+.help-body table td:first-child{white-space:nowrap;padding-right:16px}
+.search-item mark{background:rgba(0,212,170,0.2);color:var(--accent);border-radius:2px;padding:0 3px}
+
+/* ===== Toast ===== */
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:400;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);padding:16px 28px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.toast.show{opacity:1}
+
+/* ===== 浅色覆盖 ===== */
+.light body,.light html{background:var(--bg-primary)!important}
+.light .sidebar{background:var(--bg-secondary)!important;border-right-color:var(--border)!important}
+.light .sidebar-title{-webkit-text-fill-color:var(--text);font-weight:600}
+.light .goal-card,.light .card{background:var(--bg-card)!important;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.light .homework-card{background:var(--accent-dim)!important}
+.light .ok-box{background:var(--green-bg)!important;border-color:var(--green-border)!important;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.light .header-bar{background:var(--bg-secondary)!important;backdrop-filter:none!important}
+.light .slide-inner table th{background:var(--bg-input)!important;color:var(--text)!important}
+.light .slide-inner h1{color:var(--text)!important}
+.light .slide-inner h2{color:var(--accent)!important}
+.light .slide-inner h3{color:var(--accent2)!important}
+.light .slide-inner li,.light .slide-inner p{color:var(--text)!important}
+.light .nav-link.active{color:var(--accent)!important;background:var(--accent-dim)!important}
+.light .progress-fill{box-shadow:none!important}
+.light .cover{background:radial-gradient(ellipse at 30% 20%,rgba(9,105,218,0.08),transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(5,80,174,0.06),transparent 55%),var(--bg-primary)!important}
+.light .cover-tag{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-label{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-text{color:var(--text)!important}
+.light .cover-sub{color:var(--text-muted)!important}
+.light .end-thanks{background:var(--bg-card);border-color:rgba(9,105,218,0.15)}
+.light .end-title{color:var(--accent)!important}
+.light .prompt-box pre code{color:var(--text)!important}
+.light .code-toolbar{background:rgba(0,0,0,0.05)}
+/* 深色主题下注释颜色调亮（原atom-one-dark太暗） */
+.hljs-comment,.hljs-meta{color:#8b949e!important}
+
+/* ===== 封面 ===== */
+.cover{display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;height:100vh;box-sizing:border-box;background:radial-gradient(ellipse at 30% 20%,rgba(0,212,170,0.18) 0%,transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(79,195,247,0.12) 0%,transparent 55%),linear-gradient(180deg,#0A0E27 0%,#0D1430 100%);position:relative;overflow:hidden}
+.cover.active{display:flex!important}
+.cover::after{content:'';position:absolute;top:-120px;right:-120px;width:400px;height:400px;background:radial-gradient(circle,rgba(0,212,170,0.08),transparent 70%);border-radius:50%;pointer-events:none}
+.cover-tag{display:inline-block;font-size:14px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);border-radius:20px;padding:8px 22px;margin-bottom:24px;letter-spacing:2px}
+.cover h1{font-size:52px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;letter-spacing:-1px;border:none;line-height:1.2;max-width:800px}
+.cover-sub{font-size:16px;color:var(--text-muted);margin-bottom:40px;max-width:650px;line-height:1.8}
+.cover-meta{font-size:14px;color:#6B7280;line-height:2.2;display:flex;flex-direction:column;gap:8px;align-items:center}
+.cover-meta-row{display:flex;align-items:center;gap:8px}
+.cover-meta-label{font-size:13px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.3);border-radius:6px;padding:3px 12px}
+.cover-meta-text{font-size:16px;color:#CBD5E1}
+
+/* ===== 结束页 ===== */
+.end-page{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:100%;box-sizing:border-box;max-width:920px;margin:0 auto;padding:36px 48px}
+.end-page h2{text-align:center;border-bottom:none;margin-bottom:32px}
+.end-thanks{display:flex;align-items:center;justify-content:center;gap:60px;flex-wrap:wrap;padding:60px 56px;border:2px solid rgba(0,212,170,0.3);border-radius:16px;background:linear-gradient(135deg,rgba(0,212,170,0.06),rgba(17,24,39,0.95))}
+.end-left{flex:1;min-width:200px;text-align:center}
+.end-right{flex:0 0 auto;text-align:center;padding-left:24px;border-left:1px solid rgba(0,212,170,0.2)}
+.end-icon{font-size:48px;margin-bottom:16px}
+.end-title{font-size:24px;color:var(--accent);font-weight:700;margin-bottom:20px}
+.end-sub{font-size:18px;color:var(--text-muted)}
+.end-contact{margin-top:16px;font-size:13px;color:var(--text-muted);line-height:1.7}
+.end-right img{width:120px;height:120px;border-radius:10px;margin-bottom:10px;border:2px solid var(--border);transition:transform .2s}
+.end-right img:hover{transform:scale(1.05)}
+.end-right p{font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5}
+.end-link{display:inline-block;color:var(--accent);text-decoration:none;font-size:13px;border:1px solid rgba(0,212,170,0.3);padding:8px 16px;border-radius:8px;transition:all .25s;white-space:nowrap}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+.end-next-link{display:inline-block;margin-top:20px;color:var(--accent2);text-decoration:none;font-size:15px;font-weight:600;padding:10px 24px;border:2px solid var(--accent2);border-radius:10px;transition:all .25s}
+.end-next-link:hover{background:rgba(79,195,247,0.1);box-shadow:0 4px 20px rgba(79,195,247,0.2);transform:translateY(-2px)}
+/* 二维码放大 */
+.qr-zoom-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;cursor:pointer}
+.qr-zoom-overlay.show{display:flex}
+.qr-zoom-overlay img{max-width:80vw;max-height:80vh;border-radius:12px;box-shadow:0 8px 32px rgba(0,212,170,0.2)}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+
+/* ===== 学习目标 ===== */
+.goal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:8px}
+.goal-card{background:linear-gradient(135deg,var(--bg-card),var(--bg-secondary));border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:14px;transition:all .3s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.goal-card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.goal-icon{font-size:28px;flex-shrink:0;transition:transform .3s}
+.goal-card:hover .goal-icon{transform:scale(1.15)}
+.goal-text{font-size:calc(var(--font-size) * 1.05);color:var(--text);line-height:1.6}
+
+/* 侧边栏 - 特殊链接（无序号） */
+.nav-special{font-style:italic;color:var(--accent2)!important}
+/* 导航标签 */
+.nav-badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:6px;font-weight:600;vertical-align:1px}
+.nav-badge.practice{color:var(--accent2);background:rgba(79,195,247,0.12);border:1px solid rgba(79,195,247,0.25)}
+.nav-badge.comprehensive{color:var(--purple);background:rgba(192,132,252,0.12);border:1px solid rgba(192,132,252,0.25)}
+.nav-badge.homework{color:var(--orange);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25)}
+
+/* ===== 响应式 ===== */
+/* ===== 移动端 header 精简按钮 ===== */
+.mobile-info{display:none;font-size:13px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.mobile-info .mi-lesson{color:var(--accent);font-weight:600}
+.mobile-info .mi-sep{margin:0 4px;color:var(--text-muted);opacity:0.5}
+.mobile-info .mi-page{color:var(--text)}
+.mobile-more{display:none;position:relative}
+.mobile-more-menu{display:none;position:absolute;top:100%;right:0;margin-top:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:4px 0;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:50;min-width:160px}
+.mobile-more-menu.open{display:block}
+.mobile-more-menu .mm-item{display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--text);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.mobile-more-menu .mm-item:hover{background:var(--accent-dim);color:var(--accent)}
+@media(max-width:768px){.sidebar{display:none}.slide-inner{padding:18px 18px 80px}.cover{padding-left:40px;padding-right:40px}.cover h1{font-size:32px}.nav-buttons{right:12px;bottom:12px}.header-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap}.header-btn[onclick="toggleTheme()"]{padding:6px 6px}.progress-wrap{display:none}.header-dropdown{display:none}.header-btn[onclick^="changeFont"]{display:none}.header-btn[onclick="openSearch()"]{display:none}.header-btn[onclick="toggleHelp()"]{display:none}.mobile-info{display:flex;align-items:center;gap:2px}.mi-page{display:none}.mobile-more{display:inline-block}.slides-container{min-height:calc(100vh - 54px)}}
+</style>
+</head>
+<body>
+<div class="container">
+<nav class="sidebar">
+    <div class="sidebar-title">📘 课件7_网格与材质</div>
+    <a href="#" class="nav-link nav-special" data-page="1"><span class="nav-status"></span>封面</a>
+<a href="#" class="nav-link" data-page="2"><span class="nav-status"></span>1. 学习目标 </a>
+<a href="#" class="nav-link" data-page="3"><span class="nav-status"></span>2. 渲染模式 </a>
+<a href="#" class="nav-link" data-page="4"><span class="nav-status"></span>3. Mesh 网格 </a>
+<a href="#" class="nav-link" data-page="5"><span class="nav-status"></span>4. Material 材质 </a>
+<a href="#" class="nav-link" data-page="6"><span class="nav-status"></span>5. Shader 着色器 </a>
+<a href="#" class="nav-link" data-page="7"><span class="nav-status"></span>6. 天空盒 SkyBox </a>
+<a href="#" class="nav-link" data-page="8"><span class="nav-status"></span>7. 作业 — 下载免费资源美化场景 <span class="nav-badge homework">作业</span></a>
+<a href="#" class="nav-link nav-special" data-page="9"><span class="nav-status"></span>结束页</a>
+
+</nav>
+<div class="main-area" id="mainArea">
+    <div class="header-bar">
+        <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <span class="progress-text" id="progressText">0 / 11</span>
+        </div>
+        <div class="mobile-info" id="mobileInfo" onclick="mobileInfoTap()" style="cursor:pointer"><span class="mi-lesson"></span><span class="mi-sep">·</span><span class="mi-page"></span></div>
+        <button class="header-btn" id="themeBtn" onclick="toggleTheme()">🌙 深色</button>
+        <div class="header-dropdown">
+          <button class="header-btn" id="ideBtn">💻 在线编辑器 ▾</button>
+          <div class="dropdown-menu" id="ideMenu">
+            <a href="#" class="dropdown-item" data-url="https://www.runoob.com/try/runcode.php?filename=helloworld&type=csharp">菜鸟教程</a>
+            <a href="#" class="dropdown-item" data-url="https://www.tutorialspoint.com/compilers/online-csharp-compiler.htm">Tutorialspoint（支持输入）</a>
+            <a href="#" class="dropdown-item" data-url="https://dotnetfiddle.net/">DotNetFiddle</a>
+          </div>
+        </div>
+        <button class="header-btn" onclick="changeFont(-1)">A-</button>
+        <button class="header-btn" onclick="changeFont(1)">A+</button>
+        <button class="header-btn" onclick="openSearch()">🔍</button>
+        <button class="header-btn" onclick="toggleHelp()" title="使用帮助">❓</button>
+        <button class="header-btn" onclick="toggleCatalog()" title="课件目录">📚</button>
+        <div class="mobile-more">
+          <button class="header-btn" onclick="toggleMobileMore()" title="更多">☰</button>
+          <div class="mobile-more-menu" id="mobileMoreMenu">
+            <div class="mm-item" onclick="mobileAction('ide')">💻 在线编辑器</div>
+            <div class="mm-item" onclick="mobileAction('fontDown')">🔤 A- 缩小字号</div>
+            <div class="mm-item" onclick="mobileAction('fontUp')">🔤 A+ 放大字号</div>
+            <div class="mm-item" onclick="mobileAction('search')">🔍 搜索</div>
+            <div class="mm-item" onclick="mobileAction('help')">❓ 使用帮助</div>
+          </div>
+        </div>
+    </div>
+    <div class="slides-container"><div class="cover" data-page="1">
+    <div class="cover-tag">数字产品设计</div>
+    <h1>网格与材质</h1>
+    <div class="cover-sub">理解 Mesh 网格与 Material 材质，会更换 / 添加材质、设置 Albedo，并调出属于自己的天空盒</div>
+    <div class="cover-meta">
+        <div class="cover-meta-row"><span class="cover-meta-label">授课教师</span><span class="cover-meta-text">彭堉斌</span></div>
+        <div class="cover-meta-row"><span class="cover-meta-label">学校</span><span class="cover-meta-text">汕头职业技术学院</span></div>
+    </div>
+</div>
+<div class="slide" data-page="2"><div class="slide-inner">
+<h1>学习目标</h1>
+<div class="goal-grid"><div class="goal-card"><span class="goal-icon">🎯</span><span class="goal-text">区分渲染模式（着色 / 线框 / 着色线框）</span></div><div class="goal-card"><span class="goal-icon">🔍</span><span class="goal-text">理解 Mesh 网格是什么（顶点 + 法向）</span></div><div class="goal-card"><span class="goal-icon">📝</span><span class="goal-text">掌握材质 Material 的创建、更换、拖拽切换，会用 Albedo / Metallic / Smoothness / Tiling 调整外观</span></div><div class="goal-card"><span class="goal-icon">🧱</span><span class="goal-text">会用纹理包制作 PBR 材质：设置反射率 / 高度 / 法线贴图，做出地板等效果</span></div><div class="goal-card"><span class="goal-icon">🌤️</span><span class="goal-text">会创建 Procedural 天空盒材质，并调整 Sun Size、Exposure 等参数</span></div><div class="goal-card"><span class="goal-icon">🌍</span><span class="goal-text">会用 HDRI 全景图制作真实天空盒并应用到场景</span></div></div>
+<div class="ok-box">网格决定&quot;形状&quot;，材质决定&quot;皮肤&quot;，天空盒决定&quot;环境&quot;。学完本节，就能用免费资源网站美化和装饰自己的场景。</div>
+</div></div>
+<div class="slide" data-page="3"><div class="slide-inner markable">
+<h1>渲染模式</h1>
+<div class="card"><p>Scene 视图左上角下拉框，控制场景的显示方式：</p></div><img src="images/课件7/渲染模式下拉框.png" alt="渲染模式下拉框" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><p><strong>Shaded（着色）</strong>：正常实体显示，能看到材质颜色与光影</p></div><img src="images/课件7/shaded着色.png" alt="Shaded 着色模式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><p><strong>Wireframe（线框）</strong>：只显示网格线框，看物体结构</p></div><img src="images/课件7/wireframe线框.png" alt="Wireframe 线框模式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><p><strong>Shaded Wireframe（着色线框）</strong>：实体 + 线框叠加</p></div><img src="images/课件7/shaded_wireframe着色线框.png" alt="Shaded Wireframe 着色线框模式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="ok-box">💡 想看清楚一个复杂模型的&quot;骨架&quot;时，切到 Wireframe 最直观。</div>
+</div></div>
+<div class="slide" data-page="4"><div class="slide-inner markable">
+<h1>Mesh 网格</h1>
+<div class="card"><p><strong>Mesh（网格）</strong> 是 3D 物体的&quot;形状骨架&quot;，由两部分定义：</p></div><div class="card"><ul><li><strong>顶点坐标（Vertices）</strong>：空间中一个个点，连成三角面</li><li><strong>面的法向（Normals）</strong>：每个面朝哪，决定光照从哪边亮</li></ul></div><div class="contest-row"><img src="images/课件7/立方体网格.png" alt="立方体网格" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><img src="images/课件7/球体网格.png" alt="球体网格" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div><div class="card"><p>网格的<strong>精细程度</strong>由顶点数 / 三角面数决定：</p><ul><li><strong>面数越少</strong>：模型越&quot;棱角分明&quot;，性能开销小（如立方体只有 6 个面）</li><li><strong>面数越多</strong>：模型越光滑圆润，但更耗性能（如球体由大量三角面拼成）</li></ul></div><div class="card"><h3>为什么都用三角形？</h3><ul><li>三角形是<strong>平面</strong>，三个点永远共面，不会&quot;扭曲&quot;</li><li>四边形可能弯曲变形（四个点不在同一平面），游戏引擎无法渲染</li></ul></div><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 为什么同一个球，有的亮有的暗？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))"><p>法向 = 每个面的&quot;朝向箭头&quot;。光线从上方照下来时：</p><ul><li><strong>法向正确</strong>：朝上的面迎光→亮，朝下的面背光→暗，看起来正常</li><li><strong>法向反了</strong>：朝上的箭头被翻转朝下→引擎认为它背光→该亮的面变暗，整个模型&quot;发黑&quot;</li></ul><p>常见原因：从建模软件导出时法向被翻转、手动编辑网格误操作。Unity 里可用 <code>Recalculate Normals</code> 重新计算修复。</p></div></div><div class="card"><h3>网格在哪看？</h3><p>选中 3D 物体后，Inspector 里有两个配套组件：</p></div><img src="images/课件7/立方体网格信息.png" alt="立方体网格信息" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><ul><li><strong>Mesh Filter</strong>（网格过滤器）：持有&quot;用哪个 Mesh&quot;的引用 &mdash; 决定<strong>形状</strong></li><li><strong>Mesh Renderer</strong>（网格渲染器）：决定&quot;怎么画出来&quot;（<span style="color:#FFB020">材质</span>、阴影、光照）&mdash; 决定<strong>外观</strong></li></ul></div><div class="card"><p>少了 Filter 不知道画什么形状，少了 Renderer 画不出来。<strong>Filter 给形状，Renderer 给皮肤。</strong></p></div><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ Mesh 和 Material 是什么关系？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">Mesh 是&quot;骨架&quot;（形状），Material 是&quot;皮肤&quot;（颜色 / 光影）。同一个立方体 Mesh，换上不同材质就能变成木头、金属、玻璃。</div></div>
+</div></div>
+<div class="slide" data-page="5"><div class="slide-inner markable">
+<h1>Material 材质</h1>
+<div class="card"><p><strong>Material（材质）</strong> 决定物体表面的&quot;光学特性&quot;：</p><ul><li>颜色、金属 / 非金属、光滑 / 粗糙、透明 / 半透明 / 不透明、凹凸……</li></ul></div><div class="card"><h3>更换材质</h3><p>游戏对象的材质可以替换。选中材质时会有阴影效果，点击右下角的 <strong>选择材质</strong> 按钮弹出&quot;选择材质&quot;窗口。</p></div><div class="card"><h3>添加材质</h3><ul><li>资源放置在 <code>Assets</code> 文件夹内</li><li>在 Project 窗口<strong>创建新文件夹</strong>（如 <code>Materials</code>）归类</li><li>右键 <code>Create（创建）</code> → <code>Material（材质）</code> 新建一个材质</li><li>命名（如 <code>black</code>）</li></ul></div><img src="images/课件7/场景窗口 - 添加资源 - 材质.gif" alt="创建材质资源" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><h3>修改 / 选用材质</h3><ul><li>材质<strong>拖拽到物体上</strong>即使用</li><li><strong>Albedo（反照率）</strong> 就是材质的&quot;基础颜色&quot;，点开色板就能改</li><li>点击选择材质，即可查看其属性并设置</li></ul></div><img src="images/课件7/场景窗口 - 材质 - 设置.gif" alt="设置材质" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><h3>游戏对象材质可直接拖拽切换</h3><p>游戏对象材质可<strong>直接拖拽切换</strong>。</p></div><img src="images/课件7/场景窗口 - 材质 - 修改.gif" alt="拖拽更换材质" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><h3>多个自定义材质拖拽切换</h3><p>有多个自定义材质，都可直接拖拽到游戏对象上切换。</p></div><img src="images/课件7/场景窗口 - 材质 - 切换.gif" alt="切换材质" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="card"><h3>精准设置</h3><ul><li>场景中多个游戏对象时，直接拖拽材质到 Inspector 的<strong>材质框</strong>最为精准，不会误伤别的物体</li><li>点击右下角的 <strong>选择材质</strong> 按钮弹出窗口，也可看到创建的材质</li></ul></div><img src="images/课件7/场景窗口 - 材质 - 精准切换.gif" alt="精准切换" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><div class="ok-box">💡 颜色用 Albedo 调；要更真实就调 Smoothness（光滑度）和 Metallic（金属度）。</div>
+</div></div>
+<div class="slide" data-page="6"><div class="slide-inner markable">
+<h1>Shader 着色器</h1>
+<div class="card"><h3>什么是 Shader（着色器）？</h3><img src="images/课件7/shader_intro.png" alt="Shader 着色器概念图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"><p><strong>Shader（着色器）</strong>是决定&quot;怎么把表面画出来&quot;的程序——它定义了 <strong>Material（材质）</strong>背后使用什么属性来计算光照、颜色和纹理。</p><p>换个理解方式：</p><ul><li><strong>Shader</strong> = 一套&quot;属性模板&quot;（决定面板上有哪些参数可调）</li><li><strong>Material</strong> = Shader + 你填入的具体参数值（颜色、贴图、数值）</li><li>同一个 Shader 配不同参数 = 不同材质（如同一个 Standard，一个做木头、一个做金属）</li><li><strong>换 Shader = 换一套完全不同的属性面板</strong></li></ul></div>
+<div class="card"><h3>Unity 常用内置 Shader</h3><p>在材质 Inspector 面板顶部点击 Shader 下拉框，可以看到 Unity 内置的所有着色器。下面重点讲两个最常用的：<strong>Standard</strong> 和 <strong>Skybox/Procedural</strong>。</p></div>
+<div class="card" style="display:flex;gap:16px;align-items:flex-start;"><div style="flex:1;"><h3>⭐ Standard Shader</h3><p>Standard（标准着色器）是 Unity 默认的基于物理渲染（PBR）的着色器，能模拟石头、木头、玻璃、塑料、金属等几乎所有真实材质。</p></div><img src="images/课件7/standard_shader_panel.png" alt="Standard Shader 属性面板" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;width:45%;flex-shrink:0;" onerror="this.style.display='none'"></div>
+<div class="card" style="display:flex;gap:16px;align-items:flex-start;"><div style="flex:1;"><h4>Rendering Mode（渲染模式）</h4><p>控制物体的透明方式，是 Standard Shader 的第一个参数：</p><table><tr><th>模式</th><th>效果</th><th>适用场景</th></tr><tr><td><strong>Opaque（不透明）</strong></td><td>默认，完全不透明</td><td>石头、木头、金属</td></tr><tr><td><strong>Cutout（镂空）</strong></td><td>硬边透明，无半透明区域</td><td>树叶、铁丝网、破布</td></tr><tr><td><strong>Transparent（透明）</strong></td><td>逼真透明，<strong>保留高光反射</strong></td><td>玻璃、透明塑料</td></tr><tr><td><strong>Fade（渐隐）</strong></td><td>连高光一起淡出</td><td>全息图、幽灵、淡入淡出动画</td></tr></table><p><em>Transparent vs Fade：Transparent 的玻璃仍有清晰的高光反射，Fade 则整体变淡包括高光。</em></p></div><img src="images/课件7/standard_rendering_mode.png" alt="Rendering Mode 属性" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;width:45%;flex-shrink:0;" onerror="this.style.display='none'"></div>
+<h4>Albedo（反照率）</h4><p>物体的<strong>基础颜色</strong>，可以选纯色或贴一张颜色贴图。也包含透明通道（Alpha），配合 Transparent 模式做透明效果。</p><img src="images/课件7/standard_albedo.png" alt="Albedo 属性" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<h4>Metallic（金属的）</h4><p>0 = 非金属（塑料、木头），1 = 纯金属（铁、金）。中间值可以做半金属质感（如生锈的铁）。可贴金属度贴图实现局部金属区域。</p><img src="images/课件7/standard_metallic.png" alt="Metallic 属性" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<h4>Smoothness（平滑度）</h4><p>0 = 粗糙漫反射（如岩石），1 = 镜面反射（如镜面金属）。决定表面反光的锐利程度。可贴光滑度贴图实现局部差异。</p><img src="images/课件7/standard_smoothness.png" alt="Smoothness 属性" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<h4>Normal Map（法线贴图）</h4><p>制造表面凹凸细节，<strong>不改变模型形状</strong>，只改变光照计算。蓝紫色图像，让平面看起来有雕刻、划痕、砖缝等纹理感。</p><img src="images/课件7/standard_normal.png" alt="Normal Map 属性" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<h4>Height Map（高度贴图）</h4><p>视差贴图，比法线贴图更有深度感（视角变化时会有位移效果），但更耗性能。灰度图，白色凸起、黑色凹陷。</p><img src="images/课件7/standard_height.png" alt="Height Map 属性" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<h4>Occlusion（遮挡）</h4><p>让缝隙和死角更暗，增强立体真实感。灰度图（AO 贴图），白色=受光、黑色=遮蔽。</p><img src="images/课件7/standard_occlusion.png" alt="Occlusion 属性" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<h4>Emission（发射）</h4><p>自发光颜色和强度，可做霓虹灯、屏幕、光芒等效果。勾选后可设置发光颜色和亮度，超过 1 的强度会触发 HDR 辉光效果。</p><img src="images/课件7/standard_emission.png" alt="Emission 属性" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<h4>Detail Mask / Map（细节遮罩）</h4><p>近距离叠加更细的纹理细节（如近看木纹更清晰）。Detail Mask 控制哪些区域显示细节贴图，Detail Map 是细节纹理本身。</p><img src="images/课件7/standard_detail.png" alt="Detail 属性" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+
+<div class="card"><h3 class="h-example">PBR 贴图效果 — 同一模型不同贴图对比</h3><p>Standard Shader 的强大之处在于<strong>贴图驱动</strong>：不需要换模型，只换贴图就能改变材质外观。一组完整的 PBR 贴图通常包含：</p><ul><li><strong>Albedo Map</strong>（颜色贴图）→ 物体本身的颜色和图案</li><li><strong>Normal Map</strong>（法线贴图）→ 表面凹凸细节（蓝紫色图）</li><li><strong>Metallic Map</strong>（金属度贴图）→ 哪些部分是金属、哪些不是</li><li><strong>Roughness/Smoothness Map</strong>（粗糙度贴图）→ 哪些部分光滑、哪些粗糙</li><li><strong>AO Map</strong>（环境光遮蔽贴图）→ 缝隙和角落的阴影</li></ul><div class="ok-box">💡 <strong>老师演示</strong>：新建一个立方体，把默认材质换成 <code>brick_floor</code>（砖地板）材质，观察立方体表面从默认灰白变成砖块纹理的过程；<strong>学生实操</strong>：用老师给的纹理包亲手做出这个材质。</div></div>
+<img src="images/课件7/pbr_compare.png" alt="PBR 贴图效果对比" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+
+<h3>课堂实操：用老师给的纹理包做 PBR 材质</h3>
+<div class="card"><ul><li><strong>第一步</strong>：把老师提供的纹理材料 <code>brick_floor_04_2k.blend</code> 拖拽到 <strong>Materials 文件夹</strong></li></ul></div>
+<img src="images/课件7/实操1拖入纹理包.png" alt="拖入纹理包" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:50%" onerror="this.style.display='none'">
+<div class="card"><ul><li><strong>第二步</strong>：在 <code>brick_floor_04_2k.blend/textures</code> 文件夹下<strong>创建新的材质</strong></li></ul></div>
+<img src="images/课件7/实操2创建材质.png" alt="创建新材质" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<div class="card"><ul><li><strong>第三步</strong>：把三个贴图依次设置给对应属性：
+<ul>
+<li><code>brick_floor_04_diff_2k.jpg</code> → <strong>反射率（Albedo）</strong></li>
+<li><code>brick_floor_04_disp_2k.png</code> → <strong>高度贴图（Height）</strong></li>
+<li><code>brick_floor_04_nor_gl_2k.exr</code> → <strong>法线贴图（Normal Map）</strong></li>
+</ul></li></ul><div class="ok-box">💡 平滑度（Smoothness）没有独立贴图槽：砖地板整体粗糙，这里不用贴图，直接在材质面板把 <strong>Smoothness 滑块</strong> 调到 <strong>0.1~0.3</strong> 即可。纹理包里的 roughness（粗糙度）贴图是做精细控制用的，本课了解即可。</div></div>
+<img src="images/课件7/实操3设置贴图属性.png" alt="设置贴图属性" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<div class="card"><ul><li><strong>第四步</strong>：选中立方体，用 <strong>Scale 工具</strong> 设置缩放：<strong>X = Z = 20、Y = 0.1</strong>，压成一块大而扁的板，再用 <strong>Move 工具</strong> 把它移到场景地面位置，作为一块大地板使用。</li></ul></div>
+<img src="images/课件7/实操4变地板.png" alt="立方体变地板" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<div class="card"><ul><li><strong>第五步</strong>：选中材质，在 Inspector 找到贴图的 <strong>Tiling（正在平铺）</strong> 属性，调整 X 和 Y 的数值（如 5~10），调到贴图在地板上看起来自然舒服即可。</li></ul><div class="ok-box">💡 <strong>Tiling（正在平铺）</strong> 控制贴图在表面上重复的次数：X、Y 数值越大贴图越密。立方体拉伸得越大，Tiling 也要相应调大，才能保持砖块大小自然。</div></div>
+<img src="images/课件7/实操5设置平铺.png" alt="设置平铺参数" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+
+<div class="card"><p><strong>免费 PBR 贴图资源网站（CC0 许可，可商用）：</strong></p><ul><li><a href="https://ambientcg.com" target="_blank">ambientCG</a> — 最大免费 CC0 PBR 贴图库，3000+ 组材质，8K 分辨率</li><li><a href="https://polyhaven.com/textures" target="_blank">Poly Haven</a> — 高质量免费 PBR 贴图 + HDRI + 3D 模型</li><li><a href="https://freepbr.com" target="_blank">FreePBR</a> — 600+ 免费 PBR 材质包</li></ul></div>
+<div class="card"><h3>其他内置 Shader</h3><table><tr><th>Shader</th><th>用途</th><th>特有属性</th></tr><tr><td>Skybox/6 Sided</td><td>六面贴图天空盒</td><td>6 张方向纹理</td></tr><tr><td>Skybox/Cubemap</td><td>立方体贴图天空盒</td><td>1 张立方体贴图</td></tr><tr><td><strong>Unlit</strong></td><td>不受光照影响，纯色或贴图（UI 底图、自发光物）</td><td>纹理、颜色</td></tr><tr><td>UI/Default</td><td>UGUI 元素专用</td><td>颜色、Sprite</td></tr><tr><td>Particles/Standard</td><td>粒子系统专用</td><td>粒子各项属性</td></tr></table><div class="contest-row"><img src="images/课件7/shader_slide24_1.png" alt="Shader 下拉菜单" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'"></div></div>
+</div></div>
+<div class="slide" data-page="7"><div class="slide-inner markable">
+<h1>天空盒 SkyBox</h1>
+<div class="card"><h3>什么是天空盒材质</h3><p>天空盒（Skybox）是罩在场景外面的<strong>背景球</strong>，决定了场景的天空背景。</p><p>我们在<strong>课件4「天空盒 SkyBox」</strong>已经讲过天空盒的基础内容（默认天空盒、如何查看），本页接着做实操。Unity 提供多种天空盒 Shader，最常用的是 <strong>Skybox/Procedural（程序化天空盒）</strong>：<strong>不依赖贴图</strong>，通过调节参数就能直接生成天空效果。</p><ul><li><strong>程序化（Procedural）</strong>：创建新项目时，场景默认的天空盒就是它——不依赖贴图，用参数直接生成天空（本页实操一）</li><li><strong>纹理化（Textured）</strong>：用真实图片（如 HDRI 全景图）做天空背景（本页实操二）</li></ul></div>
+<img src="images/课件7/基础天空盒.gif" alt="基础场景的天空盒" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<h3>课堂实操一：创建程序化天空盒（Procedural）</h3>
+<div class="card"><ul><li><strong>操作 1 · 创建新的天空盒材质</strong>：在 Project 窗口右键 → <strong>Create → Material</strong>，新建材质并命名为 <code>Sky_Procedural</code>，把 Shader 设为 <code>Skybox → Procedural（程序化）</code>，材质上出现程序化天空盒的属性面板。</li></ul></div>
+<img src="images/课件7/实操1创建天空盒材质.png" alt="创建程序化天空盒材质" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:50%" onerror="this.style.display='none'">
+<div class="card"><h3>Skybox Procedural 参数分析</h3><p>Skybox/Procedural 材质面板上有 6 个常用参数，逐个看下：</p><img src="images/课件7/skybox_procedural_panel.gif" alt="Skybox/Procedural 属性面板" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:100%;margin:0 0 8px 16px" onerror="this.style.display='none'">
+<h4><mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">Sun Size</mark>（太阳大小）</h4><p>控制天空中太阳的视觉大小。0 = 看不到太阳，1 = 太阳占据大片天空。通常设 0.04~0.1 较为自然。</p>
+<h4><mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">Sun Size Convergence</mark>（太阳收敛）</h4><p>控制太阳边缘的柔和程度：值越大，太阳边缘越锐利；值越小越柔和、过渡越自然。</p>
+<h4><mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">Atmosphere Thickness</mark>（大气厚度）</h4><p>模拟大气层的厚度。0 = 无大气（太空感），1 = 厚大气（地面感）。值越大，天空越蓝、日落色彩越浓郁。</p>
+<h4><mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">Sky Tint</mark>（天空色调）</h4><p>天空的整体颜色倾向。默认蓝色，可以改成紫色做异世界、橙红色做黄昏。</p>
+<h4><mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">Ground Color</mark>（地面颜色）</h4><p>地平线以下区域的颜色。默认深色，模拟地面反射。可以调成浅色做水面反射效果。</p>
+<h4><mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">Exposure</mark>（曝光度）</h4><p>天空整体亮度。0 = 全黑，1 = 正常亮度，>1 = 过曝。配合 Directional Light 的强度调整场景氛围。</p></div>
+<div class="card"><ul><li><strong>操作 2 · 设置新的天空盒</strong>：点击顶部导航栏 <code>Window（窗口）→ Rendering（渲染）→ Lighting（照明）</code>，切换到 <strong>Environment（环境）</strong> 标签页，把 <code>Sky_Procedural</code> 材质拖进 <strong>Skybox Material（天空盒材质）</strong> 槽，场景背景立即变成程序化天空。</li></ul></div>
+<img src="images/课件7/实操2设置场景天空盒.png" alt="设置场景天空盒" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<div class="card"><ul><li><strong>操作 3 · 修改天空盒参数看效果</strong>：选中 <code>Sky_Procedural</code> 材质，调整 <strong>Sun Size（太阳大小）</strong>、<strong>Exposure（曝光度）</strong>、<strong>Sky Tint（天空色调）</strong> 等滑块，观察场景天空随之变化，找出自己喜欢的效果。</li></ul></div>
+<img src="images/课件7/实操3调整天空盒参数.png" alt="调整天空盒参数" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<div class="ok-box">💡 Procedural 天空盒不依赖图片，调几个滑块就能换一整天色，课堂最方便。</div>
+
+<h3>课堂实操二：添加 HDRI 资源，设置真实天空盒</h3>
+<div class="card"><ul><li><strong>操作 1 · 导入 HDRI 资源</strong>：把老师提供的 <code>golden_gate_hills_2k.hdr</code> 拖进 Project 窗口的 <strong>Assets 文件夹</strong> 导入。</li></ul></div>
+<img src="images/课件7/实操4导入HDRI.png" alt="导入 HDRI" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:50%" onerror="this.style.display='none'">
+<div class="card"><ul><li><strong>操作 2 · 创建天空盒新材质</strong>：右键 → <strong>Create → Material</strong>，新建材质并命名为 <code>Skybox_HDRI</code>，把 Shader 设为 <code>Skybox → Panoramic</code>（全景）。</li></ul></div>
+<img src="images/课件7/实操5创建HDRI材质.png" alt="创建 HDRI 天空盒材质" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:50%" onerror="this.style.display='none'">
+<div class="card"><ul><li><strong>操作 3 · 设置天空盒新材质</strong>：把 <code>golden_gate_hills_2k.hdr</code> 拖到材质的 <strong>Spherical (HDR)</strong> 属性槽，材质预览上立刻出现真实天空贴图。</li></ul></div>
+<img src="images/课件7/实操6设置HDRI贴图.png" alt="设置 HDRI 贴图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<div class="card"><ul><li><strong>操作 4 · 应用到场景</strong>：打开 <code>Window（窗口）→ Rendering（渲染）→ Lighting（照明）</code>，切换到 <strong>Environment（环境）</strong> 标签页，把 <code>Skybox_HDRI</code> 材质拖进 <strong>Skybox Material（天空盒材质）</strong> 槽，场景背景立即变成真实天空。</li></ul></div>
+<img src="images/课件7/实操7应用HDRI天空盒.png" alt="应用 HDRI 天空盒" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<div class="ok-box">💡 对比：<strong>Procedural</strong> 用滑块生成天空（不需要图片），<strong>Panoramic + HDRI</strong> 用真实照片（更逼真）。两种材质都能在 Lighting 窗口直接替换。</div>
+<img src="images/课件7/实操8HDRI最终效果.png" alt="HDRI 天空盒最终效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+</div></div>
+<div class="slide" data-page="8"><div class="slide-inner markable">
+<h1>作业 — 下载免费资源美化场景</h1>
+<div class="ok-box">📌 本次作业用免费资源网站 <strong>Poly Haven</strong> 下载贴图和 HDRI，美化自己的场景：作业一给基础模型贴图，作业二给天空盒换真实天空。</div>
+<div class="card"><h3>Poly Haven 免费资源网站</h3><p>打开浏览器访问 <a href="https://polyhaven.com" target="_blank">https://polyhaven.com</a>，这是一个完全免费（CC0）的 3D 资源网站，可以下载<strong>贴图（Textures）</strong>、<strong>HDRI</strong> 和<strong>模型（Models）</strong>。</p></div>
+<img src="images/课件7/作业0访问网站.png" alt="访问 Poly Haven 网站" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+
+<div class="card"><h3>作业一：下载贴图，实现地板</h3><p>从 Poly Haven 下载一张地板类贴图（如 Wood 木头、Brick 砖块），按课堂实操的步骤做出一个地板：导入贴图 → 创建材质并设置贴图 → 立方体压扁成地面 → 调整平铺（Tiling）。</p></div>
+<div class="card"><ul><li><strong>步骤一</strong>：在网站顶部点击 <strong>浏览 贴图（Textures）</strong></li></ul></div>
+<img src="images/课件7/作业1步骤1浏览贴图.png" alt="点击浏览贴图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<div class="card"><ul><li><strong>步骤二</strong>：在贴图列表里任选一个地板类贴图资源（如 Wood 木头、Brick 砖块等）</li></ul></div>
+<img src="images/课件7/作业1步骤2选择贴图.png" alt="选择贴图资源" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<div class="card"><ul><li><strong>步骤三</strong>：进入详情页，点击 <strong>Download（下载）</strong>，分辨率任选（如 1K / 2K）。下载完成后导入 Unity，做成一块地板</li></ul></div>
+<img src="images/课件7/作业1步骤3下载贴图.png" alt="下载贴图资源" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+
+<div class="card"><h3>作业二：下载 HDRI，设置给天空盒</h3><p>从 Poly Haven 下载一张 HDRI 全景图，导入 Unity 后做成天空盒材质，应用到场景。</p></div>
+<div class="card"><ul><li><strong>步骤一</strong>：在网站顶部点击 <strong>浏览 HDRI</strong></li></ul></div>
+<img src="images/课件7/作业2步骤1浏览HDRI.png" alt="点击浏览 HDRI" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<div class="card"><ul><li><strong>步骤二</strong>：任选一个 HDRI 资源（如阳光、日落、夜景场景）</li></ul></div>
+<img src="images/课件7/作业2步骤2选择HDRI.png" alt="选择 HDRI 资源" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+<div class="card"><ul><li><strong>步骤三</strong>：进入详情页点击 <strong>Download（下载）</strong>，分辨率任选，<strong>格式选择 <code>.hdr</code></strong>。下载完成后导入 Unity，做成天空盒材质应用到场景</li></ul></div>
+<img src="images/课件7/作业2步骤3下载HDRI.png" alt="下载 HDRI 资源" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="this.style.display='none'">
+
+<div class="ok-box">💬 验收标准：地板上出现清晰贴图纹理，场景天空变为真实 HDRI 天空；能说出自己下载的分辨率并说明为什么这样选。</div>
+</div></div>
+<div class="slide" data-page="9"><div class="slide-inner end-page">
+
+<div class="end-thanks">
+    <div class="end-left">
+        <div class="end-icon">💪</div>
+        <div class="end-title">感谢各位同学的参与!</div>
+        <div class="end-sub">祝大家学习进步</div>
+    </div>
+    <div class="end-right">
+        <img src="images/tencent-docs-qrcode.png" alt="腾讯文档二维码" onerror="this.style.display='none'" onclick="zoomQR(this)" style="cursor:pointer">
+        <p>扫码查看作业完成情况</p>
+        <a href="https://docs.qq.com/sheet/DV2tKZ2pSTUNwUFpX?tab=bo2p4o" target="_blank" class="end-link">📊 查看作业完成情况文档</a>
+    </div>
+</div>
+<a href="课件9_Fbx导入与脚本入门.html" class="end-next-link">📖 下一节：课件8 · Fbx模型导入 →</a>
+</div></div>
+</div>
+</div>
+</div>
+
+<div class="search-panel" id="searchPanel">
+    <div class="search-panel-header">
+        <span>🔍 全局搜索</span>
+        <button class="search-panel-close" onclick="closeSearch()">✕</button>
+    </div>
+    <input class="search-input" id="searchInput" placeholder="输入关键词搜索..." oninput="doSearch()" autocomplete="off">
+    <div class="search-results" id="searchResults"></div>
+</div>
+
+<div class="help-overlay" id="helpOverlay">
+    <div class="help-header"><span>📖 使用帮助</span><button class="help-close-btn" onclick="closeHelp()">✕</button></div>
+    <div class="help-body">
+            <h3>⌨️ 快捷键</h3>
+            <table><tr><td><code>Ctrl+K</code></td><td>打开搜索</td></tr><tr><td><code>← →</code></td><td>上一页 / 下一页</td></tr><tr><td><code>Esc</code></td><td>关闭弹窗</td></tr></table>
+            <h3>🎯 导航</h3>
+            <p>左侧边栏点击切换页面；底部圆点快速跳转；进度条显示学习完成度。</p>
+            <h3>💻 在线编辑器</h3>
+            <p>顶部「在线编辑器」下拉提供菜鸟教程、Tutorialspoint、DotNetFiddle 三个在线 C# 编译器。</p>
+            <h3>🌙 主题与字号</h3>
+            <p>深色/浅色切换；A- / A+ 调整字号；刷新后保留设置。</p>
+            <h3>🔍 搜索</h3>
+            <p>支持中英文关键词，匹配结果高亮显示，点击跳转到对应页面。</p>
+        </div>
+</div>
+
+<div class="catalog-panel" id="catalogPanel">
+    <div class="catalog-header">
+        <span>📚 课件目录</span>
+        <button class="catalog-close-btn" onclick="closeCatalog()">✕</button>
+    </div>
+    <div class="catalog-list" id="catalogList"></div>
+</div>
+
+<div class="qr-zoom-overlay" id="qrZoom" onclick="closeZoom()">
+    <img id="qrZoomImg" src="" alt="二维码放大">
+</div>
+
+<div class="nav-buttons">
+    <button class="nav-btn" id="prevBtn" onclick="goSlide(-1)">◀ 上一页</button>
+    <button class="nav-btn" id="nextBtn" onclick="goSlide(1)">下一页 ▶</button>
+</div>
+<div class="progress-dots" id="progressDots"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+window.__CATALOG__ = [{"file": "课件1_认识Unity与课程介绍.html", "label": "课件1 · 认识Unity与课程介绍"}, {"file": "课件2_注册与安装软件.html", "label": "课件2 · 注册与安装软件"}, {"file": "课件3_Unity引擎概览.html", "label": "课件3 · Unity引擎概览"}, {"file": "课件4_场景与物体.html", "label": "课件4 · 场景与物体"}, {"file": "课件5_移动视野与物体.html", "label": "课件5 · 移动视野与物体"}, {"file": "课件6_旋转缩放多选.html", "label": "课件6 · 旋转缩放多选"}, {"file": "课件7_网格与材质.html", "label": "课件7 · 网格与材质"}, {"file": "课件8_C#核心语法.html", "label": "课件8 · C#核心语法"}, {"file": "课件9_Fbx导入与脚本入门.html", "label": "课件9 · Fbx导入与脚本入门"}, {"file": "课件10_键盘控制移动.html", "label": "课件10 · 键盘控制移动"}, {"file": "课件11_变量类型与可见性.html", "label": "课件11 · 变量类型与可见性"}, {"file": "课件12_访问其他游戏对象.html", "label": "课件12 · 访问其他游戏对象"}, {"file": "课件13_刚体与碰撞体.html", "label": "课件13 · 刚体与碰撞体"}, {"file": "课件14_受力运动.html", "label": "课件14 · 受力运动"}, {"file": "课件15_主控脚本与随机生成.html", "label": "课件15 · 主控脚本与随机生成"}, {"file": "课件16_中文显示与打包.html", "label": "课件16 · 中文显示与打包"}, {"file": "课件17_FPS场景玩家武器.html", "label": "课件17 · FPS场景玩家武器"}, {"file": "课件18_移动射击.html", "label": "课件18 · 移动射击"}, {"file": "课件19_跳跃与穿墙.html", "label": "课件19 · 跳跃与穿墙"}, {"file": "课件20_场地美化与免费资源.html", "label": "课件20 · 场地美化与免费资源"}, {"file": "课件21_敌人简易跟踪.html", "label": "课件21 · 敌人简易跟踪"}, {"file": "课件22_AI敌人巡逻.html", "label": "课件22 · AI敌人巡逻"}, {"file": "课件23_敌人动画切换.html", "label": "课件23 · 敌人动画切换"}, {"file": "课件24_启动页面.html", "label": "课件24 · 启动页面"}, {"file": "课件25_玩家血条与被接触攻击.html", "label": "课件25 · 玩家血条与被接触攻击"}, {"file": "课件26_死亡与游戏管理器.html", "label": "课件26 · 死亡与游戏管理器"}, {"file": "课件27_消灭敌人与孵化器.html", "label": "课件27 · 消灭敌人与孵化器"}, {"file": "课件28_粒子系统与随机生成.html", "label": "课件28 · 粒子系统与随机生成"}, {"file": "课件29_拾取物品.html", "label": "课件29 · 拾取物品"}, {"file": "课件30_更换枪械.html", "label": "课件30 · 更换枪械"}, {"file": "课件31_修改动画状态机.html", "label": "课件31 · 修改动画状态机"}, {"file": "课件32_NPC对话.html", "label": "课件32 · NPC对话"}, {"file": "课件33_NPC对话进阶.html", "label": "课件33 · NPC对话进阶"}, {"file": "课件34_任务队列.html", "label": "课件34 · 任务队列"}];
+let LESSON_LABEL='';(function(){
+  let cur=window.location.pathname.split('/').pop();
+  let items=window.__CATALOG__||[];
+  for(let i=0;i<items.length;i++){if(items[i].file===cur){LESSON_LABEL=items[i].label;break}}
+  if(!LESSON_LABEL)LESSON_LABEL=document.title.split(' — ')[0]||'';
+})();
+
+// ========== 移动端 "更多" 菜单 ==========
+function toggleMobileMore(){document.getElementById('mobileMoreMenu').classList.toggle('open')}
+function mobileAction(act){
+  document.getElementById('mobileMoreMenu').classList.remove('open');
+  if(act==='ide'){let m=document.getElementById('ideMenu');if(m)m.classList.add('show')}
+  else if(act==='fontDown')changeFont(-1);
+  else if(act==='fontUp')changeFont(1);
+  else if(act==='search')openSearch();
+  else if(act==='help')toggleHelp();
+}
+document.addEventListener('click',function(e){
+  let mm=document.getElementById('mobileMoreMenu');
+  if(mm&&mm.classList.contains('open')&&!e.target.closest('.mobile-more'))mm.classList.remove('open');
+});
+// 点击移动端信息条跳转下一页
+function mobileInfoTap(){goSlide(1)}
+
+// ========== localStorage ==========
+const LS=(k,d)=>localStorage.getItem(k)||d;
+const LSset=(k,v)=>localStorage.setItem(k,v);
+
+// ========== 主题 ==========
+// ========== 在线编辑器下拉 ==========
+document.addEventListener('DOMContentLoaded',function(){
+    var ideBtn=document.getElementById('ideBtn');
+    if(ideBtn){
+        ideBtn.onclick=function(e){
+            e.stopPropagation();
+            document.getElementById('ideMenu').classList.toggle('show');
+        };
+    }
+    document.querySelectorAll('.dropdown-item').forEach(function(el){
+        el.onclick=function(e){
+            e.preventDefault();
+            window.open(this.dataset.url,'_blank');
+            document.getElementById('ideMenu').classList.remove('show');
+        };
+    });
+    document.addEventListener('click',function(){
+        document.getElementById('ideMenu').classList.remove('show');
+    });
+});
+
+// ========== 主题 ==========
+if(LS('theme','dark')==='light')document.body.classList.add('light');
+function toggleTheme(){
+    const il=document.body.classList.toggle('light');
+    LSset('theme',il?'light':'dark');
+    document.getElementById('themeBtn').textContent=il?'☀️浅色':'🌙深色';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('themeBtn').textContent=document.body.classList.contains('light')?'☀️浅色':'🌙深色';
+    let mi=document.getElementById('mobileInfo');
+    if(mi){
+        mi.querySelector('.mi-lesson').textContent=LESSON_LABEL;
+        mi.querySelector('.mi-page').textContent='第1页 / 共'+total+'页';
+    }
+});
+
+// ========== 字号 ==========
+const FONT_SIZES=['xs','sm','md','lg','xl'];
+let fontIdx=FONT_SIZES.indexOf(LS('font','md'));
+if(fontIdx<0)fontIdx=2;
+if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+function changeFont(d){
+    document.body.classList.remove('font-'+FONT_SIZES[fontIdx]);
+    fontIdx=Math.max(0,Math.min(FONT_SIZES.length-1,fontIdx+d));
+    if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+    LSset('font',FONT_SIZES[fontIdx]);
+}
+
+// ========== 幻灯片 ==========
+let slides=document.querySelectorAll('.slide,.cover'),
+    navLinks=document.querySelectorAll('.nav-link'),
+    curr=0,total=12,contentTotal=10;
+
+// 进度圆点
+// 侧边栏点击
+navLinks.forEach((l,i)=>l.addEventListener('click',e=>{e.preventDefault();showSlide(i);}));
+let dotsHtml='';
+for(let i=0;i<total;i++)dotsHtml+=`<span class="progress-dot" data-idx="${i}" onclick="showSlide(${i})"></span>`;
+document.getElementById('progressDots').innerHTML=dotsHtml;
+let dots=document.querySelectorAll('.progress-dot');
+
+function showSlide(idx){
+    if(idx<0||idx>=total)return;
+    slides.forEach((s,i)=>s.classList.toggle('active',i===idx));
+    navLinks.forEach((l,i)=>l.classList.toggle('active',i===idx));
+    dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
+    curr=idx;
+    let cp=Math.max(0,Math.min(idx,contentTotal));
+    document.getElementById('progressFill').style.width=(cp/contentTotal*100)+'%';
+    document.getElementById('progressText').textContent=cp+' / '+contentTotal;
+    let mi=document.getElementById('mobileInfo');
+    if(mi){
+        mi.querySelector('.mi-lesson').textContent=LESSON_LABEL;
+        mi.querySelector('.mi-page').textContent='第'+(idx+1)+'页 / 共'+total+'页';
+    }
+    document.getElementById('mainArea').scrollTop=0;
+    document.querySelectorAll('.nav-status')[idx]?.classList.add('seen');
+    updateNav();
+}
+function goSlide(d){ showSlide(curr+d); }
+function updateNav(){
+    document.getElementById('prevBtn').disabled=curr===0;
+    document.getElementById('nextBtn').disabled=curr===total-1;
+    LSset('page_'+window.location.pathname.split('/').pop(), curr);
+}
+
+// 键盘
+document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')goSlide(1);
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')goSlide(-1);
+    if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openSearch();}
+    if(e.key==='Escape'){closeSearch();closeHelp();closeZoom();closeCatalog();}
+});
+
+// ========== 搜索 ==========
+function openSearch(){document.getElementById('searchPanel').classList.add('open');document.getElementById('searchInput').focus();document.getElementById('searchInput').value='';document.getElementById('searchResults').innerHTML=''}
+function closeSearch(){document.getElementById('searchPanel').classList.remove('open')}
+function toggleHelp(){document.getElementById('helpOverlay').classList.toggle('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+// 课件目录
+function toggleCatalog(){
+    let p=document.getElementById('catalogPanel');
+    if(!p.classList.contains('open')){loadCatalog();p.classList.add('open')}else{p.classList.remove('open')}
+}
+function closeCatalog(){document.getElementById('catalogPanel').classList.remove('open')}
+function loadCatalog(){
+    let c=document.getElementById('catalogList');
+    if(c.children.length>0)return;
+    let current=window.location.pathname.split('/').pop();
+    let items=window.__CATALOG__||[];
+    if(!items.length){c.innerHTML='<div class="catalog-item" style="color:var(--text-muted)">暂无课件</div>';return}
+    items.forEach(item=>{
+        let a=document.createElement('a');a.className='catalog-item';a.href=encodeURIComponent(item.file);
+        if(item.file===current)a.classList.add('current');
+        a.innerHTML=`<span class="catalog-num">${item.label.split(' · ')[0]}</span><span>${item.label.split(' · ').slice(1).join(' · ')||item.label}</span>`;
+        c.appendChild(a);
+    });
+}
+function zoomQR(img){document.getElementById('qrZoomImg').src=img.src;document.getElementById('qrZoom').classList.add('show')}
+function closeZoom(){document.getElementById('qrZoom').classList.remove('show')}
+function doSearch(){
+    let q=document.getElementById('searchInput').value,qLower=q.toLowerCase(),c=document.getElementById('searchResults');
+    c.innerHTML='';if(q.length<2)return;
+    let r=[];
+    slides.forEach((s,i)=>{
+        let raw=s.textContent,lower=raw.toLowerCase(),idx=lower.indexOf(qLower);
+        if(idx<0)return;
+        let start=Math.max(0,idx-15),end=Math.min(raw.length,idx+q.length+30);
+        let ex=raw.substring(start,end);
+        if(start>0)ex='...'+ex;
+        if(end<raw.length)ex=ex+'...';
+        // 高亮匹配词
+        let re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+        ex=ex.replace(re,'<mark>$1</mark>');
+        r.push({idx:i,excerpt:ex,slide:s});
+    });
+    r.slice(0,20).forEach(x=>{
+        let a=document.createElement('a');a.className='search-item';a.href='#';
+        let title=navLinks[x.idx]?.textContent.replace(/^\d+\.\s*/,'')||('页面'+(x.idx+1));
+        a.innerHTML=`<div class="sr-lesson">${x.idx+1}. ${title}</div><div class="sr-text">${x.excerpt}</div>`;
+        a.onclick=e=>{e.preventDefault();showSlide(x.idx);closeSearch();};
+        c.appendChild(a);
+    });
+}
+
+// ========== 复制 ==========
+function copyCode(cid,btn){
+    let code=document.getElementById(cid).textContent;
+    navigator.clipboard.writeText(code).then(()=>{
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    }).catch(()=>{
+        // fallback
+        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
+        document.execCommand('copy');document.body.removeChild(ta);
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    });
+}
+
+// ========== 初始化 ==========
+hljs.highlightAll();
+// 折叠面板
+function toggleFold(btn){
+    btn.classList.toggle('open');
+    let content=btn.nextElementSibling;
+    if(!content||!content.classList.contains('fold-content')) content=content.nextElementSibling;
+    if(content&&content.classList.contains('fold-content')) content.classList.toggle('show');
+}
+let savedPage=parseInt(LS('page_'+window.location.pathname.split('/').pop(),'0'));
+if(savedPage>0&&savedPage<total)showSlide(savedPage);else showSlide(0);
+</script>
+</body>
+</html>
