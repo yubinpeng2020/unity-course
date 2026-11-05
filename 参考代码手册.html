@@ -471,7 +471,7 @@ public class EnemyControl : MonoBehaviour
     <span class="ftitle">敌人攻击参数（已修正）</span>
     <button class="copy-btn" onclick="copyCode(this)">复制</button>
   </div>
-  <p class="fdesc">【修正 2025 PPT 的 bug】原 PPT 漏声明 lastAttackTime 字段，导致编译错误，已补上。CanAttack 控制攻击间隔，避免每帧扣血。</p>
+  <p class="fdesc">【修正 2025 PPT 的 bug】原 PPT 漏声明 lastAttackTime 字段，导致编译错误，已补上。TryAttack 控制攻击间隔，避免每帧扣血；名字用 Try 开头，是因为它在判断之外还会把这次攻击的时间记下来（查询带副作用）。</p>
   <pre><code class="language-csharp">using UnityEngine;
 
 public class EnemyData : MonoBehaviour
@@ -480,7 +480,7 @@ public class EnemyData : MonoBehaviour
     public float contactAttackInterval = 1f;  // 攻击间隔（秒）
     private float lastAttackTime = -999f;     // 上次攻击时间（已补声明）
 
-    public bool CanAttack()
+    public bool TryAttack()
     {
         if (Time.time - lastAttackTime &gt;= contactAttackInterval)
         {
@@ -518,8 +518,8 @@ public class HealthChange : MonoBehaviour
     {
         if (hit.collider.CompareTag("Enemy"))
         {
-            EnemyData enemyData = hit.gameObject.GetComponent&lt;EnemyData&gt;();
-            if (enemyData != null &amp;&amp; enemyData.CanAttack())
+            EnemyData enemyData = hit.collider.GetComponentInParent&lt;EnemyData&gt;();
+            if (enemyData != null &amp;&amp; enemyData.TryAttack())
             {
                 TakeDamage(enemyData.attackPower);
             }
