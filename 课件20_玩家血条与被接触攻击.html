@@ -364,7 +364,7 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <a href="#" class="nav-link" data-page="9"><span class="nav-status"></span>7. 血条填充 · FillImageHealth</a>
 <a href="#" class="nav-link" data-page="10"><span class="nav-status"></span>8. 生命图标 · HealthIcon</a>
 <a href="#" class="nav-link" data-page="11"><span class="nav-status"></span>9. 摆放验收 · 让血条待在左下角</a>
-<a href="#" class="nav-link" data-page="12"><span class="nav-status"></span>10. 敌人准备 · 碰撞体与 Enemy 标签</a>
+<a href="#" class="nav-link" data-page="12"><span class="nav-status"></span>10. 敌人准备 · 碰撞体与 Player 标签</a>
 <a href="#" class="nav-link" data-page="13"><span class="nav-status"></span>11. 敌人攻击力 · EnemyData</a>
 <a href="#" class="nav-link" data-page="14"><span class="nav-status"></span>12. 血条原理 · 只改一个 fillAmount</a>
 <a href="#" class="nav-link" data-page="15"><span class="nav-status"></span>13. 玩家扣血 · HealthChange</a>
@@ -423,7 +423,7 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <h1>本节学习目标</h1>
 <img src="images/课件20/血条效果.gif" alt="敌人扑上来咬一口，血条跟着缩短" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>本课要做出来的效果</h3><p>前面十几课做的全是<strong>场景里的 3D 物体</strong>：有位置、有大小，相机看得见才看得见。这一课第一次碰<strong>游戏 UI</strong>——贴在屏幕上的东西。</p><p>做完的样子：屏幕左下角一条血条，玩家跑遍地图它都待在原地；敌人扑上来咬一口，红条就短一截，冷却期间不会再掉。</p></div>
-<div class="goal-grid"><div class="goal-card"><span class="goal-icon">➕</span><span class="goal-text">会建画布：右键 <strong>UI → 画布</strong>，认得出一起冒出来的<strong>事件系统</strong></span></div><div class="goal-card"><span class="goal-icon">🖼️</span><span class="goal-text">搞懂<strong>画布（Canvas）</strong>是什么，为什么 UI 不能直接摆在场景里</span></div><div class="goal-card"><span class="goal-icon">📐</span><span class="goal-text">设好<strong>画布缩放</strong>，换分辨率血条不变形、不跑出屏幕</span></div><div class="goal-card"><span class="goal-icon">🧭</span><span class="goal-text">看懂<strong>矩形变换</strong>与<strong>锚点</strong>，知道血条为什么贴左下角</span></div><div class="goal-card"><span class="goal-icon">🩸</span><span class="goal-text">搭出血条三段：<strong>半透明底板 + 红色填充 + 生命图标</strong></span></div><div class="goal-card"><span class="goal-icon">🎚️</span><span class="goal-text">明白血条长短只看一个数：<code>fillAmount</code>（0～1）</span></div><div class="goal-card"><span class="goal-icon">💥</span><span class="goal-text">给敌人加<strong>碰撞体</strong>与 <code>Enemy</code> 标签，接触时按<strong>攻击力</strong>扣血</span></div><div class="goal-card"><span class="goal-icon">📝</span><span class="goal-text">作业：血量数字 + 低血时整条血条闪烁</span></div></div>
+<div class="goal-grid"><div class="goal-card"><span class="goal-icon">➕</span><span class="goal-text">会建画布：右键 <strong>UI → 画布</strong>，认得出一起冒出来的<strong>事件系统</strong></span></div><div class="goal-card"><span class="goal-icon">🖼️</span><span class="goal-text">搞懂<strong>画布（Canvas）</strong>是什么，为什么 UI 不能直接摆在场景里</span></div><div class="goal-card"><span class="goal-icon">📐</span><span class="goal-text">设好<strong>画布缩放</strong>，换分辨率血条不变形、不跑出屏幕</span></div><div class="goal-card"><span class="goal-icon">🧭</span><span class="goal-text">看懂<strong>矩形变换</strong>与<strong>锚点</strong>，知道血条为什么贴左下角</span></div><div class="goal-card"><span class="goal-icon">🩸</span><span class="goal-text">搭出血条三段：<strong>半透明底板 + 红色填充 + 生命图标</strong></span></div><div class="goal-card"><span class="goal-icon">🎚️</span><span class="goal-text">明白血条长短只看一个数：<code>fillAmount</code>（0～1）</span></div><div class="goal-card"><span class="goal-icon">💥</span><span class="goal-text">给敌人写<strong>攻击脚本</strong>：够近 + 冷却好了，就按<strong>攻击力</strong>咬掉玩家血量</span></div><div class="goal-card"><span class="goal-icon">📝</span><span class="goal-text">作业：血量数字 + 低血时整条血条闪烁</span></div></div>
 </div></div>
 <div class="slide" data-page="3"><div class="slide-inner markable">
 <h1>添加画布 · 右键 UI → 画布</h1>
@@ -603,12 +603,12 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <div class="ok-box">💡 血条大小不合适、位置偏了，<strong>不要改三个子对象</strong>，改 <code>PlayerHealth</code> 一个的宽度和位置就行——底板和红条是拉伸的，会跟着一起变。这就是套一层父对象的好处。</div>
 </div></div>
 <div class="slide" data-page="12"><div class="slide-inner markable">
-<h1>敌人准备 · 碰撞体与 Enemy 标签</h1>
-<div class="card"><p>血条搭好了，可它一直是满的——因为还没人扣血。扣血靠「撞」：敌人扑到玩家身上咬一口。要让 Unity 知道「碰上了」，敌人身上必须有两样东西：</p><ul><li><strong>碰撞体（Collider）</strong>：告诉引擎「我占了多大一块地方」。没有它，两个东西只会互相穿过去，不算碰上</li><li><strong>标签（Tag）= Enemy</strong>：玩家被撞时得认出「撞我的是敌人，不是房子」，靠的就是标签</li></ul></div>
+<h1>敌人准备 · 碰撞体与 Player 标签</h1>
+<div class="card"><p>血条搭好了，可它一直是满的——因为还没人扣血。这一课让动物<strong>扑到你身边咬一口</strong>。动手之前先确认两样东西：</p><ul><li><strong>碰撞体（Collider）</strong>：动物的身子是「实心」的，玩家撞不进动物里，也不会和它叠在一起</li><li><strong>Player 标签（Tag）</strong>：下一节的代码要让动物<strong>自己找到玩家</strong>，靠的就是玩家身上这个标签</li></ul></div>
 <div class="card"><h3>① 六个动物的碰撞体早就有了</h3><p>不用新加——<strong>课件16</strong> 给动物建「空壳」的时候，就把 <strong>盒型碰撞体（Box Collider）</strong> 一起加上去了，六种动物（<code>NewCat</code>、<code>NewChiken</code>、<code>NewCow</code>、<code>NewElephent</code>、<code>NewLLama</code>、<code>NewPig</code>）全都有，边框也照着身子拖过。这一课只做<strong>确认</strong>。</p><ul><li><strong>确认</strong>：双击预制体进去，选中<strong>最外层那个空壳</strong>（跟 <code>AnimalRoam</code> 这些脚本同一层，不是它里面的模型），检查器里能看到<strong>盒型碰撞体</strong>，场景里那圈绿框裹着动物</li><li><strong>万一被删了</strong>：添加组件 → 盒型碰撞体（Box Collider），点「编辑碰撞体（Edit Collider）」把绿框拖到贴合——课件16 做过的动作</li></ul><div class="step-img"><img src="images/课件20/敌人1-盒型碰撞体.png" alt="六个动物预制体的空壳上都有盒型碰撞体，绿框裹住动物" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
-<div class="card"><h3>② 千万别勾 Is Trigger</h3><p>盒型碰撞体上有一个 <strong>是触发器（Is Trigger）</strong> 勾选框，<strong>不要勾</strong>。</p><p>触发器只是「穿过的时候通知一声」，<strong>不产生真正的碰撞</strong>——玩家身上那个「撞到东西才响」的回调（<code>OnControllerColliderHit</code>）根本不会被调用，撞上去一点血都不掉，还查不出原因。</p></div>
-<div class="card"><h3>③ 新建并设置 Enemy 标签</h3><ol><li><strong>先新建标签</strong>：检查器顶部 <strong>标签（Tag）</strong> 下拉 → <strong>添加标签…（Add Tag…）</strong>，在标签管理器里点 <strong>+</strong>，输入 <code>Enemy</code> 回车</li><li><strong>再选上它</strong>：<strong>还留在预制体里</strong>（先别关），选中那个空壳，把<strong>标签</strong>下拉选成 <code>Enemy</code>；六个预制体各设一遍——只设一只的话，另外五只扑上来不掉血</li></ol><p><code>Enemy</code> <strong>不是 Unity 自带的标签</strong>——自带的只有 <code>Untagged</code>、<code>Player</code>、<code>MainCamera</code> 那几个，下拉里原本没有 Enemy，必须自己建，否则代码里的 <code>CompareTag("Enemy")</code> 永远不成立。</p><div class="step-img"><img src="images/课件20/敌人2-Enemy标签.png" alt="在标签管理器新建 Enemy 标签，并把敌人的标签选为 Enemy" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
-<div class="ok-box">⚠️ <strong>预制体</strong>和<strong>场景</strong>是两个地方，改哪边结果不一样：<br>· <strong>双击预制体进去改</strong>（上面两步就是这么做的）：六个各改一次，场景里那几只、以及以后生成中心刷出来的，<strong>全都跟着变</strong>，不用管覆盖。<br>· <strong>在场景里点中那只动物改</strong>：那只是这一只的「覆盖（Overrides）」，预制体本身没动——要在检查器顶部点 <strong>覆盖（Overrides）→ 应用全部（Apply All）</strong> 才生效——它会把这只身上的改动一起写回预制体。否则只有你手上这一只带标签，其它五只扑上来不掉血。</div>
+<div class="card"><h3>② 千万别勾 Is Trigger</h3><p>盒型碰撞体上有一个 <strong>是触发器（Is Trigger）</strong> 勾选框，<strong>不要勾</strong>。</p><p>勾上之后这个碰撞体就不再「挡人」了：玩家会直接从动物身子里穿过去，两只叠在一起，看起来像动物根本没有实体。</p></div>
+<div class="card"><h3>③ 确认玩家身上有 Player 标签</h3><ol><li>在层级（Hierarchy）里选中 <code>Player</code></li><li>看检查器最上方的 <strong>标签（Tag）</strong> 下拉，是不是 <code>Player</code>；不是就选成 <code>Player</code></li></ol><p><code>Player</code> 是 Unity <strong>自带</strong>的标签，不用新建，下拉里直接有。<strong>名字和标签是两回事</strong>：对象可以叫 Player 而标签仍是 <code>Untagged</code>，代码只认标签、不认名字。</p><p>为什么现在要确认它：下一节 <code>EnemyData</code> 里那句 <code>FindGameObjectWithTag("Player")</code> 就是靠它找到你——标签不对，动物找不到玩家，血永远不会掉。课件14 让动物找玩家，用的也是同一个标签。</p><div class="step-img"><img src="images/课件20/玩家0-Player标签.png" alt="选中 Player，检查器顶部的标签下拉选为 Player" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="ok-box">⚠️ <strong>预制体</strong>和<strong>场景</strong>是两个地方，改哪边结果不一样：<br>· <strong>双击预制体进去改</strong>（上面两步就是这么做的）：六个各改一次，场景里那几只、以及以后生成中心刷出来的，<strong>全都跟着变</strong>，不用管覆盖。<br>· <strong>在场景里点中某只动物改</strong>：那只是这一只的「覆盖（Overrides）」，预制体本身没动——要在检查器顶部点 <strong>覆盖（Overrides）→ 应用全部（Apply All）</strong> 才写回预制体。<br>· ③ 改的是场景里的 <code>Player</code>，它不是预制体，直接改就生效。</div>
 </div></div>
 <div class="slide" data-page="13"><div class="slide-inner markable">
 <h1>敌人攻击力 · EnemyData</h1>
@@ -620,26 +620,40 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 
 public class EnemyData : MonoBehaviour
 {
-    public float attackPower = 10f;             // 每次咬掉多少血
-    public float contactAttackInterval = 1f;    // 两次攻击至少隔几秒
+    public float attackPower = 10f;      // 每次咬掉多少血
+    public float attackInterval = 1f;    // 两次攻击至少隔几秒
+    public float attackRange = 2.2f;     // 离玩家多近算咬到
 
-    private float lastAttackTime;               // 上一次攻击的时刻
+    private float lastAttackTime;        // 上一次攻击的时刻
+    private HealthChange player;         // 玩家身上的扣血脚本
 
-    // 试一次：冷却好了就记下这一刻、返回 true；还没好返回 false
-    public bool TryAttack()
+    void Start()
     {
-        float currentTime = Time.time;
-        if (currentTime - lastAttackTime &gt;= contactAttackInterval)
+        // 开局找一次玩家（Find 比较慢，别放到 Update 里每帧找）
+        GameObject find = GameObject.FindGameObjectWithTag(&quot;Player&quot;);
+        if (find != null) player = find.GetComponent&lt;HealthChange&gt;();
+    }
+
+    void Update()
+    {
+        if (player == null) return;      // 找不到玩家就什么都不做，避免报空引用
+
+        // 只在水平面上量距离：高度差不算，上下坡才不会误判
+        Vector3 me = transform.position;          me.y = 0f;
+        Vector3 you = player.transform.position;  you.y = 0f;
+
+        // 够近 + 冷却好了 → 咬一口
+        if (Vector3.Distance(me, you) &lt;= attackRange
+            &amp;&amp; Time.time - lastAttackTime &gt;= attackInterval)
         {
-            lastAttackTime = currentTime;
-            return true;
+            lastAttackTime = Time.time;
+            player.TakeDamage(attackPower);
         }
-        return false;
     }
 }</code></pre>
 </div>
-<div class="card"><h3>② 逐段看</h3><ol><li><strong>两个 public 字段</strong>：<code>public</code> 才能在检查器里看到、也才能被别的脚本读到。攻击力决定一口掉多少血，间隔决定多久能咬第二口。</li><li><strong><code>lastAttackTime</code> 为什么是 private</strong>：它是内部记账的时间，不需要给人调，所以不写 public。</li><li><strong><code>Time.time</code></strong>：游戏从开始跑到现在的秒数，一直在涨。</li><li><strong>为什么一定要有间隔</strong>：碰撞回调是<strong>每一帧都在响</strong>的——玩家贴着敌人站一秒，就是几十次回调。没有间隔，血条一瞬间就空了。</li><li><strong>为什么名字叫 <code>TryAttack()</code></strong>：它不只是「问一句能不能」，能咬就顺手把时间记下来——所以每调用一次都可能改变状态，<strong>同一帧里别调两次</strong>。C# 里这种「试一次、可能改状态」的方法习惯用 <code>Try</code> 开头，别叫成 <code>CanAttack</code>：那样名字看着像只读，实际却把冷却吃掉了。</li></ol></div>
-<div class="ok-box">💡 调难度只改这两个数：攻击力 20 + 间隔 2 秒 = 疼但慢；攻击力 5 + 间隔 0.5 秒 = 不疼但粘人。玩家脚本一个字都不用动。<br>本课玩家<strong>没有防御力</strong>，所以攻击力就是实际掉的血；以后要是加了护甲，扣血公式写在玩家的 <code>TakeDamage</code> 里，不用回头改敌人。</div>
+<div class="card"><h3>② 逐段看</h3><ol><li><strong>三个 public 字段</strong>：<code>public</code> 才能在检查器里看到、也才能被别的脚本读到。攻击力决定一口掉多少血，间隔决定多久能咬第二口，范围决定站多远就算咬到。</li><li><strong><code>lastAttackTime</code> 为什么是 private</strong>：它是内部记账的时间，不需要给人调，所以不写 public。</li><li><strong><code>Time.time</code></strong>：游戏从开始跑到现在的秒数，一直在涨。</li><li><strong>为什么一定要有间隔</strong>：<code>Update</code> 是<strong>每一帧都在跑</strong>的——没有间隔，贴着你的那一秒就是几十次扣血，血条一瞬间就空。</li><li><strong><code>Start()</code> 里找一次玩家</strong>：<code>FindGameObjectWithTag("Player")</code> 要遍历整个场景，比较慢（课件14 说过），开局找一次存进变量就行，别放进 <code>Update</code> 里每帧找；万一没找到，就先空着，<code>Update</code> 开头那句 <code>if (player == null) return;</code> 会兜住，不至于一开局就崩。</li><li><strong>为什么只在水平面量距离</strong>：两边 <code>y</code> 都置 0 再算——上下坡、站在坎上时，高度差不会让它误判成「离得远」。<code>AnimalFollow</code> 用的也是这个做法。</li><li><strong>为什么是敌人去调 <code>player.TakeDamage()</code></strong>：谁攻击谁发起。玩家那边只提供一个「我扣血了」的接口，敌人够近就调一下；以后加陷阱、毒圈、子弹，也是调同一个方法，玩家脚本一个字不用改。</li></ol></div>
+<div class="card"><h3>③ 攻击范围为什么填 2.2</h3><p>课件17 的跟随是「走到离你 2 米就停」，动物根本不会贴到你身上。所以攻击范围要<strong>略大于 2</strong>——填 <code>2.2</code>，动物停在那圈上就已经能咬到你了。</p><p>这也是大多数游戏的做法：判定用「范围」而不是「模型真的碰上」，看着像被咬到就够了。想让动物必须撞上来才掉血，把范围调到 <code>1.5</code> 以下即可——但那样只有你主动凑过去才会掉血。</p></div><div class="ok-box">💡 调难度只改这几个数：攻击力 20 + 间隔 2 秒 = 疼但慢；攻击力 5 + 间隔 0.5 秒 = 不疼但粘人。玩家脚本一个字都不用动。<br>本课玩家<strong>没有防御力</strong>，所以攻击力就是实际掉的血；以后要是加了护甲，扣血公式写在玩家的 <code>TakeDamage</code> 里，不用回头改敌人。</div>
 </div></div>
 <div class="slide" data-page="14"><div class="slide-inner markable">
 <h1>血条原理 · 只改一个 fillAmount</h1>
@@ -662,20 +676,7 @@ public class HealthChange : MonoBehaviour
         UpdateHealth();
     }
 
-    // 玩家用角色控制器撞到东西时触发（不需要刚体）
-    void OnControllerColliderHit(ControllerColliderHit hit)
-    {
-        if (hit.collider.CompareTag("Enemy"))
-        {
-            EnemyData enemy = hit.collider.GetComponentInParent&lt;EnemyData&gt;();
-            if (enemy != null &amp;&amp; enemy.TryAttack())
-            {
-                TakeDamage(enemy.attackPower);
-            }
-        }
-    }
-
-    // 扣血：扣完立刻刷新血条
+    // 扣血：敌人咬到时会调这个方法，扣完立刻刷新血条
     public void TakeDamage(float damage)
     {
         CurrentHealth = CurrentHealth - damage;
@@ -693,7 +694,7 @@ public class HealthChange : MonoBehaviour
     }
 }</code></pre>
 </div><p>血条相关的变量只有三个，先记住它们各自是什么、谁给它值：</p><table><thead><tr><th>变量</th><th>是什么</th><th>值从哪来</th></tr></thead><tbody><tr><td><code>MaxHealth</code></td><td>满血是多少</td><td>脚本里默认 <code>100</code>，检查器里也能改</td></tr><tr><td><code>CurrentHealth</code></td><td>现在还剩多少血</td><td><code>Start()</code> 里先设成满血，被撞时减</td></tr><tr><td><code>healthFillImage</code></td><td>红条那个 <code>Image</code> 组件</td><td>检查器里把 <code>FillImageHealth</code> 拖进槽位</td></tr></tbody></table></div>
-<div class="card"><p>整段脚本四十来行，跟血条长短真正有关的只有<strong>一句</strong>。血条变短这件事 Unity 已经替我们算好了：只要给<strong>填充总数（fillAmount）</strong> 一个 0～1 的数，它自己把红条画到相应长度。所以要写的只有：</p><div class="prompt-box">
+<div class="card"><p>整段脚本不到三十行，跟血条长短真正有关的只有<strong>一句</strong>。血条变短这件事 Unity 已经替我们算好了：只要给<strong>填充总数（fillAmount）</strong> 一个 0～1 的数，它自己把红条画到相应长度。所以要写的只有：</p><div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_fill',this)">复制</button></div>
 <pre id="c20_fill"><code class="language-csharp">healthFillImage.fillAmount = CurrentHealth / MaxHealth;</code></pre>
 </div><p>血量 100、满血 100，除出来是 <code>1</code>，满格；50 / 100 是 <code>0.5</code>，一半；0 就是空的。</p></div>
@@ -720,59 +721,12 @@ public class HealthChange : MonoBehaviour
 </div></div>
 <div class="slide" data-page="15"><div class="slide-inner markable">
 <h1>玩家扣血 · HealthChange</h1>
-<div class="card"><p>脚本在原理页已经建好、挂到 Player 上了。这一页把它接上血条、再逐段看清它在干什么——整件事就是「被撞 → 扣血 → 改血条」。</p></div>
-<div class="prompt-box">
-<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_healthchange',this)">复制</button></div>
-<pre id="c20_healthchange"><code class="language-csharp">using UnityEngine;
-using UnityEngine.UI;   // 要用 Image，必须带上这一行
+<div class="card"><p>脚本在原理页已经建好、挂到 Player 上了（<strong>完整代码见上一页</strong>）。这一页把它接上血条、再逐段看清它在干什么——玩家这边只做三件事：<strong>开局满血、被咬时扣血、把血量画成血条</strong>。</p></div>
 
-public class HealthChange : MonoBehaviour
-{
-    public float MaxHealth = 100f;          // 满血
-    public float CurrentHealth;             // 当前血量
-    public Image healthFillImage;           // 血条上那条红条，检查器里拖进来
-
-    void Start()
-    {
-        CurrentHealth = MaxHealth;          // 开局满血
-        UpdateHealth();
-    }
-
-    // 玩家用角色控制器撞到东西时触发（不需要刚体）
-    void OnControllerColliderHit(ControllerColliderHit hit)
-    {
-        if (hit.collider.CompareTag("Enemy"))
-        {
-            EnemyData enemy = hit.collider.GetComponentInParent&lt;EnemyData&gt;();
-            if (enemy != null &amp;&amp; enemy.TryAttack())
-            {
-                TakeDamage(enemy.attackPower);
-            }
-        }
-    }
-
-    // 扣血：扣完立刻刷新血条
-    public void TakeDamage(float damage)
-    {
-        CurrentHealth = CurrentHealth - damage;
-        if (CurrentHealth &lt; 0) CurrentHealth = 0;
-        UpdateHealth();
-    }
-
-    // 把血量换算成 0~1，交给红条
-    void UpdateHealth()
-    {
-        if (healthFillImage != null)
-        {
-            healthFillImage.fillAmount = CurrentHealth / MaxHealth;
-        }
-    }
-}</code></pre>
-</div>
 <div class="card"><h3>① 把红条拖进「生命条填充图」槽位</h3><p>脚本挂上之后，检查器里多出一个 <strong>生命条填充图（Health Fill Image）</strong> 槽位。把层级里的 <code>FillImageHealth</code> <strong>拖到这个槽位</strong>——脚本就是靠这个引用找到红条的。</p><p>不拖会怎样：代码里有 <code>if (healthFillImage != null)</code> 挡着，所以不会报错，但<strong>血条一动不动</strong>——血在扣，只是没画出来。</p><div class="step-img"><img src="images/课件20/玩家2-拖入填充图.png" alt="把 FillImageHealth 拖到 HealthChange 的生命条填充图槽位" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
-<div class="card"><h3>② 逐段看</h3><ol><li><strong><code>using UnityEngine.UI;</code></strong>：<code>Image</code> 这个类型在 <code>UnityEngine.UI</code> 里，不写这一行，字段那一行就报「找不到类型 Image」。</li><li><strong><code>OnControllerColliderHit</code></strong>：角色控制器专用的回调，<strong>不需要刚体</strong>。玩家是用 <code>controller.Move()</code> 走的（课件13 的 <code>PlayerMove</code>），撞到谁引擎就回调它。</li><li><strong>和课件12 的 <code>OnCollisionEnter</code> 有什么区别</strong>：那个要刚体 + 碰撞体，是「被物理引擎推着走」的物体用的；角色控制器自己管碰撞，硬加刚体反而会跟它打架。</li><li><strong><code>CompareTag("Enemy")</code></strong>：先确认撞的是敌人。少了这一句，撞到房子、树木也会去取 <code>EnemyData</code>——取不到不会崩，但等于每次碰撞都白跑一趟；以后要是有别的物体也挂了 <code>EnemyData</code>（可破坏的木箱、陷阱），就会莫名其妙掉血。</li><li><strong><code>GetComponentInParent&lt;EnemyData&gt;()</code></strong>：从撞到的那只敌人身上把数据脚本取出来（课件14 学过）。用 <code>InParent</code> 版而不是 <code>GetComponent</code>，是因为动物是「外层空壳 + 里面模型」两层：脚本和标签挂在外层，碰撞体要是被加到了模型那层，<code>GetComponent</code> 直接取到 <code>null</code>、血条一点不掉还不报错；<code>InParent</code> 会顺着往上找，两层都兜得住。</li><li><strong><code>TryAttack()</code></strong>：冷却好了没，由敌人自己判断——能咬就返回 true 并把时间记下。所以「多久掉一次血」是敌人的参数，玩家这边不掺和。</li><li><strong><code>Start()</code> 里先满血</strong>：<code>CurrentHealth</code> 默认为 0，不初始化的话开局血条就是空的。</li><li><strong><code>UpdateHealth()</code></strong>：把当前血量换算成 0～1 填给 <code>fillAmount</code>。扣血、以后回血，都调这一个方法。</li></ol></div>
+<div class="card"><h3>② 逐段看</h3><ol><li><strong><code>using UnityEngine.UI;</code></strong>：<code>Image</code> 这个类型在 <code>UnityEngine.UI</code> 里，不写这一行，字段那一行就报「找不到类型 Image」。</li><li><strong><code>public void TakeDamage(float damage)</code></strong>：这是<strong>给敌人调</strong>的接口。敌人那边一句 <code>player.TakeDamage(attackPower)</code>，就相当于「咬你一口」。写成 <code>public</code>，别的脚本才调得到。</li><li><strong>为什么玩家不自己去检测「谁撞我」</strong>：角色控制器的 <code>OnControllerColliderHit</code> 只在<strong>玩家自己移动撞到东西</strong>时才响——你站着不动、动物蹭过来，它一声都不响；跟随的动物又停在离你 2 米的地方，物理上压根没碰上。所以判定放到敌人那边（上一页的攻击范围），玩家这边只管「掉血」。</li><li><strong>扣完夹到 0</strong>：<code>if (CurrentHealth &lt; 0) CurrentHealth = 0;</code>——不夹住的话血量会变成负数，<code>fillAmount</code> 拿到负值，血条会反向填充，看着像在回血。</li><li><strong><code>Start()</code> 里先满血</strong>：<code>CurrentHealth</code> 默认为 0，不初始化的话开局血条就是空的。</li><li><strong><code>UpdateHealth()</code></strong>：把当前血量换算成 0～1 填给 <code>fillAmount</code>。扣血、以后回血，都调这一个方法。</li></ol></div>
 <div class="step-img"><img src="images/课件20/玩家掉血.gif" alt="敌人扑上来咬一口，血条短一截" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
-<div class="ok-box">⚠️ 撞上去完全不掉血，按这个顺序查：① 敌人有没有碰撞体、<strong>勾没勾</strong> Is Trigger ② 标签是不是 <code>Enemy</code>（大小写也要对）③ 「生命条填充图」槽位有没有拖东西 ④ 红条的图像类型是不是<strong>已填充</strong>。</div>
+<div class="ok-box">⚠️ 血一直不掉，按这个顺序查：① 敌人身上挂没挂 <code>EnemyData</code> ② <strong>攻击范围</strong>够不够——动物跟随时停在离你 2 米的地方，范围要大于 2 ③ 玩家身上的标签是不是 <code>Player</code>（代码靠它找你） ④「生命条填充图」槽位有没有拖东西 ⑤ 红条的图像类型是不是<strong>已填充</strong>。</div>
 </div></div>
 <div class="slide" data-page="16"><div class="slide-inner markable">
 <h1>作业 · 血量数字与低血闪烁</h1>

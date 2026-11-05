@@ -468,26 +468,43 @@ public class EnemyControl : MonoBehaviour
 <div class="code-card" id="code16">
   <div class="code-head">
     <span class="fname">EnemyData.cs</span>
-    <span class="ftitle">敌人攻击参数（已修正）</span>
+    <span class="ftitle">敌人攻击参数（距离判定 + 主动攻击）</span>
     <button class="copy-btn" onclick="copyCode(this)">复制</button>
   </div>
-  <p class="fdesc">【修正 2025 PPT 的 bug】原 PPT 漏声明 lastAttackTime 字段，导致编译错误，已补上。TryAttack 控制攻击间隔，避免每帧扣血；名字用 Try 开头，是因为它在判断之外还会把这次攻击的时间记下来（查询带副作用）。</p>
+  <p class="fdesc">敌人够近（<code>attackRange</code>）+ 冷却好了（<code>attackInterval</code>）就主动调玩家的 <code>TakeDamage</code>。<code>Start</code> 里用 <code>Player</code> 标签找一次玩家。挂动物预制体的空壳上，攻击力 10 / 间隔 1 / 范围 2.2。<br>⛔ 不要改回 <code>OnControllerColliderHit</code> + <code>CompareTag("Enemy")</code> 的物理接触判定：它只在「玩家自己移动撞到东西」时响，玩家站着不动、动物蹭过来不响；跟随的动物又停在离玩家 2 米处，物理上碰不到，实测扣血极稀疏。</p>
   <pre><code class="language-csharp">using UnityEngine;
 
 public class EnemyData : MonoBehaviour
 {
-    public float attackPower = 1f;            // 攻击力
-    public float contactAttackInterval = 1f;  // 攻击间隔（秒）
-    private float lastAttackTime = -999f;     // 上次攻击时间（已补声明）
+    public float attackPower = 10f;      // 每次咬掉多少血
+    public float attackInterval = 1f;    // 两次攻击至少隔几秒
+    public float attackRange = 2.2f;     // 离玩家多近算咬到
 
-    public bool TryAttack()
+    private float lastAttackTime;        // 上一次攻击的时刻
+    private HealthChange player;         // 玩家身上的扣血脚本
+
+    void Start()
     {
-        if (Time.time - lastAttackTime &gt;= contactAttackInterval)
+        // 开局找一次玩家（Find 比较慢，别放到 Update 里每帧找）
+        GameObject find = GameObject.FindGameObjectWithTag(&quot;Player&quot;);
+        if (find != null) player = find.GetComponent&lt;HealthChange&gt;();
+    }
+
+    void Update()
+    {
+        if (player == null) return;      // 找不到玩家就什么都不做，避免报空引用
+
+        // 只在水平面上量距离：高度差不算，上下坡才不会误判
+        Vector3 me = transform.position;          me.y = 0f;
+        Vector3 you = player.transform.position;  you.y = 0f;
+
+        // 够近 + 冷却好了 → 咬一口
+        if (Vector3.Distance(me, you) &lt;= attackRange
+            &amp;&amp; Time.time - lastAttackTime &gt;= attackInterval)
         {
             lastAttackTime = Time.time;
-            return true;
+            player.TakeDamage(attackPower);
         }
-        return false;
     }
 }</code></pre>
 </div>
@@ -495,52 +512,40 @@ public class EnemyData : MonoBehaviour
 <div class="code-card" id="code17">
   <div class="code-head">
     <span class="fname">HealthChange.cs</span>
-    <span class="ftitle">玩家血条与被接触攻击（已修正）</span>
+    <span class="ftitle">玩家血量与血条</span>
     <button class="copy-btn" onclick="copyCode(this)">复制</button>
   </div>
-  <p class="fdesc">【修正 2025 PPT 的 bug】原 PPT 漏声明 healthFillImage 字段，且定义了 UpdateHealth 却从未调用——血条永远不变。已补字段并在扣血后调用。挂载在 Player 上，FillImage 拖入血条填充图。</p>
+  <p class="fdesc">玩家只负责三件事：开局满血、被咬扣血、把血量换算成 <code>fillAmount</code>。<strong>不自己检测碰撞</strong>——攻击由 <code>EnemyData</code> 发起，所以 <code>TakeDamage</code> 是 <code>public</code>。挂载在 Player 上，<code>FillImageHealth</code> 拖入生命条填充图。</p>
   <pre><code class="language-csharp">using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.UI;   // 要用 Image，必须带上这一行
 
 public class HealthChange : MonoBehaviour
 {
-    public float maxHealth = 100f;
-    public float currentHealth;
-    public Image healthFillImage; // 血条填充图片（Inspector 拖入，已补声明）
+    public float MaxHealth = 100f;          // 满血
+    public float CurrentHealth;             // 当前血量
+    public Image healthFillImage;           // 血条上那条红条，检查器里拖进来
 
     void Start()
     {
-        currentHealth = maxHealth;
+        CurrentHealth = MaxHealth;          // 开局满血
         UpdateHealth();
     }
 
-    void OnControllerColliderHit(ControllerColliderHit hit)
+    // 扣血：敌人咬到时会调这个方法，扣完立刻刷新血条
+    public void TakeDamage(float damage)
     {
-        if (hit.collider.CompareTag("Enemy"))
-        {
-            EnemyData enemyData = hit.collider.GetComponentInParent&lt;EnemyData&gt;();
-            if (enemyData != null &amp;&amp; enemyData.TryAttack())
-            {
-                TakeDamage(enemyData.attackPower);
-            }
-        }
+        CurrentHealth = CurrentHealth - damage;
+        if (CurrentHealth &lt; 0) CurrentHealth = 0;
+        UpdateHealth();
     }
 
-    void TakeDamage(float amount)
-    {
-        currentHealth -= amount;
-        if (currentHealth &lt;= 0f)
-        {
-            currentHealth = 0f;
-            Debug.Log("玩家死亡！");
-        }
-        UpdateHealth(); // 已补：原 PPT 从不调用，血条不变
-    }
-
+    // 把血量换算成 0~1，交给红条
     void UpdateHealth()
     {
         if (healthFillImage != null)
-            healthFillImage.fillAmount = currentHealth / maxHealth;
+        {
+            healthFillImage.fillAmount = CurrentHealth / MaxHealth;
+        }
     }
 }</code></pre>
 </div>
