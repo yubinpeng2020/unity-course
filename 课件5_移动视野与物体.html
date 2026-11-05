@@ -346,8 +346,29 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <body>
 <script>
 // ========== 缺图占位：显示文件名 + 一键复制 ==========
+/* —— GitHub Pages 图片回源 ——
+   Pages 只存 LFS 指针，位图取不到原图；这里改从 media.githubusercontent.com 拿真实文件。
+   仅线上（*.github.io）生效，本地/内网打开时图片正常加载，不会走到这里。 */
+const PAGES_MEDIA_BASE='https://media.githubusercontent.com/media/yubinpeng2020/unity-course/refs/heads/master/';
+function pagesRetry(img){
+    const src0=img.dataset.origSrc||img.getAttribute('src')||'';
+    if(location.hostname.endsWith('github.io')&&!img.dataset.mediaTried
+        &&src0.indexOf('images/')===0
+        &&/\.(png|jpe?g|gif|webp|exr|hdr)$/i.test(src0)){
+        img.dataset.origSrc=src0;
+        img.dataset.mediaTried='1';
+        img.src=PAGES_MEDIA_BASE+src0;
+        return true;
+    }
+    return false;
+}
+function imgHide(img){
+    if(pagesRetry(img)) return;
+    img.style.display='none';
+}
 function imgMissing(img){
-    const src=img.getAttribute('src')||'';
+    if(pagesRetry(img)) return;
+    const src=img.dataset.origSrc||img.getAttribute('src')||'';
     const name=src.split('/').pop();
     const dir=src.slice(0,src.lastIndexOf('/'));
     const d=document.createElement('div');
@@ -438,7 +459,7 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="2"><div class="slide-inner markable">
 <h1>变换工具总览</h1>
-<div class="card"><p>Scene 视图左上角的<strong>工具栏</strong>，从左到右依次是：</p></div><div class="contest-row"><img src="images/课件5/p3_2.png" alt="变换工具栏" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:10%;height:auto;max-height:none;object-fit:contain" onerror='this.style.display="none"'><div class="card" style="flex:1"><table><tr><th>名称</th><th>快捷键</th><th>作用</th></tr><tr><td><span style="color:#4FC3F7">查看工具 View</span></td><td><code>Q</code></td><td>平移 / 旋转摄像机视野</td></tr><tr><td>移动工具 Move</td><td><code>W</code></td><td>移动选中的物体</td></tr><tr><td>旋转工具 Rotate</td><td><code>E</code></td><td>旋转物体</td></tr><tr><td>缩放工具 Scale</td><td><code>R</code></td><td>缩放物体</td></tr><tr><td>矩形工具 Rect</td><td><code>T</code></td><td>2D / UI 元素排版</td></tr><tr><td>变换组件按钮</td><td><code>Y</code></td><td>移动/旋转/缩放游戏对象</td></tr></table></div></div>
+<div class="card"><p>Scene 视图左上角的<strong>工具栏</strong>，从左到右依次是：</p></div><div class="contest-row"><img src="images/课件5/p3_2.png" alt="变换工具栏" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:10%;height:auto;max-height:none;object-fit:contain" onerror="imgHide(this)"><div class="card" style="flex:1"><table><tr><th>名称</th><th>快捷键</th><th>作用</th></tr><tr><td><span style="color:#4FC3F7">查看工具 View</span></td><td><code>Q</code></td><td>平移 / 旋转摄像机视野</td></tr><tr><td>移动工具 Move</td><td><code>W</code></td><td>移动选中的物体</td></tr><tr><td>旋转工具 Rotate</td><td><code>E</code></td><td>旋转物体</td></tr><tr><td>缩放工具 Scale</td><td><code>R</code></td><td>缩放物体</td></tr><tr><td>矩形工具 Rect</td><td><code>T</code></td><td>2D / UI 元素排版</td></tr><tr><td>变换组件按钮</td><td><code>Y</code></td><td>移动/旋转/缩放游戏对象</td></tr></table></div></div>
 </div></div>
 <div class="slide" data-page="3"><div class="slide-inner markable">
 <h1>查看工具：平移 · 聚焦 · 转动</h1>

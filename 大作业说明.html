@@ -296,6 +296,19 @@ html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microso
 </style>
 </head>
 <body>
+<script>
+/* GitHub Pages 图片回源：Pages 只存 LFS 指针，这里改从 media 取真实文件（仅线上生效，本地不受影响） */
+function pagesRetry(img){
+    const src0=img.dataset.origSrc||img.getAttribute('src')||'';
+    if(location.hostname.endsWith('github.io')&&!img.dataset.mediaTried&&src0.indexOf('images/')===0&&/\.(png|jpe?g|gif|webp|exr|hdr)$/i.test(src0)){
+        img.dataset.origSrc=src0; img.dataset.mediaTried='1';
+        img.src='https://media.githubusercontent.com/media/yubinpeng2020/unity-course/refs/heads/master/'+src0;
+        return true;
+    }
+    return false;
+}
+function imgHide(img){ if(pagesRetry(img)) return; img.style.display='none'; }
+</script>
 <div class="container">
 <nav class="sidebar">
     <div class="sidebar-title">📘 大作业说明</div>
@@ -368,7 +381,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microso
         <div class="end-contact">有问题可联系授课教师<br>📧 <code>ybpeng1286@stpt.edu.cn</code></div>
     </div>
     <div class="end-right">
-        <img src="images/tencent-docs-qrcode.png" alt="腾讯文档二维码" onerror="this.style.display='none'" onclick="zoomQR(this)" style="cursor:pointer">
+        <img src="images/tencent-docs-qrcode.png" alt="腾讯文档二维码" onerror="imgHide(this)" onclick="zoomQR(this)" style="cursor:pointer">
         <p>扫码查看作业完成情况</p>
         <a href="https://docs.qq.com/sheet/DV2tKZ2pSTUNwUFpX?tab=bo2p4o" target="_blank" class="end-link">📊 查看作业完成情况文档</a>
     </div>

@@ -352,8 +352,29 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <body>
 <script>
 // ========== 缺图占位：显示文件名 + 一键复制 ==========
+/* —— GitHub Pages 图片回源 ——
+   Pages 只存 LFS 指针，位图取不到原图；这里改从 media.githubusercontent.com 拿真实文件。
+   仅线上（*.github.io）生效，本地/内网打开时图片正常加载，不会走到这里。 */
+const PAGES_MEDIA_BASE='https://media.githubusercontent.com/media/yubinpeng2020/unity-course/refs/heads/master/';
+function pagesRetry(img){
+    const src0=img.dataset.origSrc||img.getAttribute('src')||'';
+    if(location.hostname.endsWith('github.io')&&!img.dataset.mediaTried
+        &&src0.indexOf('images/')===0
+        &&/\.(png|jpe?g|gif|webp|exr|hdr)$/i.test(src0)){
+        img.dataset.origSrc=src0;
+        img.dataset.mediaTried='1';
+        img.src=PAGES_MEDIA_BASE+src0;
+        return true;
+    }
+    return false;
+}
+function imgHide(img){
+    if(pagesRetry(img)) return;
+    img.style.display='none';
+}
 function imgMissing(img){
-    const src=img.getAttribute('src')||'';
+    if(pagesRetry(img)) return;
+    const src=img.dataset.origSrc||img.getAttribute('src')||'';
     const name=src.split('/').pop();
     const dir=src.slice(0,src.lastIndexOf('/'));
     const d=document.createElement('div');
@@ -456,7 +477,7 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="5"><div class="slide-inner markable">
 <h1>原生物体 — 3D Object</h1>
-<div class="card"><p>Unity 内置了多种基础 3D 物体，无需任何素材即可创建：</p></div><div class="card"><table><tr><th>物体</th><th>说明</th><th>外观</th></tr><tr><td>Cube 立方体</td><td>长宽高相等的六面体</td><td><img src="images/课件4/p6_cube.png" alt="立方体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror='this.style.display="none"'></td></tr><tr><td>Sphere 球体</td><td>光滑的球</td><td><img src="images/课件4/p6_sphere.png" alt="球体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror='this.style.display="none"'></td></tr><tr><td>Capsule 胶囊体</td><td>圆柱+半球组合，常用于人物</td><td><img src="images/课件4/p6_capsule.png" alt="胶囊体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror='this.style.display="none"'></td></tr><tr><td>Cylinder 圆柱体</td><td>柱状体</td><td><img src="images/课件4/p6_cylinder.png" alt="圆柱体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror='this.style.display="none"'></td></tr></table></div><img src="images/课件4/p6_compare.png" alt="四种原生物体对比" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 游戏对象的单位长度&quot;1&quot;代表 1 米吗？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">不是。<strong>1 只是一个约定的基准单位</strong>，可以理解为 1 格。导入模型时按比例换算即可（如 1 单位 = 1 米，由开发者自行约定）。</div></div><div class="card"><h3>Plane 平面 — 单面薄片</h3><ul><li>只有单面，常用于地面、地板</li><li>从侧面几乎看不见，适合做基座</li></ul></div><img src="images/课件4/场景窗口 --- 平面.gif" alt="平面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror='this.style.display="none"'>
+<div class="card"><p>Unity 内置了多种基础 3D 物体，无需任何素材即可创建：</p></div><div class="card"><table><tr><th>物体</th><th>说明</th><th>外观</th></tr><tr><td>Cube 立方体</td><td>长宽高相等的六面体</td><td><img src="images/课件4/p6_cube.png" alt="立方体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgHide(this)"></td></tr><tr><td>Sphere 球体</td><td>光滑的球</td><td><img src="images/课件4/p6_sphere.png" alt="球体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgHide(this)"></td></tr><tr><td>Capsule 胶囊体</td><td>圆柱+半球组合，常用于人物</td><td><img src="images/课件4/p6_capsule.png" alt="胶囊体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgHide(this)"></td></tr><tr><td>Cylinder 圆柱体</td><td>柱状体</td><td><img src="images/课件4/p6_cylinder.png" alt="圆柱体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgHide(this)"></td></tr></table></div><img src="images/课件4/p6_compare.png" alt="四种原生物体对比" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 游戏对象的单位长度&quot;1&quot;代表 1 米吗？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">不是。<strong>1 只是一个约定的基准单位</strong>，可以理解为 1 格。导入模型时按比例换算即可（如 1 单位 = 1 米，由开发者自行约定）。</div></div><div class="card"><h3>Plane 平面 — 单面薄片</h3><ul><li>只有单面，常用于地面、地板</li><li>从侧面几乎看不见，适合做基座</li></ul></div><img src="images/课件4/场景窗口 --- 平面.gif" alt="平面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgHide(this)">
 </div></div>
 <div class="slide" data-page="6"><div class="slide-inner markable">
 <h1>处理物体 — 修改命名 / 删除 / 复制</h1>
@@ -465,7 +486,7 @@ function copyImgName(btn){
 <div class="slide" data-page="7"><div class="slide-inner markable">
 <h1>摄像机 · 光源 · 新增</h1>
 <div class="card"><ul><li><strong>Main Camera 主摄像机 = 用户的眼睛</strong></li><li>Game 游戏窗口中看到的内容，就是摄像机&quot;看&quot;到的内容</li><li>新建场景默认自带一台主摄像机</li></ul></div><img src="images/课件4/p8_1.png" alt="初始场景：主摄像机与定向光" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>移动摄像机，改变视角</h3><ul><li>在 Scene 中选中摄像机物体，用移动工具拖动</li><li>Game 窗口中的画面会跟着改变</li></ul></div><img src="images/课件4/场景窗口 --- 主摄像机 --- 移动.gif" alt="移动主摄像机" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 如果场景里没有摄像机，运行游戏会看到什么？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">会看到一片黑屏或空白——因为没有任何&quot;眼睛&quot;在观察场景。</div></div>
-<div class="card"><h3>定向光 Directional Light = 太阳</h3><ul><li>光从无穷远处平行照射，场景物体都会受光</li><li>新建场景默认自带一束定向光</li></ul></div><img src="images/课件4/p9_1.png" alt="定向光" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:90%" onerror="imgMissing(this)"><div style="display:flex;gap:12px;width:100%"><div style="flex:1"><p style="text-align:center;margin-bottom:4px;font-weight:600">有平行光源</p><img src="images/课件4/p9_2.png" alt="有光" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;width:100%" onerror='this.style.display="none"'></div><div style="flex:1"><p style="text-align:center;margin-bottom:4px;font-weight:600">无平行光源</p><img src="images/课件4/p9_3.png" alt="无光" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;width:100%" onerror='this.style.display="none"'></div></div><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">删掉光源后，场景会<strong>变暗/变黑</strong>（新物体呈现暗色，材质颜色无法正确显示）。所以光源是场景中不可或缺的&quot;太阳&quot;。</div>
+<div class="card"><h3>定向光 Directional Light = 太阳</h3><ul><li>光从无穷远处平行照射，场景物体都会受光</li><li>新建场景默认自带一束定向光</li></ul></div><img src="images/课件4/p9_1.png" alt="定向光" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:90%" onerror="imgMissing(this)"><div style="display:flex;gap:12px;width:100%"><div style="flex:1"><p style="text-align:center;margin-bottom:4px;font-weight:600">有平行光源</p><img src="images/课件4/p9_2.png" alt="有光" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;width:100%" onerror="imgHide(this)"></div><div style="flex:1"><p style="text-align:center;margin-bottom:4px;font-weight:600">无平行光源</p><img src="images/课件4/p9_3.png" alt="无光" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;width:100%" onerror="imgHide(this)"></div></div><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">删掉光源后，场景会<strong>变暗/变黑</strong>（新物体呈现暗色，材质颜色无法正确显示）。所以光源是场景中不可或缺的&quot;太阳&quot;。</div>
 <div class="card"><h3>新增摄像机与光源</h3><p><strong>新增摄像机</strong>：菜单栏 <code>GameObject（游戏对象）</code> → <code>Camera（摄像机）</code></p><p><strong>新增光源</strong>：菜单栏 <code>GameObject（游戏对象）</code> → <code>Light（光源）</code> → <code>Directional Light（平行光）</code>（或 <code>Point Light（点光源）</code> 等）</p></div><img src="images/课件4/p10_1.png" alt="新增摄像机" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件4/p10_2.png" alt="新增光源" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box">💡 一个场景可以有多台摄像机、多个光源。多摄像机可以切换视角，多光源可以实现丰富的照明效果（本课先用默认的单机单光即可）。</div>
 </div></div>
 <div class="slide" data-page="8"><div class="slide-inner markable">
