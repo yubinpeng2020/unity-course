@@ -1,0 +1,11 @@
+*.project
+*.md
+*.py
+*.txt
+*.bak
+__pycache__
+_ppt_source
+_archive
+_verify
+_backup_*
+_image_*
