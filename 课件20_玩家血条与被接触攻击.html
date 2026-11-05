@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>课件20_玩家血条与被接触攻击 — C#先知课堂</title>
+<link rel="stylesheet" href="vendor/atom-one-dark.min.css">
+<script src="vendor/highlight.min.js"></script>
+<style>
+/* ===== 色彩变量 ===== */
+:root{
+--bg-primary:#0A0E27;--bg-secondary:#0D1430;--bg-card:rgba(17,24,39,0.95);
+--bg-input:#0B1020;--border:rgba(255,255,255,0.06);
+--text:#E8EAED;--text-muted:#9AA0A6;
+--accent:#00D4AA;--accent2:#4FC3F7;--accent-dim:rgba(0,212,170,0.08);
+--orange:#F59E0B;--blue:#818CF8;
+--green:#22C55E;--green-bg:rgba(34,197,94,0.08);--green-border:rgba(34,197,94,0.3);
+--red:#EF4444;--red-bg:rgba(239,68,68,0.08);--red-border:rgba(239,68,68,0.3);
+--yellow:#F59E0B;--purple:#C084FC;--teal:#86EFAC;--teal-border:rgba(34,197,94,0.3);
+--font-size:16px;
+}
+.light{
+--bg-primary:#ffffff;--bg-secondary:#f6f8fa;--bg-card:#f6f8fa;--bg-input:#ffffff;
+--border:#d0d7de;--text:#24292f;--text-muted:#656d76;
+--accent:#0969da;--accent2:#0550ae;--accent-dim:rgba(9,105,218,0.08);
+--orange:#cf222e;--blue:#0550ae;
+--green:#1a7f37;--green-bg:#eefdf2;--green-border:#86d9a0;
+--red:#cf222e;--red-bg:#ffebe9;--red-border:#fdaeb7;
+--yellow:#9a6700;--purple:#8250df;--teal:#0550ae;--teal-border:#4ac26b;
+}
+body.font-xs{--font-size:12px}body.font-sm{--font-size:14px}body.font-md{--font-size:16px}body.font-lg{--font-size:19px}body.font-xl{--font-size:22px}
+
+/* ===== 全局 ===== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microsoft YaHei',sans-serif;background:linear-gradient(180deg,var(--bg-primary),var(--bg-secondary));color:var(--text);line-height:1.6;font-size:var(--font-size)}
+.container{display:flex;height:100vh}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.02)}
+::-webkit-scrollbar-thumb{background:rgba(0,212,170,0.2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,212,170,0.4)}
+
+/* ===== 侧边栏 ===== */
+.sidebar{width:260px;min-width:260px;height:100vh;background:linear-gradient(180deg,rgba(10,14,39,0.98),rgba(13,20,48,0.95));border-right:1px solid var(--border);overflow-y:auto;padding:12px 0;flex-shrink:0;backdrop-filter:blur(10px);position:relative;z-index:10}
+.sidebar-title{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-size:16px;font-weight:700;padding:0 14px 10px;border-bottom:1px solid rgba(0,212,170,0.15);margin-bottom:6px}
+.nav-link{display:flex;align-items:center;color:var(--text-muted);text-decoration:none;padding:8px 14px;font-size:12px;border-left:3px solid transparent;transition:all .2s}
+.nav-link:hover{color:var(--accent);background:var(--accent-dim);border-left-color:rgba(0,212,170,0.4)}
+.nav-link.active{color:#fff!important;background:linear-gradient(90deg,rgba(0,212,170,0.18),transparent);border-left:3px solid var(--accent);font-weight:600}
+.nav-status{width:7px;height:7px;border-radius:50%;margin-right:7px;flex-shrink:0;background:rgba(255,255,255,0.1);transition:all .3s}
+.nav-status.seen{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,0.5)}
+
+/* ===== Header ===== */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header-bar{display:flex;align-items:center;gap:16px;padding:10px 24px;background:rgba(10,14,39,0.95);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;position:relative;z-index:5}
+.progress-wrap{flex:1;min-width:200px;display:flex;align-items:center;gap:12px}
+.progress-bar{flex:1;height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,0.3)}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .5s ease;width:0;box-shadow:0 0 8px rgba(0,212,170,0.4)}
+.progress-text{font-size:11px;color:var(--text-muted);white-space:nowrap}
+.header-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .25s;white-space:nowrap}
+.header-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 8px rgba(0,212,170,0.1);transform:translateY(-1px)}
+.header-dropdown{position:relative;display:inline-block}
+.dropdown-menu{display:none;position:absolute;top:100%;right:0;margin-top:6px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;min-width:180px;z-index:100;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.dropdown-menu.show{display:block}
+.dropdown-item{display:block;padding:10px 16px;color:var(--text);font-size:13px;text-decoration:none;transition:background .2s;cursor:pointer;white-space:nowrap}
+.dropdown-item:hover{background:var(--accent-dim);color:var(--accent)}
+.dropdown-item:not(:last-child){border-bottom:1px solid var(--border)}
+
+/* ===== 幻灯片 ===== */
+.slides-container{flex:1;position:relative !important;overflow:hidden}
+#mainArea .slides-container{position:relative !important;overflow:hidden !important;min-height:calc(100vh - 60px)}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transform:translateX(30px);transition:opacity .35s,transform .35s;pointer-events:none;overflow-y:auto}
+.slide::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:.6;z-index:10}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto;z-index:1}
+.slide-inner{max-width:920px;margin:0 auto;padding:56px 48px 80px}
+
+/* 标题 */
+.slide-inner h1{color:#fff;font-size:26px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid rgba(0,212,170,0.2);letter-spacing:-0.3px}
+.slide-inner h2{color:var(--accent2);font-size:20px;margin:28px 0 14px;font-weight:600}
+.slide-inner h3{color:var(--accent);font-size:calc(var(--font-size) * 1.06);margin:20px 0 10px;font-weight:600;padding-left:10px;border-left:3px solid var(--accent)}
+.slide-inner h3.h-example{color:var(--accent2);border-left-color:var(--accent2)}
+.slide-inner h3.h-practice{color:var(--orange);border-left-color:var(--orange)}
+.slide-inner p{color:var(--text);margin-bottom:10px;line-height:1.85}
+.slide-inner ul,.slide-inner ol{margin-left:22px;margin-bottom:14px}
+.slide-inner li{color:#CBD5E1;margin-bottom:6px;line-height:1.75}
+
+/* 内联代码 */
+.slide-inner strong{color:var(--accent2);font-weight:700}
+.slide-inner em{color:var(--orange);font-style:normal;font-weight:500}
+.slide-inner code{background:rgba(0,212,170,0.08);color:var(--accent);padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:90%;border:1px solid rgba(0,212,170,0.15);font-weight:600}
+
+/* 表格 */
+.slide-inner table{width:100%;border-collapse:collapse;font-size:calc(var(--font-size) * 0.94);margin:12px 0;border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.slide-inner table td,.slide-inner table th{padding:8px 14px;border:1px solid var(--border);text-align:left}
+.slide-inner table th{background:linear-gradient(135deg,rgba(17,24,39,0.9),rgba(15,23,41,0.9));color:var(--accent);font-weight:600;font-size:calc(var(--font-size) * 1.0);text-transform:uppercase;letter-spacing:.5px}
+.slide-inner table tr:nth-child(odd){background:rgba(255,255,255,0.015)}
+.slide-inner table tr:hover{background:var(--accent-dim)}
+
+/* 链接 */
+.slide-inner a{color:var(--accent2);text-decoration:underline;text-decoration-color:rgba(79,195,247,0.3);text-underline-offset:3px;transition:all .2s}
+.slide-inner a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+
+/* ===== 卡片 ===== */
+.card,.homework-card,.ok-box,.prompt-box{margin:10px 0;border-radius:12px;transition:all .3s}
+.card{background:linear-gradient(135deg,var(--bg-card),rgba(13,20,48,0.85));border:1px solid var(--border);padding:14px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.2);overflow:hidden}
+.card .card-img{float:right;max-width:200px;max-height:250px;margin:0 0 8px 16px;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 标题+图片+列表 类型的卡片：确定性两栏（左文右图），不依赖 float 环绕 */
+.card.side-card{display:flex;align-items:flex-start;gap:18px;overflow:hidden}
+.card.side-card .side-body{flex:1;min-width:0}
+.card.side-card .side-body h3{margin-top:0}
+.card.side-card .card-img{float:none;flex:0 0 auto;max-width:200px;max-height:250px;margin:0;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.card.side-card .side-body ul,.card.side-card .side-body ol{margin:8px 0 0;padding-left:22px}
+.card.side-card .side-body ul li,.card.side-card .side-body ol li{margin:4px 0}
+.card table .card-img{float:none;max-width:280px;max-height:none;margin:4px auto;display:block;border-radius:4px}
+.card table .card-img-sm{float:none;max-width:100px;max-height:none;margin:4px 0;display:inline-block;border-radius:4px}
+.card-img{display:block;max-width:100%;margin:16px auto;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 表格单元格内图片（发展四时代等）：小图居中，破图自动隐藏 */
+.slide-inner table td img.card-img,.slide-inner table th img.card-img{display:block;max-width:150px;max-height:105px;width:auto;height:auto;margin:6px auto;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+.slide-inner table td img.card-img-sm,.slide-inner table th img.card-img-sm{display:block;max-width:96px;max-height:66px;margin:4px auto;border-radius:4px}
+/* 竞赛照片三图并排 */
+.contest-row{display:flex;gap:12px;justify-content:center;margin:16px 0;flex-wrap:wrap}
+.contest-row img{flex:1;min-width:0;max-width:280px;max-height:200px;object-fit:cover;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer}
+/* 步骤截图：整宽大图 / 半宽居中 */
+.step-img{display:block;margin:10px 0 2px}
+.step-img img{display:block;width:100%;max-width:100%;max-height:none;height:auto;margin:0;object-fit:contain;border-radius:10px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer}
+.step-img.half img{width:50%;max-width:50%;margin:0 auto}
+.step-img.third img{width:33.3333%;max-width:33.3333%;margin:0 auto}
+.img-pair{display:flex;gap:14px;align-items:flex-start;margin:16px 0}
+.img-pair img{flex:1 1 0;min-width:0;width:100%;max-width:100%;max-height:none;height:auto;display:block;float:none;margin:0;object-fit:contain;border-radius:10px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer}
+@media(max-width:768px){.img-pair{flex-direction:column}}
+.card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.12);transform:translateY(-1px)}
+.card h3{margin-top:0}
+
+/* 代码块 */
+.prompt-box{background:var(--bg-input);border:1px solid rgba(0,212,170,0.2);border-left:3px solid var(--accent);overflow:hidden;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03)}
+.code-toolbar{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.04)}
+.code-lang{font-size:10px;color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.copy-btn{background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2);color:var(--accent);padding:3px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-family:inherit;transition:all .2s}
+.copy-btn:hover{background:rgba(0,212,170,0.2);border-color:var(--accent)}
+.copy-btn.copied{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.prompt-box pre{background:transparent;padding:12px 16px;margin:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;overflow-x:auto}
+.prompt-box pre code{background:transparent;padding:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;font-family:'JetBrains Mono','Menlo','Monaco',monospace;color:#E2E8F0;border:none}
+
+/* ok-box / homework-card */
+.homework-card{background:linear-gradient(135deg,rgba(0,212,170,0.06),var(--bg-card));border:1px solid var(--teal-border);padding:14px 18px}
+.homework-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(0,212,170,0.08)}
+.homework-card h3{color:var(--teal)}
+.ok-box{background:linear-gradient(135deg,rgba(34,197,94,0.06),var(--bg-card));border:1px solid var(--green-border);padding:14px 18px}
+.ok-box:hover{border-color:var(--green);box-shadow:0 8px 24px rgba(34,197,94,0.08)}
+.ok-box ul,.ok-box ol{margin:6px 0;padding-left:1.5em}
+.ok-box li{margin:3px 0;line-height:1.7}
+
+/* 高亮标记 */
+.markable li,.markable p{cursor:pointer;transition:all .15s;border-radius:3px;padding:1px 3px}
+.markable li.marked,.markable p.marked{background:rgba(192,132,252,.12);border-left:3px solid var(--purple);padding-left:8px}
+
+/* ===== 折叠面板 ===== */
+.fold-toggle{display:inline-flex;align-items:center;gap:6px;background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:calc(var(--font-size) * 1.06);font-family:inherit;transition:all .2s;margin:8px 0;user-select:none}
+.fold-toggle:hover{background:rgba(0,212,170,0.15);box-shadow:0 2px 8px rgba(0,212,170,0.15)}
+.fold-toggle .arrow{display:inline-block;transition:transform .3s;font-size:10px}
+.fold-toggle.open .arrow{transform:rotate(90deg)}
+.fold-content{max-height:0;overflow:hidden;transition:max-height .4s ease;opacity:0}
+.fold-content.show{max-height:3000px;opacity:1}
+/* 提示折叠 绿色 */
+.fold-toggle.hint{color:var(--green);border-color:var(--green-border);background:var(--green-bg)}
+.fold-toggle.hint:hover{background:rgba(34,197,94,0.12)}
+/* 答案折叠 紫色 */
+.fold-toggle.solution{color:var(--purple);border-color:rgba(192,132,252,0.4);background:rgba(192,132,252,0.08)}
+.fold-toggle.solution:hover{background:rgba(192,132,252,0.15)}
+/* 问答折叠 橙色 */
+.fold-toggle.qa{color:var(--orange);border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.08)}
+.fold-toggle.qa:hover{background:rgba(245,158,11,0.15)}
+/* 填空代码 */
+.code-blank{color:var(--orange);background:rgba(245,158,11,0.1);padding:2px 6px;border-radius:4px;font-weight:600}
+
+/* ===== 导航按钮 ===== */
+.nav-buttons{position:fixed;bottom:24px;right:32px;display:flex;gap:8px;z-index:100}
+.nav-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:10px 22px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:500;transition:all .25s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 4px 16px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
+.progress-dots{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:100}
+.progress-dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:all .3s;cursor:pointer}
+.progress-dot:hover{background:var(--accent2)}
+.progress-dot.active{background:var(--accent);transform:scale(1.4);box-shadow:0 0 8px rgba(0,212,170,0.5)}
+
+/* ===== 搜索 ===== */
+.search-panel{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:300;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.search-panel.open{right:0}
+.search-panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.search-panel-header span{font-size:15px;font-weight:600;color:var(--text)}
+.search-panel-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.search-panel-close:hover{color:var(--text);background:var(--accent-dim)}
+
+/* ===== 课件目录 ===== */
+.catalog-panel{position:fixed;top:0;right:-320px;width:320px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:298;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.catalog-panel.open{right:0}
+.catalog-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.catalog-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.catalog-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.catalog-list{flex:1;overflow-y:auto;padding:8px 0}
+.catalog-item{display:flex;align-items:center;gap:10px;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.catalog-item:hover{background:var(--accent-dim);border-left-color:var(--accent)}
+.catalog-item.current{color:var(--accent)!important;background:var(--accent-dim);border-left-color:var(--accent);font-weight:600}
+.catalog-num{color:var(--accent);font-size:11px;font-weight:700;min-width:40px;white-space:nowrap}
+.search-input{width:100%;padding:14px 18px;background:var(--bg-input);border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:15px;outline:none;flex-shrink:0}
+.search-input::placeholder{color:var(--text-muted)}
+.search-results{flex:1;overflow-y:auto;padding:8px 0}
+.search-item{display:block;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.search-item:hover,.search-item.focus{background:var(--accent-dim);border-left-color:var(--accent)}
+.help-overlay{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:299;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.help-overlay.open{right:0}
+.help-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.help-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.help-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.help-body{flex:1;overflow-y:auto;padding:16px 22px 24px}
+.help-body h3{color:var(--accent);font-size:14px;margin:16px 0 8px;padding-left:0;border-left:none}
+.help-body p{font-size:13px;color:var(--text-muted);margin-bottom:8px}
+.help-body table{font-size:13px}
+.help-body table td{padding:4px 12px 4px 0}
+.help-body table td:first-child{white-space:nowrap;padding-right:16px}
+.search-item mark{background:rgba(0,212,170,0.2);color:var(--accent);border-radius:2px;padding:0 3px}
+
+/* ===== Toast ===== */
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:400;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);padding:16px 28px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.toast.show{opacity:1}
+
+/* ===== 浅色覆盖 ===== */
+.light body,.light html{background:var(--bg-primary)!important}
+.light .sidebar{background:var(--bg-secondary)!important;border-right-color:var(--border)!important}
+.light .sidebar-title{-webkit-text-fill-color:var(--text);font-weight:600}
+.light .goal-card,.light .card{background:var(--bg-card)!important;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.light .homework-card{background:var(--accent-dim)!important}
+.light .ok-box{background:var(--green-bg)!important;border-color:var(--green-border)!important;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.light .header-bar{background:var(--bg-secondary)!important;backdrop-filter:none!important}
+.light .slide-inner table th{background:var(--bg-input)!important;color:var(--text)!important}
+.light .slide-inner h1{color:var(--text)!important}
+.light .slide-inner h2{color:var(--accent)!important}
+.light .slide-inner h3{color:var(--accent2)!important}
+.light .slide-inner li,.light .slide-inner p{color:var(--text)!important}
+.light .nav-link.active{color:var(--accent)!important;background:var(--accent-dim)!important}
+.light .progress-fill{box-shadow:none!important}
+.light .cover{background:radial-gradient(ellipse at 30% 20%,rgba(9,105,218,0.08),transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(5,80,174,0.06),transparent 55%),var(--bg-primary)!important}
+.light .cover-tag{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-label{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-text{color:var(--text)!important}
+.light .cover-sub{color:var(--text-muted)!important}
+.light .end-thanks{background:var(--bg-card);border-color:rgba(9,105,218,0.15)}
+.light .end-title{color:var(--accent)!important}
+.light .prompt-box pre code{color:var(--text)!important}
+.light .code-toolbar{background:rgba(0,0,0,0.05)}
+/* 深色主题下注释颜色调亮（原atom-one-dark太暗） */
+.hljs-comment,.hljs-meta{color:#8b949e!important}
+
+/* ===== 封面 ===== */
+.cover{display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;height:100vh;box-sizing:border-box;background:radial-gradient(ellipse at 30% 20%,rgba(0,212,170,0.18) 0%,transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(79,195,247,0.12) 0%,transparent 55%),linear-gradient(180deg,#0A0E27 0%,#0D1430 100%);position:relative;overflow:hidden}
+.cover.active{display:flex!important}
+.cover::after{content:'';position:absolute;top:-120px;right:-120px;width:400px;height:400px;background:radial-gradient(circle,rgba(0,212,170,0.08),transparent 70%);border-radius:50%;pointer-events:none}
+.cover-tag{display:inline-block;font-size:14px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);border-radius:20px;padding:8px 22px;margin-bottom:24px;letter-spacing:2px}
+.cover h1{font-size:52px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;letter-spacing:-1px;border:none;line-height:1.2;max-width:800px}
+.cover-sub{font-size:16px;color:var(--text-muted);margin-bottom:40px;max-width:650px;line-height:1.8}
+.cover-meta{font-size:14px;color:#6B7280;line-height:2.2;display:flex;flex-direction:column;gap:8px;align-items:center}
+.cover-meta-row{display:flex;align-items:center;gap:8px}
+.cover-meta-label{font-size:13px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.3);border-radius:6px;padding:3px 12px}
+.cover-meta-text{font-size:16px;color:#CBD5E1}
+
+/* ===== 结束页 ===== */
+.end-page{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:100%;box-sizing:border-box;max-width:920px;margin:0 auto;padding:36px 48px}
+.end-page h2{text-align:center;border-bottom:none;margin-bottom:32px}
+.end-thanks{display:flex;align-items:center;justify-content:center;gap:60px;flex-wrap:wrap;padding:60px 56px;border:2px solid rgba(0,212,170,0.3);border-radius:16px;background:linear-gradient(135deg,rgba(0,212,170,0.06),rgba(17,24,39,0.95))}
+.end-left{flex:1;min-width:200px;text-align:center}
+.end-right{flex:0 0 auto;text-align:center;padding-left:24px;border-left:1px solid rgba(0,212,170,0.2)}
+.end-icon{font-size:48px;margin-bottom:16px}
+.end-title{font-size:24px;color:var(--accent);font-weight:700;margin-bottom:20px}
+.end-sub{font-size:18px;color:var(--text-muted)}
+.end-contact{margin-top:16px;font-size:13px;color:var(--text-muted);line-height:1.7}
+.end-right img{width:120px;height:120px;border-radius:10px;margin-bottom:10px;border:2px solid var(--border);transition:transform .2s}
+.end-right img:hover{transform:scale(1.05)}
+.end-right p{font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5}
+.end-link{display:inline-block;color:var(--accent);text-decoration:none;font-size:13px;border:1px solid rgba(0,212,170,0.3);padding:8px 16px;border-radius:8px;transition:all .25s;white-space:nowrap}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+.end-next-link{display:inline-block;margin-top:20px;color:var(--accent2);text-decoration:none;font-size:15px;font-weight:600;padding:10px 24px;border:2px solid var(--accent2);border-radius:10px;transition:all .25s}
+.end-next-link:hover{background:rgba(79,195,247,0.1);box-shadow:0 4px 20px rgba(79,195,247,0.2);transform:translateY(-2px)}
+/* 二维码放大 */
+.qr-zoom-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;cursor:pointer}
+.qr-zoom-overlay.show{display:flex}
+.qr-zoom-overlay img{max-width:80vw;max-height:80vh;border-radius:12px;box-shadow:0 8px 32px rgba(0,212,170,0.2)}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+
+/* ===== 学习目标 ===== */
+.goal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:8px}
+.goal-card{background:linear-gradient(135deg,var(--bg-card),var(--bg-secondary));border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:14px;transition:all .3s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.goal-card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.goal-icon{font-size:28px;flex-shrink:0;transition:transform .3s}
+.goal-card:hover .goal-icon{transform:scale(1.15)}
+.goal-text{font-size:calc(var(--font-size) * 1.05);color:var(--text);line-height:1.6}
+
+/* 侧边栏 - 特殊链接（无序号） */
+.nav-special{font-style:italic;color:var(--accent2)!important}
+/* 导航标签 */
+.nav-badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:6px;font-weight:600;vertical-align:1px}
+.nav-badge.practice{color:var(--accent2);background:rgba(79,195,247,0.12);border:1px solid rgba(79,195,247,0.25)}
+.nav-badge.comprehensive{color:var(--purple);background:rgba(192,132,252,0.12);border:1px solid rgba(192,132,252,0.25)}
+.nav-badge.homework{color:var(--orange);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25)}
+
+/* ===== 响应式 ===== */
+/* ===== 移动端 header 精简按钮 ===== */
+.mobile-info{display:none;font-size:13px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.mobile-info .mi-lesson{color:var(--accent);font-weight:600}
+.mobile-info .mi-sep{margin:0 4px;color:var(--text-muted);opacity:0.5}
+.mobile-info .mi-page{color:var(--text)}
+.mobile-more{display:none;position:relative}
+.mobile-more-menu{display:none;position:absolute;top:100%;right:0;margin-top:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:4px 0;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:50;min-width:160px}
+.mobile-more-menu.open{display:block}
+.mobile-more-menu .mm-item{display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--text);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.mobile-more-menu .mm-item:hover{background:var(--accent-dim);color:var(--accent)}
+@media(max-width:768px){.sidebar{display:none}.slide-inner{padding:18px 18px 80px}.cover{padding-left:40px;padding-right:40px}.cover h1{font-size:32px}.nav-buttons{right:12px;bottom:12px}.header-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap}.header-btn[onclick="toggleTheme()"]{padding:6px 6px}.progress-wrap{display:none}.header-dropdown{display:none}.header-btn[onclick^="changeFont"]{display:none}.header-btn[onclick="openSearch()"]{display:none}.header-btn[onclick="toggleHelp()"]{display:none}.mobile-info{display:flex;align-items:center;gap:2px}.mi-page{display:none}.mobile-more{display:inline-block}.slides-container{min-height:calc(100vh - 54px)}}
+/* ===== 平铺模式（连续显示全部页面，用于导出 PDF） ===== */
+html.flat-mode,body.flat-mode{height:auto;overflow:visible}
+.flat-mode .container{height:auto;overflow:visible}
+.flat-mode .main-area{overflow:visible}
+.flat-mode .sidebar{display:none}
+.flat-mode .slides-container{overflow:visible;height:auto;min-height:0!important}
+.flat-mode .slide{position:static;opacity:1!important;transform:none!important;pointer-events:auto;height:auto;overflow:visible;margin:0 0 28px}
+.flat-mode .slide::before{display:none}
+.flat-mode .slide,.flat-mode .cover{transition:none!important}
+.flat-mode .slide-inner{padding:36px 48px 32px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,0.02)}
+.flat-mode .cover{position:static;opacity:1!important;transform:none!important;pointer-events:auto;height:auto;overflow:visible;margin:0 0 28px;border:1px solid var(--border);border-radius:14px}
+.flat-mode .nav-buttons{display:none}
+.flat-mode .progress-dots{display:none}
+.flat-mode .header-bar{position:sticky;top:0}
+/* ===== 图片显示模式（右侧小图 / 下方大图） ===== */
+.img-bottom .card .card-img{float:none;display:block;width:100%;max-width:100%;max-height:none;margin:16px auto 4px}
+.img-bottom .card table .card-img{width:auto;max-width:100%;margin:4px auto}
+.img-bottom .card .card-img-sm{width:auto;max-width:120px;max-height:none}
+.img-bottom .side-card{flex-direction:column;align-items:stretch}
+
+
+/* 平铺/PDF导出：并排多图改为单独一行放大显示（保持可点击放大） */
+.flat-mode .contest-row{display:block}
+.flat-mode .contest-row img{display:block;width:100%;max-width:100%;max-height:none;object-fit:contain;margin:16px auto 4px}
+
+/* ===== 缺图占位：老师还没放图时显示，文件名可一键复制 ===== */
+.img-missing{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;box-sizing:border-box;
+  width:100%;max-width:540px;margin:10px auto;padding:14px 16px;border:1.5px dashed var(--border);border-radius:10px;
+  background:var(--bg-input);color:var(--text-muted);font-size:13px;line-height:1.5;text-align:center}
+.img-missing .im-name{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--accent);
+  background:var(--bg-secondary);padding:3px 8px;border-radius:6px;border:1px solid var(--border);word-break:break-all}
+.img-missing button{cursor:pointer;font:inherit;font-size:12px;padding:4px 10px;border-radius:6px;
+  border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
+.img-missing button:hover{border-color:var(--accent);color:var(--accent)}
+.img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="container">
+<nav class="sidebar">
+    <div class="sidebar-title">📘 课件20_玩家血条与被接触攻击</div>
+    <a href="#" class="nav-link nav-special" data-page="1"><span class="nav-status"></span>封面</a>
+<a href="#" class="nav-link" data-page="2"><span class="nav-status"></span>本节学习目标</a>
+<a href="#" class="nav-link" data-page="3"><span class="nav-status"></span>1. 添加画布 · 右键 UI → 画布</a>
+<a href="#" class="nav-link" data-page="4"><span class="nav-status"></span>2. 画布 · 游戏 UI 的底板</a>
+<a href="#" class="nav-link" data-page="5"><span class="nav-status"></span>3. 画布设置 · 缩放与渲染模式</a>
+<a href="#" class="nav-link" data-page="6"><span class="nav-status"></span>4. 血条骨架 · 建 PlayerHealth 空对象</a>
+<a href="#" class="nav-link" data-page="7"><span class="nav-status"></span>5. 矩形变换 · 锚点决定贴哪边</a>
+<a href="#" class="nav-link" data-page="8"><span class="nav-status"></span>6. 血条底板 · BackgroundImage</a>
+<a href="#" class="nav-link" data-page="9"><span class="nav-status"></span>7. 血条填充 · FillImageHealth</a>
+<a href="#" class="nav-link" data-page="10"><span class="nav-status"></span>8. 生命图标 · HealthIcon</a>
+<a href="#" class="nav-link" data-page="11"><span class="nav-status"></span>9. 摆放验收 · 让血条待在左下角</a>
+<a href="#" class="nav-link" data-page="12"><span class="nav-status"></span>10. 血条原理 · 只改一个 fillAmount</a>
+<a href="#" class="nav-link" data-page="13"><span class="nav-status"></span>11. 敌人准备 · 碰撞体与 Enemy 标签</a>
+<a href="#" class="nav-link" data-page="14"><span class="nav-status"></span>12. 敌人攻击力 · EnemyData</a>
+<a href="#" class="nav-link" data-page="15"><span class="nav-status"></span>13. 玩家扣血 · HealthChange</a>
+<a href="#" class="nav-link" data-page="16"><span class="nav-status"></span>14. 作业 · 血量数字与低血闪烁 <span class="nav-badge homework">作业</span></a>
+<a href="#" class="nav-link nav-special" data-page="17"><span class="nav-status"></span>结束页</a>
+
+</nav>
+<div class="main-area" id="mainArea">
+    <div class="header-bar">
+        <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <span class="progress-text" id="progressText">0 / 15</span>
+        </div>
+        <div class="mobile-info" id="mobileInfo" onclick="mobileInfoTap()" style="cursor:pointer"><span class="mi-lesson"></span><span class="mi-sep">·</span><span class="mi-page"></span></div>
+                <button class="header-btn" id="flatBtn" onclick="toggleFlat()" title="切换分页 / 平铺（平铺便于打印导出 PDF）">📄 平铺</button>
+        <button class="header-btn" id="imgBtn" onclick="toggleImgBottom()" title="切换图片显示位置（右侧小图 / 下方大图）">🖼️ 图下</button>
+
+        <button class="header-btn" id="themeBtn" onclick="toggleTheme()">🌙 深色</button>
+        <div class="header-dropdown">
+          <button class="header-btn" id="ideBtn">💻 在线编辑器 ▾</button>
+          <div class="dropdown-menu" id="ideMenu">
+            <a href="#" class="dropdown-item" data-url="https://www.runoob.com/try/runcode.php?filename=helloworld&type=csharp">菜鸟教程</a>
+            <a href="#" class="dropdown-item" data-url="https://www.tutorialspoint.com/compilers/online-csharp-compiler.htm">Tutorialspoint（支持输入）</a>
+            <a href="#" class="dropdown-item" data-url="https://dotnetfiddle.net/">DotNetFiddle</a>
+          </div>
+        </div>
+        <button class="header-btn" onclick="changeFont(-1)">A-</button>
+        <button class="header-btn" onclick="changeFont(1)">A+</button>
+        <button class="header-btn" onclick="openSearch()">🔍</button>
+        <button class="header-btn" onclick="toggleHelp()" title="使用帮助">❓</button>
+        <button class="header-btn" onclick="toggleCatalog()" title="课件目录">📚</button>
+        <div class="mobile-more">
+          <button class="header-btn" onclick="toggleMobileMore()" title="更多">☰</button>
+          <div class="mobile-more-menu" id="mobileMoreMenu">
+            <div class="mm-item" onclick="mobileAction('ide')">💻 在线编辑器</div>
+            <div class="mm-item" onclick="mobileAction('fontDown')">🔤 A- 缩小字号</div>
+            <div class="mm-item" onclick="mobileAction('fontUp')">🔤 A+ 放大字号</div>
+            <div class="mm-item" onclick="mobileAction('search')">🔍 搜索</div>
+                        <div class="mm-item" onclick="mobileAction('flat')">📄 平铺/分页</div>
+            <div class="mm-item" onclick="mobileAction('imgbottom')">🖼️ 图下/侧图</div>
+
+            <div class="mm-item" onclick="mobileAction('help')">❓ 使用帮助</div>
+          </div>
+        </div>
+    </div>
+    <div class="slides-container"><div class="cover" data-page="1">
+    <div class="cover-tag">数字产品设计</div>
+    <h1>玩家血条与被接触攻击</h1>
+    <div class="cover-sub">第一次做游戏 UI：从「画布」讲起，一步步搭出左下角的血条；敌人扑上来咬一口，血条跟着缩短</div>
+    <div class="cover-meta">
+        <div class="cover-meta-row"><span class="cover-meta-label">授课教师</span><span class="cover-meta-text">彭堉斌</span></div>
+        <div class="cover-meta-row"><span class="cover-meta-label">学校</span><span class="cover-meta-text">汕头职业技术学院</span></div>
+    </div>
+</div>
+<div class="slide" data-page="2"><div class="slide-inner markable">
+<h1>本节学习目标</h1>
+<img src="images/课件20/血条效果.gif" alt="敌人扑上来咬一口，血条跟着缩短" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>本课要做出来的效果</h3><p>前面十几课做的全是<strong>场景里的 3D 物体</strong>：有位置、有大小，相机看得见才看得见。这一课第一次碰<strong>游戏 UI</strong>——贴在屏幕上的东西。</p><p>做完的样子：屏幕左下角一条血条，玩家跑遍地图它都待在原地；敌人扑上来咬一口，红条就短一截，冷却期间不会再掉。</p></div>
+<div class="goal-grid"><div class="goal-card"><span class="goal-icon">➕</span><span class="goal-text">会建画布：右键 <strong>UI → 画布</strong>，认得出一起冒出来的<strong>事件系统</strong></span></div><div class="goal-card"><span class="goal-icon">🖼️</span><span class="goal-text">搞懂<strong>画布（Canvas）</strong>是什么，为什么 UI 不能直接摆在场景里</span></div><div class="goal-card"><span class="goal-icon">📐</span><span class="goal-text">设好<strong>画布缩放</strong>，换分辨率血条不变形、不跑出屏幕</span></div><div class="goal-card"><span class="goal-icon">🧭</span><span class="goal-text">看懂<strong>矩形变换</strong>与<strong>锚点</strong>，知道血条为什么贴左下角</span></div><div class="goal-card"><span class="goal-icon">🩸</span><span class="goal-text">搭出血条三段：<strong>半透明底板 + 红色填充 + 生命图标</strong></span></div><div class="goal-card"><span class="goal-icon">🎚️</span><span class="goal-text">明白血条长短只看一个数：<code>fillAmount</code>（0～1）</span></div><div class="goal-card"><span class="goal-icon">💥</span><span class="goal-text">给敌人加<strong>碰撞体</strong>与 <code>Enemy</code> 标签，接触时按<strong>攻击力</strong>扣血</span></div><div class="goal-card"><span class="goal-icon">📝</span><span class="goal-text">作业：血量数字 + 低血时整条血条闪烁</span></div></div>
+</div></div>
+<div class="slide" data-page="3"><div class="slide-inner markable">
+<h1>添加画布 · 右键 UI → 画布</h1>
+<div class="card"><p>工程里现在<strong>一张画布都没有</strong>——前面做的全是 3D 物体。血条要贴在屏幕上，就得先有一块画布挂着它。这一页先把画布建出来、把名字定好，<strong>下一页再回头讲它到底是什么</strong>。</p></div>
+<div class="card"><h3>① 在层级窗口里右键</h3><p>在<strong>层级（Hierarchy）窗口</strong>的空白处点右键 → <strong>UI → 画布（Canvas）</strong>。</p><div class="step-img"><img src="images/课件20/血条1-右键创建画布.png" alt="层级窗口右键，菜单里选 UI → 画布" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>② 一次会多出两个对象</h3><ul><li><code>Canvas</code>：画布本体，血条要挂在它下面</li><li><code>EventSystem</code>：<strong>事件系统</strong>，Unity 顺手一起建的，管「鼠标点上去能不能命中 UI」。本课血条不点它，但<strong>别删</strong>——删了以后做按钮会点不动</li></ul><p><code>EventSystem</code> <strong>不在画布底下</strong>，它是场景里独立的一个对象，这是正常的，别把它拖进画布。</p><div class="step-img"><img src="images/课件20/血条2-画布与事件系统.png" alt="层级窗口里同时出现 Canvas 和 EventSystem 两个对象" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>③ 改名 GameUI</h3><p>选中画布，在<strong>检查器（Inspector）</strong>最上面的名字框里把 <code>Canvas</code> 改成 <code>GameUI</code>。后面找血条、找画布，都按这个名字认。</p><div class="step-img"><img src="images/课件20/血条3-改名GameUI.png" alt="选中画布，在检查器名字框里改名为 GameUI" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+
+<div class="card"><h3>中英对照：这几个词后面天天用</h3><table><thead><tr><th>中文</th><th>English</th><th>干什么用</th></tr></thead><tbody><tr><td>画布</td><td>Canvas</td><td>UI 的底板，所有 UI 元素的爹</td></tr><tr><td>事件系统</td><td>EventSystem</td><td>按钮、输入框的点击命中</td></tr><tr><td>图像</td><td>Image</td><td>画血条的底板和红条</td></tr><tr><td>文本</td><td>Text</td><td>显示血量数字（作业用）</td></tr><tr><td>画布组</td><td>Canvas Group</td><td>一次调整整组 UI 的透明度</td></tr><tr><td>矩形变换</td><td>Rect Transform</td><td>UI 元素的位置与大小</td></tr></tbody></table></div>
+<div class="step-img"><img src="images/课件20/血条5-看不到画布.png" alt="Game 视图里只有场景画面，画布上什么都看不到" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="ok-box">💡 建完看不见东西是正常的：画布本身是透明的，此刻它还是个空底板，真正显示出来的是挂在它下面的子对象。<br>它的位置、大小这些设置<strong>先别动</strong>——下一页说它是干什么用的，再下一页专门讲怎么设。</div>
+</div></div>
+<div class="slide" data-page="4"><div class="slide-inner markable">
+<h1>画布 · 游戏 UI 的底板</h1>
+<svg viewBox="0 0 680 330" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:4px auto 14px;font-family:inherit" role="img" aria-label="左边是铺满整块屏幕的画布覆在3D场景画面之上，画布上挂着一个血条，标注为这节课要做的效果；右边层级窗口里画布 GameUI 下面挂着血条底板、血条填充、血条图标三个待建子对象">
+<rect x="1" y="1" width="678" height="328" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
+<text x="24" y="28" font-size="14" font-weight="700" fill="var(--accent2)">画布 = 屏幕上 UI 的底板</text>
+<text x="24" y="50" font-size="12" fill="var(--text-muted)">刚建完它是空的；血条这类东西挂上去，屏幕上才看得见</text>
+<rect x="24" y="64" width="316" height="182" rx="9" fill="var(--bg-secondary)" stroke="var(--border)"/>
+<rect x="27" y="67" width="310" height="110" rx="8" fill="var(--accent2)" opacity="0.10"/>
+<rect x="27" y="177" width="310" height="66" rx="8" fill="var(--green)" opacity="0.20"/>
+<path d="M150 177 V141 L188 113 L226 141 V177 Z" fill="var(--orange)" opacity="0.30" stroke="var(--orange)" stroke-width="1.5"/>
+<text x="236" y="160" font-size="10.5" fill="var(--text-muted)">房屋（3D 物体）</text>
+<rect x="27" y="67" width="310" height="176" rx="8" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="182" y="86" font-size="11" fill="var(--accent)" text-anchor="middle">画布（铺满整块屏幕）</text>
+<rect x="44" y="196" width="170" height="16" rx="3" fill="var(--bg-card)" opacity="0.8" stroke="var(--border)"/>
+<rect x="64" y="198" width="102" height="12" rx="2" fill="#F92137"/>
+<circle cx="54" cy="204" r="6" fill="var(--accent2)"/>
+<text x="44" y="228" font-size="10.5" fill="var(--text-muted)">↑ 血条 · 这节课最后要做出来的效果</text>
+<text x="358" y="76" font-size="12" font-weight="700" fill="var(--text)">层级（Hierarchy）里要长成这样</text>
+<rect x="358" y="84" width="298" height="162" rx="9" fill="var(--bg-card)" stroke="var(--border)"/>
+<text x="376" y="110" font-size="12" font-weight="700" fill="var(--accent)">▾ GameUI　（画布）</text>
+<path d="M384 122 V192" stroke="var(--text-muted)" stroke-width="1" opacity="0.45"/>
+<rect x="388" y="122" width="236" height="70" rx="5" fill="none" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4 4" opacity="0.5"/>
+<text x="400" y="142" font-size="11" fill="var(--text-muted)">├ 血条底板</text>
+<text x="400" y="160" font-size="11" fill="var(--text-muted)">├ 血条填充</text>
+<text x="400" y="178" font-size="11" fill="var(--text-muted)">└ 血条图标</text>
+<text x="376" y="212" font-size="10.5" fill="var(--text-muted)">这三样后面几页才建，现在一个都还没有</text>
+<text x="376" y="232" font-size="10.5" fill="var(--text-muted)">EventSystem 在场景根，不在画布下面</text>
+<rect x="24" y="262" width="632" height="48" rx="9" fill="var(--accent-dim)" stroke="var(--border)"/>
+<text x="340" y="283" font-size="12" font-weight="700" fill="var(--accent)" text-anchor="middle">画布的作用：给屏幕上要显示的东西一块底板</text>
+<text x="340" y="301" font-size="11" fill="var(--text-muted)" text-anchor="middle">图上画的是做出来的样子 —— 左边血条就是本课的目标效果</text>
+</svg>
+<div class="card"><h3>画布（Canvas）· 它到底是什么</h3><p>上一步右键建出来的 <code>GameUI</code>，就是<strong>画布（Canvas）</strong>。Unity 把「要显示在屏幕上的东西」统一画在<strong>一块专用的平面</strong>上，这块平面就是画布——它是 Unity 里所有 UI 的落脚点。</p><p>画布上的元素按层次一层层往上叠：底板在最下，红条盖在底板上，图标再盖上去。这一整块就是<strong>游戏 UI</strong>（用户界面）。</p><p>画布本身不提供任何内容，<strong>它的作用就是给这些元素当底板</strong>。</p></div><div class="card"><h3>画布上装的东西，和 3D 物体差在哪</h3><table><thead><tr><th>对比项</th><th>3D 物体（动物、房屋、玩家）</th><th>UI（血条）</th></tr></thead><tbody><tr><td><strong>在哪</strong></td><td>场景里有真实位置，相机一转就跟着变</td><td>屏幕上固定的位置，玩家怎么跑都不动</td></tr><tr><td><strong>会被挡住吗</strong></td><td>被墙、房子挡住就看不见</td><td>永远画在最上层，什么都挡不住</td></tr></tbody></table><p>血条这类东西，<strong>不属于 3D 世界，只属于屏幕</strong>——所以才必须挂到画布上，靠画布统一画出来。</p></div><img src="images/课件20/血条效果.gif" alt="血条挂在画布上：玩家跑动它不动，敌人咬一口红条就短一截" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>三条必须记住的规则</h3><ul><li><strong>UI 元素必须是画布的子对象</strong>：不在画布底下的图像、文本，Unity 不会把它当 UI 画出来，建了也看不见</li><li><strong>画布只要一块</strong>：本课的血条、以后的准心、提示文字，全都挂在 <code>GameUI</code> 下面，不用每做一个界面就新建一块画布</li><li><strong>UI 的坐标是屏幕坐标</strong>：锚点定在屏幕哪个角，它就跟着哪个角走，跟玩家跑多远、转多少度没关系</li></ul></div><div class="ok-box">💡 一句话记法：<strong>3D 物体归场景管，UI 归画布管</strong>。以后遇到「UI 建不出来 / 建了看不见」，第一件事就是查它是不是画布的子对象。</div>
+</div></div>
+<div class="slide" data-page="5"><div class="slide-inner markable">
+<h1>画布设置 · 缩放与渲染模式</h1>
+<div class="card"><h3>画布身上有三个组件</h3><p>选中 <code>GameUI</code>，检查器里是三个组件：<strong>画布（Canvas）</strong>、<strong>画布缩放器（Canvas Scaler）</strong>、<strong>图形射线检测器（Graphic Raycaster）</strong>。本课只动前两个；第三个管鼠标点击，做按钮才用得上，先不用管。</p><div class="step-img third"><img src="images/课件20/血条6-画布组件.png" alt="选中 GameUI，检查器里三个组件：画布、画布缩放器、图形射线检测器" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>渲染模式：UI 画在哪儿</h3><p>上一页的对比表里说，UI <strong>永远画在最上层、什么都挡不住</strong>——其实这条<strong>不是绝对</strong>的，取决于<strong>渲染模式</strong>这一项怎么选。</p><table><thead><tr><th>渲染模式</th><th>什么意思</th><th>什么时候用</th></tr></thead><tbody><tr><td><strong>屏幕空间-覆盖</strong><br><span style="font-size:11px;color:var(--text-muted)">Screen Space - Overlay</span></td><td>直接画在屏幕最上层，跟相机没关系，也不会被任何 3D 物体挡住</td><td><strong>本课</strong>的血条、以后的准心和提示文字（默认值）</td></tr><tr><td><strong>屏幕空间-摄像机</strong><br><span style="font-size:11px;color:var(--text-muted)">Screen Space - Camera</span></td><td>画在指定相机前面，靠近相机的 3D 物体能挡住它</td><td>想让 UI 被场景里的东西遮挡时</td></tr><tr><td><strong>世界空间</strong><br><span style="font-size:11px;color:var(--text-muted)">World Space</span></td><td>UI 变成场景里的一个平面，有真实位置和朝向</td><td>敌人头顶血条、墙上的告示牌</td></tr></tbody></table><p>本课保持默认的<strong>屏幕空间-覆盖</strong>不动。选它之后，<strong>画布的位置和宽高根本不用管</strong>：在 Scene 里拖它、改那几个数字都不起作用，它永远铺满 Game 视图。</p><div class="step-img"><img src="images/课件20/血条4-渲染模式.png" alt="选中 GameUI，画布组件的渲染模式是屏幕空间-覆盖" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>画布缩放器：换分辨率不变形</h3><p>这是本课最容易踩的坑：默认的「恒定像素大小」会让 UI 按<strong>像素</strong>算大小。1920×1080 上调好的血条，到了 1366×768 的笔记本上就占掉半屏，投到教室大屏又小得看不见。</p><ol><li><strong>UI 缩放模式（UI Scale Mode）</strong> 选 <strong>随屏幕大小缩放（Scale With Screen Size）</strong></li><li><strong>参考分辨率（Reference Resolution）</strong> 填 <code>1920</code> × <code>1080</code>——按这个尺寸摆，别的分辨率等比缩放</li><li><strong>屏幕匹配模式（Screen Match Mode）</strong> 选 <strong>匹配（Match）</strong>，Match 拉到 <code>0.5</code>（宽高各占一半权重）</li></ol><div class="step-img"><img src="images/课件20/血条7-画布缩放器.png" alt="画布缩放器：随屏幕大小缩放、参考分辨率 1920×1080、Match 0.5" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>顺手把 Game 视图也定成 1920 × 1080</h3><p>先说清楚：<strong>不设也能用</strong>。画布缩放器里的 1920×1080 是<strong>设计基准</strong>，不是实际运行的分辨率——换台电脑、把窗口拉大拉小，UI 都会按这个基准等比缩放。</p><p>但 Game 视图默认是<strong>自由比例（Free Aspect）</strong>，窗口一拉尺寸就变，预览时血条的位置会跟着飘，很容易误以为「哪里没设对」。把 Game 视图左上角的分辨率选成 <code>1920 × 1080</code>，预览就和设计基准对齐，截图、验收、投屏看到的是同一个样子。</p><div class="step-img"><img src="images/课件20/血条7b-Game视图分辨率.png" alt="Game 视图左上角的分辨率下拉菜单，选中 1920×1080" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="ok-box">⚠️ 这一步<strong>只做一次、一辈子受用</strong>：整个工程的 UI 都按 1920×1080 摆，投影仪、笔记本、大屏都能正常显示。忘了设，以后每加一个界面都要在每台电脑上单独调一遍。</div>
+</div></div>
+<div class="slide" data-page="6"><div class="slide-inner markable">
+<h1>血条骨架 · 建 PlayerHealth 空对象</h1>
+<div class="card"><h3>这一页先把血条的骨架搭起来</h3><p>血条不是一个对象，是<strong>三样东西叠起来</strong>。这一页先把它们的落脚点建出来：在画布上建一个<strong>空对象</strong>，再给它加一个<strong>控制整组透明度的组件</strong>。</p><p>下一页先把它的位置摆好，再往后三页把三样东西一个个建出来装进去。<strong>为什么非得套个空对象，等三样都装完再回头说</strong>。位置也先不摆。</p></div>
+<div class="card"><h3>① 在画布上建空对象 PlayerHealth</h3><p>在层级（Hierarchy）窗口里选中 <code>GameUI</code>，右键 → <strong>创建空对象（Create Empty）</strong>，再把名字改成 <code>PlayerHealth</code>。</p><p><strong>一定要在画布上右键</strong>——这样它才是画布的子对象；在层级窗口最下面的空白处右键建，对象会跑到画布外面去，血条照样看不见。</p><div class="step-img"><img src="images/课件20/血条9-建PlayerHealth.png" alt="在 GameUI 上右键创建空对象，改名为 PlayerHealth" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>② 加画布组（Canvas Group）</h3><p>检查器底部点 <strong>添加组件（Add Component）</strong>，搜 <code>Canvas Group</code> 加上。它管这一整组 UI 的<strong>透明度 / 能不能点 / 挡不挡射线</strong>——一个 Alpha 就能让整条血条淡入淡出，下节课血量归零就要用它淡出。</p><p>现在 <strong>Alpha 保持 1</strong>，先不用改。</p><div class="step-img"><img src="images/课件20/血条11-加CanvasGroup.png" alt="PlayerHealth 上添加 Canvas Group 组件，Alpha 为 1" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+
+
+</div></div>
+
+<div class="slide" data-page="7"><div class="slide-inner markable">
+<h1>矩形变换 · 锚点决定贴哪边</h1>
+<div class="card"><h3>UI 元素身上没有 Transform，只有 Rect Transform</h3><p>3D 物体身上是<strong>变换（Transform）</strong>：位置、旋转、缩放三行。UI 元素身上是<strong>矩形变换（Rect Transform）</strong>——它多了三样东西：<strong>宽度 / 高度</strong>、<strong>锚点（Anchors）</strong>、<strong>轴心（Pivot）</strong>。</p><p>这一页要做的，是给上一页建好的 <code>PlayerHealth</code> <strong>定位置</strong>——把它摆到血条该待的地方：屏幕左下角。不用在 Scene 里拖，<strong>全靠填数值</strong>，填完它就出现在该在的地方。</p></div>
+<div class="step-img half"><img src="images/课件20/血条22-RectTransform组件.png" alt="层级里选中画布 GameUI，检查器最上面是矩形变换（Rect Transform）组件，没有 3D 物体那三行变换" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="card"><h3>锚点：这个元素「以父对象的哪个点为准」</h3><p>3D 物体的位置填的是<strong>世界坐标</strong>——一个点定死就完事。UI 不能这么干：血条要永远贴在屏幕左下，屏幕换成 4K、窗口拉宽拉窄，它还得在左下，写死的坐标一换分辨率就偏了。所以 Rect Transform 里的「位置（Pos X / Pos Y）」记的<strong>不是屏幕坐标</strong>，而是<strong>「离某个参考点多远」</strong>。</p><p>那个参考点就是<strong>锚点</strong>：它落在<strong>父对象</strong>身上（这一课就是画布 <code>GameUI</code>），可选 9 个点，也可以选成一条边。选<strong>左下</strong>，「位置 X / Y」就变成「离父对象左下角多远」；选<strong>居中</strong>，就变成「离中心多远」——位置这两个数字的意思，是锚点给的。</p><p><strong>锚点决定「贴着谁」，位置决定「离多远」</strong>。所以屏幕换成 4K，贴左下的血条还是贴左下，只是按比例往外挪一点——这就是血条永远待在角落的原因。</p></div>
+<svg viewBox="0 0 680 252" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:14px auto 8px;font-family:inherit" role="img" aria-label="父对象上的锚点九宫格选中左下角，子元素从这一点长出来，位置填的是离左下角多远">
+<rect x="1" y="1" width="678" height="250" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
+<text x="24" y="30" font-size="14" font-weight="700" fill="var(--accent2)">锚点：父对象上的一个点</text>
+<text x="24" y="50" font-size="11.5" fill="var(--text-muted)">选中哪个点，「位置」就是「离那个点多远」</text>
+<rect x="110" y="78" width="240" height="130" rx="6" fill="var(--accent2)" opacity="0.06" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="116" y="94" font-size="10.5" fill="var(--accent2)">父对象（画布 GameUI）</text>
+<circle cx="150" cy="118" r="4.5" fill="none" stroke="var(--text-muted)" stroke-width="1.5"/>
+<circle cx="230" cy="118" r="4.5" fill="none" stroke="var(--text-muted)" stroke-width="1.5"/>
+<circle cx="310" cy="118" r="4.5" fill="none" stroke="var(--text-muted)" stroke-width="1.5"/>
+<circle cx="150" cy="152" r="4.5" fill="none" stroke="var(--text-muted)" stroke-width="1.5"/>
+<circle cx="230" cy="152" r="4.5" fill="none" stroke="var(--text-muted)" stroke-width="1.5"/>
+<circle cx="310" cy="152" r="4.5" fill="none" stroke="var(--text-muted)" stroke-width="1.5"/>
+<circle cx="230" cy="190" r="4.5" fill="none" stroke="var(--text-muted)" stroke-width="1.5"/>
+<circle cx="310" cy="190" r="4.5" fill="none" stroke="var(--text-muted)" stroke-width="1.5"/>
+<rect x="150" y="158" width="150" height="32" rx="3" fill="var(--red)" opacity="0.22" stroke="var(--red)" stroke-width="1.5"/>
+<circle cx="150" cy="190" r="6" fill="var(--red)" stroke="var(--bg-input)" stroke-width="2"/>
+<line x1="150" y1="190" x2="150" y2="230" stroke="var(--red)" stroke-width="1" stroke-dasharray="3 3" opacity="0.65"/>
+<line x1="150" y1="190" x2="106" y2="190" stroke="var(--red)" stroke-width="1" stroke-dasharray="3 3" opacity="0.65"/>
+<text x="156" y="230" font-size="10.5" fill="var(--red)">位置 Y</text>
+<text x="80" y="176" font-size="10.5" fill="var(--red)">位置 X</text>
+<text x="392" y="104" font-size="12" fill="var(--text)">· 9 个点，最右一列是<tspan font-weight="700">拉伸</tspan></text>
+<text x="392" y="132" font-size="12" fill="var(--text)">· 选<tspan font-weight="700">左下</tspan>，位置＝「离左下角多远」</text>
+<text x="392" y="160" font-size="12" fill="var(--text)">· 换 4K、拉宽窗口，还是贴左下</text>
+<text x="392" y="196" font-size="11.5" fill="var(--text-muted)">锚点落在父对象上，不在元素自己身上——</text>
+<text x="392" y="216" font-size="11.5" fill="var(--text-muted)">这是它和「轴心」最根本的区别</text>
+</svg>
+<div class="step-img half"><img src="images/课件20/血条23-锚点数值.png" alt="检查器里的矩形变换面板：Anchors 一行有 Min X / Min Y / Max X / Max Y，它们写的就是锚点落在父对象的哪个位置" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="card"><h3>轴心：元素自己身上的基准点</h3><p>锚点讲的是「贴着父对象的哪一点」，可「位置」这两个数字，究竟是量到元素的<strong>哪个点</strong>？答案不是左上角，而是<strong>轴心（Pivot）</strong>。</p><p>轴心是元素<strong>自己身上</strong>的一个基准点，默认就在正中。位置准确说是：<strong>轴心这一点，落在离锚点多远的地方</strong>。</p><p>它不只是个标记：<strong>旋转、缩放都绕轴心</strong>。轴心挪了，同样一套位置数值，元素就会整体偏出去一段。本课不去动它——轴心留在正中。代价是<strong>填位置时要多算半步</strong>：位置量的是<strong>元素中心</strong>，想让血条左边缘离屏幕 50 像素，X 就得填 50 加上宽的一半。</p></div>
+<svg viewBox="0 0 680 246" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:14px auto 8px;font-family:inherit" role="img" aria-label="锚点在父对象左下角，元素自身的轴心在正中，位置量的是轴心到锚点的距离">
+<rect x="1" y="1" width="678" height="244" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
+<text x="24" y="30" font-size="14" font-weight="700" fill="var(--accent2)">轴心：元素自己身上的基准点</text>
+<text x="24" y="50" font-size="11.5" fill="var(--text-muted)">位置这两个数字，量到的是轴心，不是元素的左上角</text>
+<rect x="60" y="74" width="300" height="120" rx="6" fill="var(--accent2)" opacity="0.06" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="66" y="90" font-size="10.5" fill="var(--accent2)">父对象（画布 GameUI）</text>
+<rect x="110" y="100" width="200" height="70" rx="4" fill="var(--accent)" opacity="0.2" stroke="var(--accent)" stroke-width="1.5"/>
+<text x="210" y="188" font-size="10.5" fill="var(--accent)" text-anchor="middle">子元素</text>
+<circle cx="60" cy="194" r="5.5" fill="var(--red)" stroke="var(--bg-input)" stroke-width="2"/>
+<text x="60" y="216" font-size="10.5" fill="var(--red)" text-anchor="middle">锚点</text>
+<line x1="60" y1="194" x2="210" y2="136" stroke="var(--red)" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.75"/>
+<circle cx="210" cy="136" r="6" fill="var(--accent2)" stroke="var(--bg-input)" stroke-width="2"/>
+<line x1="202" y1="136" x2="218" y2="136" stroke="var(--bg-input)" stroke-width="1.5"/>
+<line x1="210" y1="128" x2="210" y2="144" stroke="var(--bg-input)" stroke-width="1.5"/>
+<text x="224" y="120" font-size="10.5" fill="var(--accent2)">轴心（默认正中）</text>
+<text x="112" y="230" font-size="11" fill="var(--red)">「位置」＝ 这条虚线的长短</text>
+<text x="400" y="100" font-size="12" fill="var(--text)">· 轴心默认在元素<tspan font-weight="700">正中</tspan></text>
+<text x="400" y="126" font-size="12" fill="var(--text)">· <tspan font-weight="700">旋转、缩放都绕轴心</tspan></text>
+<text x="400" y="152" font-size="12" fill="var(--text)">· 轴心一挪，同样的数值元素整体偏一段</text>
+<text x="400" y="178" font-size="12" fill="var(--text)">· 本课不动轴心，保持正中</text>
+<text x="400" y="210" font-size="11.5" fill="var(--text-muted)">锚点管「贴着谁」，</text>
+<text x="400" y="230" font-size="11.5" fill="var(--text-muted)">轴心管「拿身上哪一点去贴」</text>
+</svg>
+<div class="step-img half"><img src="images/课件20/血条24-轴心数值.png" alt="检查器里的矩形变换面板：Pivot 一行 X、Y 都是 0.5，说明轴心在元素正中" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+
+<div class="card"><h3>拉伸（Stretch）：父对象多大它就多大</h3><p>同一个预设面板里，最右边还有一列<strong>拉伸</strong>预设（<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">横向拉伸</mark> / <mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">纵向拉伸</mark> / <mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">全屏拉伸</mark>，在面板最右边）。选中之后，「位置」会变成 <strong>左（Left）/ 右（Right）/ 顶部（Top）/ 底部（Bottom）</strong> 四个偏移——四个都填 <code>0</code>，子元素就和父对象<strong>一模一样大</strong>。血条的底板、红条都用这个。</p></div>
+<svg viewBox="0 0 680 250" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:14px auto 8px;font-family:inherit" role="img" aria-label="锚点选拉伸后，窗口变窄变宽，子元素四条边都跟着父对象贴住">
+<rect x="1" y="1" width="678" height="248" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
+<text x="24" y="30" font-size="14" font-weight="700" fill="var(--accent2)">拉伸：父对象多大，它就多大</text>
+<text x="24" y="50" font-size="11.5" fill="var(--text-muted)">锚点选成「一条边」而不是「一个点」，四条边就跟着父对象伸缩</text>
+<text x="60" y="86" font-size="10.5" fill="var(--text-muted)">窗口窄</text>
+<rect x="60" y="94" width="150" height="44" rx="5" fill="var(--accent2)" opacity="0.06" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="5 4"/>
+<rect x="60" y="94" width="150" height="44" rx="5" fill="var(--accent)" opacity="0.22" stroke="var(--accent)" stroke-width="1.5"/>
+<text x="135" y="121" font-size="10.5" fill="var(--accent)" text-anchor="middle">子元素</text>
+<text x="60" y="172" font-size="10.5" fill="var(--text-muted)">窗口变宽</text>
+<rect x="60" y="180" width="380" height="44" rx="5" fill="var(--accent2)" opacity="0.06" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="5 4"/>
+<rect x="60" y="180" width="380" height="44" rx="5" fill="var(--accent)" opacity="0.22" stroke="var(--accent)" stroke-width="1.5"/>
+<text x="250" y="207" font-size="10.5" fill="var(--accent)" text-anchor="middle">子元素</text>
+<text x="470" y="110" font-size="12" fill="var(--text)">左 / 右 / 顶部 / 底部</text>
+<text x="470" y="136" font-size="12" fill="var(--text)"><tspan font-weight="700">四个偏移都填 0</tspan></text>
+<text x="470" y="166" font-size="11.5" fill="var(--text-muted)">＝ 四边永远贴住父对象</text>
+<text x="470" y="198" font-size="11.5" fill="var(--text-muted)">血条的底板、红条都用它</text>
+</svg>
+<div class="step-img half"><img src="images/课件20/血条25-拉伸数值.png" alt="检查器里的矩形变换面板：锚点预设最右一列是拉伸，选中后位置一行变成 Left / Right / Top / Bottom 四个偏移" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="card"><h3>锚点预设：点 Rect Transform 左上角那个方块</h3><p>面板最左上角有个<strong>小方块图标</strong>，上面画着当前锚点落在父对象的哪个角落——<strong>点它一下</strong>，锚点预设就弹出来了。血条的锚点、位置，全都从这儿开始设。</p><p>弹出的面板是 <strong>3×3 九个点</strong>，对应父对象（画布 <code>GameUI</code>）的九个位置：左上、上中、右上、左中……<strong>点哪个，锚点就落到哪个位置</strong>，「位置（Pos X / Pos Y）」这两个数字的意思也跟着换。最右边那一列是<strong>拉伸</strong>，下一页讲。</p><p>选中<strong>左下</strong>后，位置会显示 <code>0</code> / <code>0</code>——贴着左下角，元素也跟着跳过去。<strong>这不是出问题</strong>：锚点换了，参考点就换了，「离参考点 0 米」自然就是贴着角。下一步再填数值把它挪进来就行。</p><div class="step-img half"><img src="images/课件20/血条8-锚点预设.png" alt="矩形变换面板左上角的锚点预设方块，点开是九宫格预设与最右边一列的拉伸预设" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>③ 把 PlayerHealth 摆到左下角</h3><p>选中 <code>PlayerHealth</code>，点矩形变换左上角的<strong>预设方块</strong>，选 <strong>左下</strong>；宽度填 <code>400</code>、高度填 <code>50</code>，位置 X 填 <code>250</code>、Y 填 <code>100</code>。</p><p><strong>为什么位置不直接填 50 / 75？</strong>因为位置量的是<strong>元素中心</strong>，不是左下角：宽 400 的一半是 200，<code>50 + 200 = 250</code>；高 50 的一半是 25，<code>75 + 25 = 100</code>。这么算下来，血条的<strong>左边缘</strong>离屏幕左边 50、<strong>下边缘</strong>离下边 75，整条完整露在屏幕里。数值不用一模一样，按自己的截图摆到差不多就行——但<strong>锚点必须是左下</strong>。</p><div class="step-img"><img src="images/课件20/血条10-锚点左下.png" alt="PlayerHealth 的锚点设为左下，位置 250/100，宽 400 高 50，血条完整落在屏幕左下角" onclick="zoomQR(this)" style="cursor:pointer;width:66.6667%;max-width:66.6667%;margin:0 auto" onerror="imgMissing(this)"></div></div>
+
+</div></div>
+
+<div class="slide" data-page="8"><div class="slide-inner markable">
+<h1>血条底板 · BackgroundImage</h1>
+<div class="card"><p>底板就是一条<strong>半透明的黑条</strong>，作用只有一个：让红条在亮堂堂的白天场景里也看得清。</p></div>
+<div class="card"><h3>① 建一个 UI 图像</h3><p>选中 <code>PlayerHealth</code>，右键 → <strong>UI → 图像（Image）</strong>，改名 <code>BackgroundImage</code>。</p><p>用「UI → 图像」建出来的对象自带 <strong>矩形变换</strong> 和 <strong>图像（Image）</strong> 组件，不用自己加。</p><div class="step-img"><img src="images/课件20/血条12-建BackgroundImage.png" alt="在 PlayerHealth 上右键 UI → 图像，改名为 BackgroundImage" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>② 拉伸，铺满父对象</h3><p>点面板最右边的<strong>全屏拉伸</strong>，再把 <strong>左 / 右 / 顶部 / 底部</strong> 四个偏移都填 <code>0</code>。底板就和 <code>PlayerHealth</code> 一样大了。</p><div class="step-img"><img src="images/课件20/血条13-背景铺满.png" alt="BackgroundImage 锚点选全屏拉伸，四边偏移都是 0" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>③ 调颜色：黑色 + 半透明</h3><p>图像组件里点 <strong>颜色（Color）</strong> 色块，调成黑色，再把 <strong>A（Alpha）</strong> 拉到 <code>140</code> 左右——A 就是透明度，范围 <code>0</code>～<code>255</code>：<code>255</code> 完全不透明，<code>0</code> 全透明，中间值就是半透明。</p><div class="step-img"><img src="images/课件20/血条14-背景颜色.png" alt="图像颜色设为黑色，Alpha 约 140，也就是半透明" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="ok-box">💡 <strong>底板可以不放图</strong>：Image 的源图像留空时会画一个纯色矩形，正好拿来当底板，不用满工程去找纯色图。<strong>但下一条红条不行</strong>——它要靠填充总数控制长度，必须有 sprite，下一页会讲。</div>
+</div></div>
+<div class="slide" data-page="9"><div class="slide-inner markable">
+<h1>血条填充 · FillImageHealth</h1>
+<div class="card"><p>这条红条是全场唯一会「变短」的东西——血量的多少，最后全落在它的<strong>填充总数（fillAmount）</strong>上。</p></div>
+<div class="card"><h3>① 再建一个 UI 图像</h3><p>还是在 <code>PlayerHealth</code> 上右键 → <strong>UI → 图像</strong>，改名 <code>FillImageHealth</code>。</p><div class="step-img"><img src="images/课件20/血条15-建FillImageHealth.png" alt="在 PlayerHealth 上再建一个 UI 图像，改名为 FillImageHealth" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>② 源图像：不能留空</h3><p>从项目窗口往 <strong>源图像（Source Image）</strong> 槽位拖一张 sprite 进来，用 <code>TEX_White_16x16.png</code> 这张 16×16 的纯白小图就行。它只是一块<strong>颜色载体</strong>，长什么样不重要，真正显示出来的是下面设的颜色。</p><div class="step-img third"><img src="images/课件20/血条15b-TEX白图.png" alt="项目窗口里的 TEX_White_16x16.png：一张 16×16 的纯白小图" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><p><strong>这里不能留空。</strong>图像没有源图像时，Unity 会退回「普通矩形」的绘制方式，<strong>「已填充」的填充方法、填充原点、填充总数全都不生效</strong>——红条永远是满的，血量掉了也不会缩短。（下一页的底板可以留空，是因为底板不需要填充。）</p><p>手边没有这张白图也不影响：新建 UI 图像时 Unity 自带的 <code>UISprite</code> 就能用，或者项目里随便一张 sprite 都行，颜色最后都靠「颜色」这一项决定。</p></div>
+<div class="card"><h3>③ 图像类型改成「已填充」</h3><p><strong>图像类型（Image Type）</strong> 从「简单」改成 <strong>已填充（Filled）</strong>。这一步是整节课的关键——<strong>只有「已填充」的图像才有「填充总数」</strong>，普通图像只能整张显示或整张隐藏。</p><p>改完之后下面会多出三项：<strong>填充方法（Fill Method）</strong>、<strong>填充原点（Fill Origin）</strong>、<strong>填充总数（Fill Amount）</strong>。</p><div class="step-img"><img src="images/课件20/血条16-已填充设置.png" alt="图像类型改为已填充，下方出现填充方法、填充原点、填充总数三项" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>④ 填充方法：水平 + 从左往右</h3><ul><li><strong>填充方法</strong> 选 <strong>水平（Horizontal）</strong>：从一边缩到另一边</li><li><strong>填充原点</strong> 选 <strong>左（Left）</strong>：从左往右缩，血少的时候先掉右边那一截</li><li><strong>填充总数</strong> 先保持 <code>1</code>（满血）</li></ul><p>选「垂直」会变成从下往上缩——那是电梯、载入进度条用的，不是血条。</p><div class="step-img half"><img src="images/课件20/血条16b-填充方法.png" alt="图像组件的填充设置：填充方法选水平，填充原点选左，填充总数保持 1" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>⑤ 调颜色与边距</h3><ul><li><strong>颜色</strong> 填 (249, 33, 55)，偏暗的鲜红；用十六进制就是 <code>F92137</code></li><li><strong>锚点</strong> 同样选<strong>全屏拉伸</strong>，四个偏移各填 <code>8</code>——红条比底板小一圈，看起来才像「框里灌了血」</li></ul><div class="step-img"><img src="images/课件20/血条17-填充颜色.png" alt="FillImageHealth 颜色设为 F92137，锚点拉伸四边各 8" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="ok-box">⚠️ <strong>填充总数是 0～1 的小数，不是百分数</strong>：<code>1</code> = 满，<code>0.5</code> = 一半，<code>0</code> = 空。填 <code>50</code> 不会变成一半，而是被当成 1（满格）。</div>
+<div class="step-img half"><img src="images/课件20/血条17b-填充0.5.png" alt="填充总数改成 0.5 后，红条只剩左边一半，右边露出底板" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+</div></div>
+<div class="slide" data-page="10"><div class="slide-inner markable">
+<h1>生命图标 · HealthIcon</h1>
+<div class="card"><h3>① 第三个 UI 图像</h3><p>还是在 <code>PlayerHealth</code> 上右键 → <strong>UI → 图像</strong>，改名 <code>HealthIcon</code>。</p><div class="step-img half"><img src="images/课件20/血条18-建HealthIcon.png" alt="在 PlayerHealth 上建第三个 UI 图像，改名为 HealthIcon" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>② 源图像选心形图标</h3><p>源图像拖 <code>HUD_LifeBar_Icon.png</code>（心形图标）。没有图标就随便找一张也行，这一层只是为了好看。</p><div class="step-img"><img src="images/课件20/血条19-图标源图.png" alt="HealthIcon 的源图像设为心形图标" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>③ 勾上「保持长宽比」</h3><p>图像组件里把 <strong>保持长宽比（Preserve Aspect）</strong> 勾上。不勾的话，图标会跟着矩形宽高被拉成扁的或长的。</p><div class="step-img"><img src="images/课件20/血条20-保持长宽比.png" alt="图像组件里勾选保持长宽比 Preserve Aspect" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>④ 摆到左端外面</h3><p>锚点选 <strong>左中（middle-left）</strong>，位置 X 填个负数（比如 <code>-20</code>），图标就探到血条左边外面一点，像血条的「脑袋」；宽度给 <code>40</code> 左右。</p></div>
+<div class="ok-box">💡 <strong>叠放顺序由层级里的上下顺序决定</strong>：同级子对象<strong>上面那层先画（在后面），下面那层后画（盖在上面）</strong>。我们是按「底板 → 红条 → 图标」的顺序建的，正好正确——别去拖层级顺序，底板一旦被拖到最后，整条血条就被它盖住了。</div>
+<div class="card"><h3>回头看：为什么非要多套一个空对象</h3><p>三样东西——半透明黑底板、红色填充、生命图标——<strong>要一起动、一起淡出</strong>。套在同一个空对象底下，以后调位置、调透明度，动这一个就够；三样各自散在画布上，改一次得改三处。</p><p>空对象自己不画任何东西，它就是这三样共用的<strong>把手</strong>。</p><p>这也是<strong>为什么不干脆用一张图当血条</strong>：血条要按比例缩短、要压在底板上、左边还要露出图标，三件事分开做才简单，合在一张图里就改不动了。以后做蓝条、经验条、Boss 血条，都是这个三段式。</p></div></div></div>
+<div class="slide" data-page="11"><div class="slide-inner markable">
+<h1>摆放验收 · 让血条待在左下角</h1>
+<div class="card"><h3>对一遍四样东西的位置</h3><table><thead><tr><th>对象</th><th>锚点</th><th>应该长什么样</th></tr></thead><tbody><tr><td><code>PlayerHealth</code></td><td>左下</td><td>整条血条离屏幕左边 50、下边 75</td></tr><tr><td><code>BackgroundImage</code></td><td>全屏拉伸 + 四边 0</td><td>和 PlayerHealth 一样大，半透明黑</td></tr><tr><td><code>FillImageHealth</code></td><td>全屏拉伸 + 四边 8</td><td>比底板小一圈的红色条</td></tr><tr><td><code>HealthIcon</code></td><td>左中</td><td>贴在血条左端，垂直居中</td></tr></tbody></table><div class="step-img"><img src="images/课件20/血条21-摆放完成.png" alt="三个子元素摆好后，2D 视图里血条的样子" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>不用运行也能看见</h3><p>切到 <strong>Game 视图</strong>（不用点播放），血条就已经在左下角了——UI 是直接画在屏幕上的，跟有没有运行无关。运行之后按 <strong>WASD</strong> 跑一圈、转个身：<strong>血条一动不动</strong>，这才对。</p></div>
+<div class="card"><h3>再验一次缩放</h3><p>Game 视图左上角把分辨率从 <code>1920×1080</code> 依次换成 <code>1366×768</code>、<code>Free Aspect</code> 各看一遍：血条的<strong>相对位置和比例不变</strong>。这就是「画布设置」那一页画布缩放器干的活——没设它的话，小窗口里血条会顶到屏幕外去。</p></div>
+<div class="ok-box">💡 血条大小不合适、位置偏了，<strong>不要改三个子对象</strong>，改 <code>PlayerHealth</code> 一个的宽度和位置就行——底板和红条是拉伸的，会跟着一起变。这就是套一层父对象的好处。</div>
+</div></div>
+<div class="slide" data-page="12"><div class="slide-inner markable">
+<h1>血条原理 · 只改一个 fillAmount</h1>
+<div class="card"><p>血条变短这件事，Unity 已经替我们算好了：只要给<strong>填充总数（fillAmount）</strong> 一个 0～1 的数，它自己把红条画到相应长度。所以脚本要做的只有一句：</p><div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_fill',this)">复制</button></div>
+<pre id="c20_fill"><code class="language-csharp">healthFillImage.fillAmount = CurrentHealth / MaxHealth;</code></pre>
+</div><p>血量 100、满血 100，除出来是 <code>1</code>，满格；50 / 100 是 <code>0.5</code>，一半；0 就是空的。</p></div>
+<svg viewBox="0 0 680 264" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:14px auto 8px;font-family:inherit" role="img" aria-label="fillAmount 为1、0.5、0.15时血条分别显示满格、一半和一小截">
+<rect x="1" y="1" width="678" height="262" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
+<text x="24" y="30" font-size="14" font-weight="700" fill="var(--accent2)">fillAmount 一个数，决定血条多长</text>
+<rect x="40" y="52" width="360" height="26" rx="4" fill="var(--text)" opacity="0.15"/>
+<rect x="40" y="52" width="360" height="26" rx="4" fill="var(--red)" opacity="0.9"/>
+<text x="416" y="70" font-size="12" font-weight="700" fill="var(--text)">fillAmount = 1</text>
+<text x="540" y="70" font-size="12" fill="var(--text-muted)">血量 100 / 100</text>
+<rect x="40" y="110" width="360" height="26" rx="4" fill="var(--text)" opacity="0.15"/>
+<rect x="40" y="110" width="180" height="26" rx="4" fill="var(--red)" opacity="0.9"/>
+<text x="416" y="128" font-size="12" font-weight="700" fill="var(--text)">fillAmount = 0.5</text>
+<text x="540" y="128" font-size="12" fill="var(--text-muted)">血量 50 / 100</text>
+<rect x="40" y="168" width="360" height="26" rx="4" fill="var(--text)" opacity="0.15"/>
+<rect x="40" y="168" width="54" height="26" rx="4" fill="var(--red)" opacity="0.9"/>
+<text x="416" y="186" font-size="12" font-weight="700" fill="var(--text)">fillAmount = 0.15</text>
+<text x="540" y="186" font-size="12" fill="var(--text-muted)">血量 15 / 100</text>
+<text x="40" y="222" font-size="11" fill="var(--text-muted)">灰底是底板 BackgroundImage，红条是 FillImageHealth</text>
+<text x="40" y="242" font-size="11" fill="var(--accent)">红条从左往右缩，是因为填充方法选了「水平」、填充原点选了「左」</text>
+</svg>
+<div class="card"><h3>这就是游戏 UI 的分工</h3><table><thead><tr><th>谁</th><th>负责</th><th>本课对应</th></tr></thead><tbody><tr><td><strong>数据</strong></td><td>血量还剩多少</td><td><code>HealthChange</code> 里的 <code>CurrentHealth</code></td></tr><tr><td><strong>显示</strong></td><td>把数字画成一根条</td><td><code>FillImageHealth</code> 的 <code>fillAmount</code></td></tr><tr><td><strong>联系</strong></td><td>一句赋值</td><td><code>fillAmount = CurrentHealth / MaxHealth</code></td></tr></tbody></table><p>把「数据」和「显示」分开，好处是改显示不用动数据：想把血条换成圆环、换成数字百分比，只改 UI 就行，脚本那行公式一个字都不用改。</p></div>
+<div class="ok-box">⚠️ 分母一定是<strong>满血 <code>MaxHealth</code></strong>，不是当前血量。写成 <code>CurrentHealth / CurrentHealth</code> 永远是 1，血条永远满格——这个错很难一眼看出来，因为画面「看起来很正常」。</div>
+</div></div>
+<div class="slide" data-page="13"><div class="slide-inner markable">
+<h1>敌人准备 · 碰撞体与 Enemy 标签</h1>
+<div class="card"><p>血条搭好了，可它一直是满的——因为还没人扣血。扣血靠「撞」：敌人扑到玩家身上咬一口。要让 Unity 知道「碰上了」，敌人身上必须有两样东西：</p><ul><li><strong>碰撞体（Collider）</strong>：告诉引擎「我占了多大一块地方」。没有它，两个东西只会互相穿过去，不算碰上</li><li><strong>标签（Tag）= Enemy</strong>：玩家被撞时得认出「撞我的是敌人，不是房子」，靠的就是标签</li></ul></div>
+<div class="card"><h3>① 检查 / 添加碰撞体</h3><p>打开动物预制体（或场景里那只动物），先看检查器里<strong>有没有碰撞体</strong>：课件18 加过盒型碰撞体的就直接用；<strong>没有</strong>就 添加组件 → <strong>球形碰撞体（Sphere Collider）</strong>，半径 <code>0.5</code> 左右、中心 Y 抬到 <code>0.6</code>，把整个身子包住。</p><div class="step-img"><img src="images/课件20/敌人1-球形碰撞体.png" alt="敌人身上添加球形碰撞体，半径 0.5，中心 Y 0.6" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>② 千万别勾 Is Trigger</h3><p>球形碰撞体上有一个 <strong>是触发器（Is Trigger）</strong> 勾选框，<strong>不要勾</strong>。</p><p>触发器只是「穿过的时候通知一声」，<strong>不产生真正的碰撞</strong>——玩家身上那个「撞到东西才响」的回调（<code>OnControllerColliderHit</code>）根本不会被调用，撞上去一点血都不掉，还查不出原因。</p></div>
+<div class="card"><h3>③ 新建并设置 Enemy 标签</h3><ol><li><strong>先新建标签</strong>：检查器顶部 <strong>标签（Tag）</strong> 下拉 → <strong>添加标签…（Add Tag…）</strong>，在标签管理器里点 <strong>+</strong>，输入 <code>Enemy</code> 回车</li><li><strong>再选上它</strong>：回到场景，把动物的<strong>标签</strong>下拉选成 <code>Enemy</code></li></ol><p><code>Enemy</code> <strong>不是 Unity 自带的标签</strong>——自带的只有 <code>Untagged</code>、<code>Player</code>、<code>MainCamera</code> 那几个，下拉里原本没有 Enemy，必须自己建，否则代码里的 <code>CompareTag("Enemy")</code> 永远不成立。</p><div class="step-img"><img src="images/课件20/敌人2-Enemy标签.png" alt="在标签管理器新建 Enemy 标签，并把敌人的标签选为 Enemy" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="ok-box">⚠️ 改的是<strong>预制体</strong>就记得 <strong>覆盖（Overrides）→ 应用全部</strong>：否则重新运行、生成中心再刷出来的动物，身上既没有碰撞体也没有标签，只有你手上那一只会让玩家掉血。</div>
+</div></div>
+<div class="slide" data-page="14"><div class="slide-inner markable">
+<h1>敌人攻击力 · EnemyData</h1>
+<div class="card"><p>每个敌人咬一口有多疼、多久咬一次，写在敌人自己的数据脚本里，方便随时调，不用改玩家那边。</p></div>
+<div class="card"><h3>① 新建 EnemyData.cs，挂到敌人身上</h3><p>项目（Project）窗口右键 → <strong>创建（Create）→ C# 脚本</strong>，命名 <code>EnemyData</code>（大小写要和类名一致）。写完拖到动物身上，检查器里 <strong>攻击力（Attack Power）</strong> 设 <code>10</code>、<strong>攻击间隔（Contact Attack Interval）</strong> 设 <code>1</code>。</p><div class="step-img"><img src="images/课件20/敌人3-EnemyData组件.png" alt="敌人身上挂 EnemyData，攻击力 10、攻击间隔 1" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_enemydata',this)">复制</button></div>
+<pre id="c20_enemydata"><code class="language-csharp">using UnityEngine;
+
+public class EnemyData : MonoBehaviour
+{
+    public float attackPower = 10f;             // 每次咬掉多少血
+    public float contactAttackInterval = 1f;    // 两次攻击至少隔几秒
+
+    private float lastAttackTime;               // 上一次攻击的时刻
+
+    // 问一句：现在能攻击吗？能就记下这次的时刻，返回 true
+    public bool canAttack()
+    {
+        float currentTime = Time.time;
+        if (currentTime - lastAttackTime &gt;= contactAttackInterval)
+        {
+            lastAttackTime = currentTime;
+            return true;
+        }
+        return false;
+    }
+}</code></pre>
+</div>
+<div class="card"><h3>② 逐段看</h3><ol><li><strong>两个 public 字段</strong>：<code>public</code> 才能在检查器里看到、也才能被别的脚本读到。攻击力决定一口掉多少血，间隔决定多久能咬第二口。</li><li><strong><code>lastAttackTime</code> 为什么是 private</strong>：它是内部记账的时间，不需要给人调，所以不写 public。</li><li><strong><code>Time.time</code></strong>：游戏从开始跑到现在的秒数，一直在涨。</li><li><strong>为什么一定要有间隔</strong>：碰撞回调是<strong>每一帧都在响</strong>的——玩家贴着敌人站一秒，就是几十次回调。没有间隔，血条一瞬间就空了。</li><li><strong>为什么在 canAttack() 里改 lastAttackTime</strong>：这个方法不只是「问一句」，能咬就顺手把时间记下来。所以它每调用一次都可能改变状态，<strong>别在同一帧里问两次</strong>。</li></ol></div>
+<div class="ok-box">💡 调难度只改这两个数：攻击力 20 + 间隔 2 秒 = 疼但慢；攻击力 5 + 间隔 0.5 秒 = 不疼但粘人。玩家脚本一个字都不用动。</div>
+</div></div>
+<div class="slide" data-page="15"><div class="slide-inner markable">
+<h1>玩家扣血 · HealthChange</h1>
+<div class="card"><p>最后一块拼图：玩家身上挂一个脚本，负责「被撞 → 扣血 → 改血条」。</p></div>
+<div class="card"><h3>① 新建 HealthChange.cs，挂到 Player 身上</h3><p>同样右键 → 创建 → C# 脚本，命名 <code>HealthChange</code>，拖到 <strong>Player</strong> 上。</p><div class="step-img"><img src="images/课件20/玩家1-挂HealthChange.png" alt="HealthChange 脚本挂在 Player 对象上" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_healthchange',this)">复制</button></div>
+<pre id="c20_healthchange"><code class="language-csharp">using UnityEngine;
+using UnityEngine.UI;   // 要用 Image，必须带上这一行
+
+public class HealthChange : MonoBehaviour
+{
+    public float MaxHealth = 100f;          // 满血
+    public float CurrentHealth;             // 当前血量
+    public Image healthFillImage;           // 血条上那条红条，检查器里拖进来
+
+    void Start()
+    {
+        CurrentHealth = MaxHealth;          // 开局满血
+        UpdateHealth();
+    }
+
+    // 玩家用角色控制器撞到东西时触发（不需要刚体）
+    void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        if (hit.collider.CompareTag("Enemy"))
+        {
+            EnemyData enemy = hit.gameObject.GetComponent&lt;EnemyData&gt;();
+            if (enemy != null &amp;&amp; enemy.canAttack())
+            {
+                TakeDamage(enemy.attackPower);
+            }
+        }
+    }
+
+    // 扣血：扣完立刻刷新血条
+    public void TakeDamage(float damage)
+    {
+        CurrentHealth = CurrentHealth - damage;
+        if (CurrentHealth &lt; 0) CurrentHealth = 0;
+        UpdateHealth();
+    }
+
+    // 把血量换算成 0~1，交给红条
+    void UpdateHealth()
+    {
+        if (healthFillImage != null)
+        {
+            healthFillImage.fillAmount = CurrentHealth / MaxHealth;
+        }
+    }
+}</code></pre>
+</div>
+<div class="card"><h3>② 把红条拖进「生命条填充图」槽位</h3><p>脚本挂上之后，检查器里多出一个 <strong>生命条填充图（Health Fill Image）</strong> 槽位。把层级里的 <code>FillImageHealth</code> <strong>拖到这个槽位</strong>——脚本就是靠这个引用找到红条的。</p><p>不拖会怎样：代码里有 <code>if (healthFillImage != null)</code> 挡着，所以不会报错，但<strong>血条一动不动</strong>——血在扣，只是没画出来。</p><div class="step-img"><img src="images/课件20/玩家2-拖入填充图.png" alt="把 FillImageHealth 拖到 HealthChange 的生命条填充图槽位" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>③ 逐段看</h3><ol><li><strong><code>using UnityEngine.UI;</code></strong>：<code>Image</code> 这个类型在 <code>UnityEngine.UI</code> 里，不写这一行，字段那一行就报「找不到类型 Image」。</li><li><strong><code>OnControllerColliderHit</code></strong>：角色控制器专用的回调，<strong>不需要刚体</strong>。玩家是用 <code>controller.Move()</code> 走的（课件13 的 <code>PlayerMove</code>），撞到谁引擎就回调它。</li><li><strong>和课件12 的 <code>OnCollisionEnter</code> 有什么区别</strong>：那个要刚体 + 碰撞体，是「被物理引擎推着走」的物体用的；角色控制器自己管碰撞，硬加刚体反而会跟它打架。</li><li><strong><code>CompareTag("Enemy")</code></strong>：先确认撞的是敌人。少了这一句，撞到房子、树木也会去取 <code>EnemyData</code>——取不到不会崩，但等于每次碰撞都白跑一趟；以后要是有别的物体也挂了 <code>EnemyData</code>（可破坏的木箱、陷阱），就会莫名其妙掉血。</li><li><strong><code>GetComponent&lt;EnemyData&gt;()</code></strong>：从撞到的那只敌人身上，把它的数据脚本取出来（课件14 学过）。</li><li><strong><code>canAttack()</code></strong>：冷却好了没，由敌人自己判断。所以「多久掉一次血」是敌人的参数，玩家这边不掺和。</li><li><strong><code>Start()</code> 里先满血</strong>：<code>CurrentHealth</code> 默认为 0，不初始化的话开局血条就是空的。</li><li><strong><code>UpdateHealth()</code></strong>：把当前血量换算成 0～1 填给 <code>fillAmount</code>。扣血、以后回血，都调这一个方法。</li></ol></div>
+<div class="step-img"><img src="images/课件20/玩家掉血.gif" alt="敌人扑上来咬一口，血条短一截" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="ok-box">⚠️ 撞上去完全不掉血，按这个顺序查：① 敌人有没有碰撞体、<strong>勾没勾</strong> Is Trigger ② 标签是不是 <code>Enemy</code>（大小写也要对）③ 「生命条填充图」槽位有没有拖东西 ④ 红条的图像类型是不是<strong>已填充</strong>。</div>
+</div></div>
+<div class="slide" data-page="16"><div class="slide-inner markable">
+<h1>作业 · 血量数字与低血闪烁</h1>
+<div class="card"><h3>基本要求</h3><p>血条已经会掉了，但屏幕上只有一个「大概」——剩 30 还是 31，看不出来；血量见底也没有任何提醒。这次作业给血条加两样东西：</p><ul><li><strong>血量数字</strong>：血条右端显示「当前 / 满血」，扣血时跟着变</li><li><strong>低血闪烁</strong>：血量低于 30 时，整条血条开始忽明忽暗</li></ul></div>
+<div class="card"><h3>核心要求</h3><ul><li>数字用 <strong>UI → 旧版 → 文本（Text）</strong> 建（新版 TextMeshPro 要先导入资源，本次不用）</li><li>文本挂在 <code>PlayerHealth</code> 下面，锚点 <strong>右中</strong>，贴在血条右端</li><li>闪烁用 <code>PlayerHealth</code> 上<strong>已经加过的画布组</strong>改 <code>alpha</code>，不要去改每张图的颜色</li><li>闪烁要能<strong>自己停下来</strong>：血量回到 30 以上，Alpha 必须恢复成 1</li></ul></div>
+<div class="card"><h3>本次作业（必做）：补完三段 TODO</h3><p>新建 <code>HealthHUD.cs</code>，挂在 <code>PlayerHealth</code> 上。骨架如下，三处 <code>TODO</code> 自己写。</p></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_hw',this)">复制</button></div>
+<pre id="c20_hw"><code class="language-csharp">using UnityEngine;
+using UnityEngine.UI;
+
+public class HealthHUD : MonoBehaviour
+{
+    public HealthChange health;      // 玩家身上的扣血脚本
+    public Text healthText;          // 血条上的数字
+    public float lowHealth = 30f;    // 低于这个值开始闪
+
+    private CanvasGroup canvasGroup;
+
+    void Start()
+    {
+        canvasGroup = GetComponent&lt;CanvasGroup&gt;();
+    }
+
+    void Update()
+    {
+        if (health == null) return;
+
+        // TODO ① 把「当前血量 / 满血」写进 healthText，形如 68 / 100
+
+        // TODO ② 血量低于 lowHealth 时，让 canvasGroup.alpha 在 0.3 ~ 1 之间来回闪
+        // 提示：Mathf.PingPong(Time.time, 1f)
+
+        // TODO ③ 血量回到 lowHealth 以上时，把 alpha 恢复成 1
+    }
+}</code></pre>
+</div>
+<div class="card"><h3>提示</h3><ul><li><strong>取血量</strong>：<code>HealthChange</code> 的 <code>MaxHealth</code> 和 <code>CurrentHealth</code> 都是 <code>public</code> 字段，先把 Player 拖进槽位，再 <code>health.CurrentHealth</code> 就能读到</li><li><strong>闪烁</strong>：<code>Mathf.PingPong(Time.time, 1f)</code> 会在 0～1 之间来回走，乘个系数再补个下限就是呼吸灯；不要用 <code>Random</code>，会闪得很难看</li><li><strong>文本</strong>：<code>CurrentHealth.ToString("0")</code> 去掉小数，再拼成 <code>"68 / 100"</code></li><li><strong>恢复</strong>：血量回到 30 以上，把 <code>alpha</code> 写回 <code>1f</code>，否则血条会一直是半透明的</li></ul></div>
+<div class="card"><h3>挑战（选做）</h3><ul><li>低血时把红条颜色改成更刺眼的亮红，血量回上来再改回 <code>F92137</code></li><li>加一个「受伤闪红」：被咬的瞬间屏幕边缘红一下（提示：在画布上铺一张全屏红色 Image，Alpha 从 0.4 快速降到 0）</li><li>把血条做成「延迟掉血」：前面一条浅色残影慢慢追上来，看起来更有打击感</li></ul></div>
+</div></div>
+<div class="slide" data-page="17"><div class="slide-inner end-page">
+
+<div class="end-thanks">
+    <div class="end-left">
+        <div class="end-icon">💪</div>
+        <div class="end-title">感谢各位同学的参与!</div>
+        <div class="end-sub">祝大家学习进步</div>
+    </div>
+    <div class="end-right">
+        <img src="images/tencent-docs-qrcode.png" alt="腾讯文档二维码" onerror="imgMissing(this)" onclick="zoomQR(this)" style="cursor:pointer">
+        <p>扫码查看作业完成情况</p>
+        <a href="https://docs.qq.com/sheet/DV2tKZ2pSTUNwUFpX?tab=bo2p4o" target="_blank" class="end-link">📊 查看作业完成情况文档</a>
+    </div>
+</div>
+<a href="课件21_死亡与游戏管理器.html" class="end-next-link">📖 下一节：课件21 · 死亡与游戏管理器 →</a>
+</div></div>
+</div>
+</div>
+</div>
+
+<div class="search-panel" id="searchPanel">
+    <div class="search-panel-header">
+        <span>🔍 全局搜索</span>
+        <button class="search-panel-close" onclick="closeSearch()">✕</button>
+    </div>
+    <input class="search-input" id="searchInput" placeholder="输入关键词搜索..." oninput="doSearch()" autocomplete="off">
+    <div class="search-results" id="searchResults"></div>
+</div>
+
+<div class="help-overlay" id="helpOverlay">
+    <div class="help-header"><span>📖 使用帮助</span><button class="help-close-btn" onclick="closeHelp()">✕</button></div>
+    <div class="help-body">
+            <h3>⌨️ 快捷键</h3>
+            <table><tr><td><code>Ctrl+K</code></td><td>打开搜索</td></tr><tr><td><code>← →</code></td><td>上一页 / 下一页</td></tr><tr><td><code>Esc</code></td><td>关闭弹窗</td></tr></table>
+            <h3>🎯 导航</h3>
+            <p>左侧边栏点击切换页面；底部圆点快速跳转；进度条显示学习完成度。</p>
+            <h3>💻 在线编辑器</h3>
+            <p>顶部「在线编辑器」下拉提供菜鸟教程、Tutorialspoint、DotNetFiddle 三个在线 C# 编译器。</p>
+            <h3>🌙 主题与字号</h3>
+            <p>深色/浅色切换；A- / A+ 调整字号；刷新后保留设置。</p>
+            <h3>🔍 搜索</h3>
+            <p>支持中英文关键词，匹配结果高亮显示，点击跳转到对应页面。</p>
+        </div>
+</div>
+
+<div class="catalog-panel" id="catalogPanel">
+    <div class="catalog-header">
+        <span>📚 课件目录</span>
+        <button class="catalog-close-btn" onclick="closeCatalog()">✕</button>
+    </div>
+    <div class="catalog-list" id="catalogList"></div>
+</div>
+
+<div class="qr-zoom-overlay" id="qrZoom" onclick="closeZoom()">
+    <img id="qrZoomImg" src="" alt="二维码放大">
+</div>
+
+<div class="nav-buttons">
+    <button class="nav-btn" id="prevBtn" onclick="goSlide(-1)">◀ 上一页</button>
+    <button class="nav-btn" id="nextBtn" onclick="goSlide(1)">下一页 ▶</button>
+</div>
+<div class="progress-dots" id="progressDots"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+window.__CATALOG__ = [{"file": "课件1_认识Unity与课程介绍.html", "label": "课件1 · 认识Unity与课程介绍"}, {"file": "课件2_注册与安装软件.html", "label": "课件2 · 注册与安装软件"}, {"file": "课件3_Unity引擎概览.html", "label": "课件3 · Unity引擎概览"}, {"file": "课件4_场景与物体.html", "label": "课件4 · 场景与物体"}, {"file": "课件5_移动视野与物体.html", "label": "课件5 · 移动视野与物体"}, {"file": "课件6_旋转缩放多选.html", "label": "课件6 · 旋转缩放多选"}, {"file": "课件7_网格与材质.html", "label": "课件7 · 网格与材质"}, {"file": "课件8_C#核心语法.html", "label": "课件8 · C#核心语法"}, {"file": "课件9_Fbx导入与脚本入门.html", "label": "课件9 · Fbx导入与脚本入门"}, {"file": "课件10_资源商店与模型资源.html", "label": "课件10 · 资源商店与模型资源"}, {"file": "课件11_键盘控制移动.html", "label": "课件11 · 键盘控制移动"}, {"file": "课件12_刚体与碰撞体.html", "label": "课件12 · 刚体与碰撞体"}, {"file": "课件13_角色移动与视角.html", "label": "课件13 · 角色移动与视角"}, {"file": "课件14_访问其他游戏对象.html", "label": "课件14 · 访问其他游戏对象"}, {"file": "课件15_游戏管理器与生成物体.html", "label": "课件15 · 游戏管理器与生成物体"}, {"file": "课件16_动物自由巡游与定点巡逻.html", "label": "课件16 · 动物自由巡游与定点巡逻"}, {"file": "课件17_走近动物跟着走.html", "label": "课件17 · 走近动物跟着走"}, {"file": "课件18_动物交互动画切换.html", "label": "课件18 · 动物交互动画切换"}, {"file": "课件19_视线检测与图层.html", "label": "课件19 · 视线检测与图层"}, {"file": "课件20_玩家血条与被接触攻击.html", "label": "课件20 · 玩家血条与被接触攻击"}, {"file": "课件21_死亡与游戏管理器.html", "label": "课件21 · 死亡与游戏管理器"}, {"file": "课件22_撤离点与粒子系统.html", "label": "课件22 · 撤离点与粒子系统"}, {"file": "课件23_启动页面.html", "label": "课件23 · 启动页面"}, {"file": "课件24_FPS场景玩家武器.html", "label": "课件24 · FPS场景玩家武器"}, {"file": "课件25_射击准心与鼠标锁定.html", "label": "课件25 · 射击准心与鼠标锁定"}, {"file": "课件26_消灭敌人与孵化器.html", "label": "课件26 · 消灭敌人与孵化器"}, {"file": "课件27_拾取物品.html", "label": "课件27 · 拾取物品"}, {"file": "课件28_更换枪械.html", "label": "课件28 · 更换枪械"}, {"file": "课件29_修改动画状态机.html", "label": "课件29 · 修改动画状态机"}, {"file": "课件30_NPC对话.html", "label": "课件30 · NPC对话"}, {"file": "课件31_NPC对话进阶.html", "label": "课件31 · NPC对话进阶"}, {"file": "课件32_任务队列.html", "label": "课件32 · 任务队列"}];
+let LESSON_LABEL='';(function(){
+  let cur=window.location.pathname.split('/').pop();
+  let items=window.__CATALOG__||[];
+  for(let i=0;i<items.length;i++){if(items[i].file===cur){LESSON_LABEL=items[i].label;break}}
+  if(!LESSON_LABEL)LESSON_LABEL=document.title.split(' — ')[0]||'';
+})();
+
+// ========== 移动端 "更多" 菜单 ==========
+function toggleMobileMore(){document.getElementById('mobileMoreMenu').classList.toggle('open')}
+function mobileAction(act){
+  document.getElementById('mobileMoreMenu').classList.remove('open');
+  if(act==='ide'){let m=document.getElementById('ideMenu');if(m)m.classList.add('show')}
+  else if(act==='fontDown')changeFont(-1);
+  else if(act==='fontUp')changeFont(1);
+  else if(act==='search')openSearch();
+  else if(act==='flat')toggleFlat();
+  else if(act==='imgbottom')toggleImgBottom();
+  else if(act==='help')toggleHelp();
+}
+document.addEventListener('click',function(e){
+  let mm=document.getElementById('mobileMoreMenu');
+  if(mm&&mm.classList.contains('open')&&!e.target.closest('.mobile-more'))mm.classList.remove('open');
+});
+// 点击移动端信息条跳转下一页
+function mobileInfoTap(){goSlide(1)}
+
+// ========== localStorage ==========
+const LS=(k,d)=>localStorage.getItem(k)||d;
+const LSset=(k,v)=>localStorage.setItem(k,v);
+
+// ========== 主题 ==========
+// ========== 在线编辑器下拉 ==========
+document.addEventListener('DOMContentLoaded',function(){
+    var ideBtn=document.getElementById('ideBtn');
+    if(ideBtn){
+        ideBtn.onclick=function(e){
+            e.stopPropagation();
+            document.getElementById('ideMenu').classList.toggle('show');
+        };
+    }
+    document.querySelectorAll('.dropdown-item').forEach(function(el){
+        el.onclick=function(e){
+            e.preventDefault();
+            window.open(this.dataset.url,'_blank');
+            document.getElementById('ideMenu').classList.remove('show');
+        };
+    });
+    document.addEventListener('click',function(){
+        document.getElementById('ideMenu').classList.remove('show');
+    });
+});
+
+// ========== 主题 ==========
+if(LS('theme','dark')==='light')document.body.classList.add('light');
+function toggleTheme(){
+    const il=document.body.classList.toggle('light');
+    LSset('theme',il?'light':'dark');
+    document.getElementById('themeBtn').textContent=il?'☀️浅色':'🌙深色';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('themeBtn').textContent=document.body.classList.contains('light')?'☀️浅色':'🌙深色';
+    let mi=document.getElementById('mobileInfo');
+    if(mi){
+        mi.querySelector('.mi-lesson').textContent=LESSON_LABEL;
+        mi.querySelector('.mi-page').textContent='第1页 / 共'+total+'页';
+    }
+});
+
+
+// ========== 平铺模式（连续显示全部页面，导出 PDF 用） ==========
+function toggleFlat(){
+    const on=document.body.classList.toggle('flat-mode');
+    document.documentElement.classList.toggle('flat-mode',on);
+    const btn=document.getElementById('flatBtn');
+    if(btn)btn.textContent=on?'🗂️ 分页':'📄 平铺';
+    LSset('flat',on?'1':'0');
+    if(!on)showSlide(curr);   // 切回分页时回到当前页
+}
+// ========== 图片显示模式（右侧小图 / 下方大图） ==========
+function toggleImgBottom(){
+    const on=document.body.classList.toggle('img-bottom');
+    document.documentElement.classList.toggle('img-bottom',on);
+    const btn=document.getElementById('imgBtn');
+    if(btn)btn.textContent=on?'🖼️ 侧图':'🖼️ 图下';
+    LSset('imgmode',on?'1':'0');
+}
+
+
+// ========== 字号 ==========
+const FONT_SIZES=['xs','sm','md','lg','xl'];
+let fontIdx=FONT_SIZES.indexOf(LS('font','md'));
+if(fontIdx<0)fontIdx=2;
+if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+function changeFont(d){
+    document.body.classList.remove('font-'+FONT_SIZES[fontIdx]);
+    fontIdx=Math.max(0,Math.min(FONT_SIZES.length-1,fontIdx+d));
+    if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+    LSset('font',FONT_SIZES[fontIdx]);
+}
+
+// ========== 幻灯片 ==========
+let slides=document.querySelectorAll('.slide,.cover'),
+    navLinks=document.querySelectorAll('.nav-link'),
+    curr=0,total=17,contentTotal=15;
+
+// 进度圆点
+// 侧边栏点击
+navLinks.forEach((l,i)=>l.addEventListener('click',e=>{e.preventDefault();showSlide(i);}));
+let dotsHtml='';
+for(let i=0;i<total;i++)dotsHtml+=`<span class="progress-dot" data-idx="${i}" onclick="showSlide(${i})"></span>`;
+document.getElementById('progressDots').innerHTML=dotsHtml;
+let dots=document.querySelectorAll('.progress-dot');
+
+function showSlide(idx){
+    if(idx<0||idx>=total)return;
+    slides.forEach((s,i)=>s.classList.toggle('active',i===idx));
+    navLinks.forEach((l,i)=>l.classList.toggle('active',i===idx));
+    dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
+    curr=idx;
+    let cp=Math.max(0,Math.min(idx,contentTotal));
+    document.getElementById('progressFill').style.width=(cp/contentTotal*100)+'%';
+    document.getElementById('progressText').textContent=cp+' / '+contentTotal;
+    let mi=document.getElementById('mobileInfo');
+    if(mi){
+        mi.querySelector('.mi-lesson').textContent=LESSON_LABEL;
+        mi.querySelector('.mi-page').textContent='第'+(idx+1)+'页 / 共'+total+'页';
+    }
+    document.getElementById('mainArea').scrollTop=0;
+    document.querySelectorAll('.nav-status')[idx]?.classList.add('seen');
+    updateNav();
+}
+function goSlide(d){ showSlide(curr+d); }
+function updateNav(){
+    document.getElementById('prevBtn').disabled=curr===0;
+    document.getElementById('nextBtn').disabled=curr===total-1;
+    LSset('page_'+window.location.pathname.split('/').pop(), curr);
+}
+
+// 键盘
+document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')goSlide(1);
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')goSlide(-1);
+    if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openSearch();}
+    if(e.key==='Escape'){closeSearch();closeHelp();closeZoom();closeCatalog();}
+});
+
+// ========== 搜索 ==========
+function openSearch(){document.getElementById('searchPanel').classList.add('open');document.getElementById('searchInput').focus();document.getElementById('searchInput').value='';document.getElementById('searchResults').innerHTML=''}
+function closeSearch(){document.getElementById('searchPanel').classList.remove('open')}
+function toggleHelp(){document.getElementById('helpOverlay').classList.toggle('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+// 课件目录
+function toggleCatalog(){
+    let p=document.getElementById('catalogPanel');
+    if(!p.classList.contains('open')){loadCatalog();p.classList.add('open')}else{p.classList.remove('open')}
+}
+function closeCatalog(){document.getElementById('catalogPanel').classList.remove('open')}
+function loadCatalog(){
+    let c=document.getElementById('catalogList');
+    if(c.children.length>0)return;
+    let current=decodeURIComponent(window.location.pathname.split('/').pop());
+    let items=window.__CATALOG__||[];
+    if(!items.length){c.innerHTML='<div class="catalog-item" style="color:var(--text-muted)">暂无课件</div>';return}
+    items.forEach(item=>{
+        let a=document.createElement('a');a.className='catalog-item';a.href=encodeURIComponent(item.file);
+        if(item.file===current)a.classList.add('current');
+        a.innerHTML=`<span class="catalog-num">${item.label.split(' · ')[0]}</span><span>${item.label.split(' · ').slice(1).join(' · ')||item.label}</span>`;
+        c.appendChild(a);
+    });
+}
+function zoomQR(img){document.getElementById('qrZoomImg').src=img.src;document.getElementById('qrZoom').classList.add('show')}
+function closeZoom(){document.getElementById('qrZoom').classList.remove('show')}
+function doSearch(){
+    let q=document.getElementById('searchInput').value,qLower=q.toLowerCase(),c=document.getElementById('searchResults');
+    c.innerHTML='';if(q.length<2)return;
+    let r=[];
+    slides.forEach((s,i)=>{
+        let raw=s.textContent,lower=raw.toLowerCase(),idx=lower.indexOf(qLower);
+        if(idx<0)return;
+        let start=Math.max(0,idx-15),end=Math.min(raw.length,idx+q.length+30);
+        let ex=raw.substring(start,end);
+        if(start>0)ex='...'+ex;
+        if(end<raw.length)ex=ex+'...';
+        // 高亮匹配词
+        let re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+        ex=ex.replace(re,'<mark>$1</mark>');
+        r.push({idx:i,excerpt:ex,slide:s});
+    });
+    r.slice(0,20).forEach(x=>{
+        let a=document.createElement('a');a.className='search-item';a.href='#';
+        let title=navLinks[x.idx]?.textContent.replace(/^\d+\.\s*/,'')||('页面'+(x.idx+1));
+        a.innerHTML=`<div class="sr-lesson">${x.idx+1}. ${title}</div><div class="sr-text">${x.excerpt}</div>`;
+        a.onclick=e=>{e.preventDefault();showSlide(x.idx);closeSearch();};
+        c.appendChild(a);
+    });
+}
+
+// ========== 缺图占位：显示文件名 + 一键复制 ==========
+function imgMissing(img){
+    const src=img.getAttribute('src')||'';
+    const name=src.split('/').pop();
+    const dir=src.slice(0,src.lastIndexOf('/'));
+    const d=document.createElement('div');
+    d.className='img-missing';
+    d.innerHTML='<span>🖼️ 缺图</span>'
+        +'<code class="im-name">'+name+'</code>'
+        +'<button type="button" onclick="copyImgName(this)">复制文件名</button>'
+        +'<div class="im-dir">放到 '+dir+' 目录下，刷新页面即显示</div>';
+    if(img.parentNode) img.parentNode.replaceChild(d,img);
+}
+function copyImgName(btn){
+    const name=btn.parentNode.querySelector('.im-name').textContent;
+    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
+        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
+        try{document.execCommand('copy');}catch(e){}
+        document.body.removeChild(ta);done();};
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(name).then(done).catch(fb);
+    }else{fb();}
+}
+
+// ========== 复制 ==========
+function copyCode(cid,btn){
+    let code=document.getElementById(cid).textContent;
+    navigator.clipboard.writeText(code).then(()=>{
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    }).catch(()=>{
+        // fallback
+        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
+        document.execCommand('copy');document.body.removeChild(ta);
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    });
+}
+
+// ========== 初始化 ==========
+hljs.highlightAll();
+// 折叠面板
+function toggleFold(btn){
+    btn.classList.toggle('open');
+    let content=btn.nextElementSibling;
+    if(!content||!content.classList.contains('fold-content')) content=content.nextElementSibling;
+    if(content&&content.classList.contains('fold-content')) content.classList.toggle('show');
+}
+let savedPage=parseInt(LS('page_'+window.location.pathname.split('/').pop(),'0'));
+if(savedPage>0&&savedPage<total)showSlide(savedPage);else showSlide(0);
+// 恢复上次的平铺/分页模式
+if(LS('flat','0')==='1')toggleFlat();
+if(LS('imgmode','0')==='1')toggleImgBottom();
+
+
+</script>
+</body>
+</html>

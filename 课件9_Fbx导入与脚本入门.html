@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>课件9_Fbx导入与脚本入门 — C#先知课堂</title>
+<link rel="stylesheet" href="vendor/atom-one-dark.min.css">
+<script src="vendor/highlight.min.js"></script>
+<style>
+/* ===== 色彩变量 ===== */
+:root{
+--bg-primary:#0A0E27;--bg-secondary:#0D1430;--bg-card:rgba(17,24,39,0.95);
+--bg-input:#0B1020;--border:rgba(255,255,255,0.06);
+--text:#E8EAED;--text-muted:#9AA0A6;
+--accent:#00D4AA;--accent2:#4FC3F7;--accent-dim:rgba(0,212,170,0.08);
+--orange:#F59E0B;--blue:#818CF8;
+--green:#22C55E;--green-bg:rgba(34,197,94,0.08);--green-border:rgba(34,197,94,0.3);
+--red:#EF4444;--red-bg:rgba(239,68,68,0.08);--red-border:rgba(239,68,68,0.3);
+--yellow:#F59E0B;--purple:#C084FC;--teal:#86EFAC;--teal-border:rgba(34,197,94,0.3);
+--font-size:16px;
+}
+.light{
+--bg-primary:#ffffff;--bg-secondary:#f6f8fa;--bg-card:#f6f8fa;--bg-input:#ffffff;
+--border:#d0d7de;--text:#24292f;--text-muted:#656d76;
+--accent:#0969da;--accent2:#0550ae;--accent-dim:rgba(9,105,218,0.08);
+--orange:#cf222e;--blue:#0550ae;
+--green:#1a7f37;--green-bg:#eefdf2;--green-border:#86d9a0;
+--red:#cf222e;--red-bg:#ffebe9;--red-border:#fdaeb7;
+--yellow:#9a6700;--purple:#8250df;--teal:#0550ae;--teal-border:#4ac26b;
+}
+body.font-xs{--font-size:12px}body.font-sm{--font-size:14px}body.font-md{--font-size:16px}body.font-lg{--font-size:19px}body.font-xl{--font-size:22px}
+
+/* ===== 全局 ===== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microsoft YaHei',sans-serif;background:linear-gradient(180deg,var(--bg-primary),var(--bg-secondary));color:var(--text);line-height:1.6;font-size:var(--font-size)}
+.container{display:flex;height:100vh}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.02)}
+::-webkit-scrollbar-thumb{background:rgba(0,212,170,0.2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,212,170,0.4)}
+
+/* ===== 侧边栏 ===== */
+.sidebar{width:260px;min-width:260px;height:100vh;background:linear-gradient(180deg,rgba(10,14,39,0.98),rgba(13,20,48,0.95));border-right:1px solid var(--border);overflow-y:auto;padding:12px 0;flex-shrink:0;backdrop-filter:blur(10px);position:relative;z-index:10}
+.sidebar-title{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-size:16px;font-weight:700;padding:0 14px 10px;border-bottom:1px solid rgba(0,212,170,0.15);margin-bottom:6px}
+.nav-link{display:flex;align-items:center;color:var(--text-muted);text-decoration:none;padding:8px 14px;font-size:12px;border-left:3px solid transparent;transition:all .2s}
+.nav-link:hover{color:var(--accent);background:var(--accent-dim);border-left-color:rgba(0,212,170,0.4)}
+.nav-link.active{color:#fff!important;background:linear-gradient(90deg,rgba(0,212,170,0.18),transparent);border-left:3px solid var(--accent);font-weight:600}
+.nav-status{width:7px;height:7px;border-radius:50%;margin-right:7px;flex-shrink:0;background:rgba(255,255,255,0.1);transition:all .3s}
+.nav-status.seen{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,0.5)}
+
+/* ===== Header ===== */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header-bar{display:flex;align-items:center;gap:16px;padding:10px 24px;background:rgba(10,14,39,0.95);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;position:relative;z-index:5}
+.progress-wrap{flex:1;min-width:200px;display:flex;align-items:center;gap:12px}
+.progress-bar{flex:1;height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,0.3)}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .5s ease;width:0;box-shadow:0 0 8px rgba(0,212,170,0.4)}
+.progress-text{font-size:11px;color:var(--text-muted);white-space:nowrap}
+.header-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .25s;white-space:nowrap}
+.header-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 8px rgba(0,212,170,0.1);transform:translateY(-1px)}
+.header-dropdown{position:relative;display:inline-block}
+.dropdown-menu{display:none;position:absolute;top:100%;right:0;margin-top:6px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;min-width:180px;z-index:100;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.dropdown-menu.show{display:block}
+.dropdown-item{display:block;padding:10px 16px;color:var(--text);font-size:13px;text-decoration:none;transition:background .2s;cursor:pointer;white-space:nowrap}
+.dropdown-item:hover{background:var(--accent-dim);color:var(--accent)}
+.dropdown-item:not(:last-child){border-bottom:1px solid var(--border)}
+
+/* ===== 幻灯片 ===== */
+.slides-container{flex:1;position:relative !important;overflow:hidden}
+#mainArea .slides-container{position:relative !important;overflow:hidden !important;min-height:calc(100vh - 60px)}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transform:translateX(30px);transition:opacity .35s,transform .35s;pointer-events:none;overflow-y:auto}
+.slide::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:.6;z-index:10}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto;z-index:1}
+.slide-inner{max-width:920px;margin:0 auto;padding:56px 48px 80px}
+
+/* 标题 */
+.slide-inner h1{color:#fff;font-size:26px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid rgba(0,212,170,0.2);letter-spacing:-0.3px}
+.slide-inner h2{color:var(--accent2);font-size:20px;margin:28px 0 14px;font-weight:600}
+.slide-inner h3{color:var(--accent);font-size:calc(var(--font-size) * 1.06);margin:20px 0 10px;font-weight:600;padding-left:10px;border-left:3px solid var(--accent)}
+.slide-inner h3.h-example{color:var(--accent2);border-left-color:var(--accent2)}
+.slide-inner h3.h-practice{color:var(--orange);border-left-color:var(--orange)}
+.slide-inner p{color:var(--text);margin-bottom:10px;line-height:1.85}
+.slide-inner ul,.slide-inner ol{margin-left:22px;margin-bottom:14px}
+.slide-inner li{color:#CBD5E1;margin-bottom:6px;line-height:1.75}
+
+/* 内联代码 */
+.slide-inner strong{color:var(--accent2);font-weight:700}
+.slide-inner em{color:var(--orange);font-style:normal;font-weight:500}
+.slide-inner code{background:rgba(0,212,170,0.08);color:var(--accent);padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:90%;border:1px solid rgba(0,212,170,0.15);font-weight:600}
+
+/* 表格 */
+.slide-inner table{width:100%;border-collapse:collapse;font-size:calc(var(--font-size) * 0.94);margin:12px 0;border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.slide-inner table td,.slide-inner table th{padding:8px 14px;border:1px solid var(--border);text-align:left}
+.slide-inner table th{background:linear-gradient(135deg,rgba(17,24,39,0.9),rgba(15,23,41,0.9));color:var(--accent);font-weight:600;font-size:calc(var(--font-size) * 1.0);text-transform:uppercase;letter-spacing:.5px}
+.slide-inner table tr:nth-child(odd){background:rgba(255,255,255,0.015)}
+.slide-inner table tr:hover{background:var(--accent-dim)}
+
+/* 链接 */
+.slide-inner a{color:var(--accent2);text-decoration:underline;text-decoration-color:rgba(79,195,247,0.3);text-underline-offset:3px;transition:all .2s}
+.slide-inner a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+
+/* ===== 卡片 ===== */
+.card,.homework-card,.ok-box,.prompt-box{margin:10px 0;border-radius:12px;transition:all .3s}
+.card{background:linear-gradient(135deg,var(--bg-card),rgba(13,20,48,0.85));border:1px solid var(--border);padding:14px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.2);overflow:hidden}
+.card .card-img{float:right;max-width:200px;max-height:250px;margin:0 0 8px 16px;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 标题+图片+列表 类型的卡片：确定性两栏（左文右图），不依赖 float 环绕 */
+.card.side-card{display:flex;align-items:flex-start;gap:18px;overflow:hidden}
+.card.side-card .side-body{flex:1;min-width:0}
+.card.side-card .side-body h3{margin-top:0}
+.card.side-card .card-img{float:none;flex:0 0 auto;max-width:200px;max-height:250px;margin:0;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.card.side-card .side-body ul,.card.side-card .side-body ol{margin:8px 0 0;padding-left:22px}
+.card.side-card .side-body ul li,.card.side-card .side-body ol li{margin:4px 0}
+.card table .card-img{float:none;max-width:280px;max-height:none;margin:4px auto;display:block;border-radius:4px}
+.card table .card-img-sm{float:none;max-width:100px;max-height:none;margin:4px 0;display:inline-block;border-radius:4px}
+.card-img{display:block;max-width:100%;margin:16px auto;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 小图（报错截图等）控制在 1/3 宽度 */
+.card-img.small{max-width:33%!important}
+/* 表格单元格内图片（发展四时代等）：小图居中，破图自动隐藏 */
+.slide-inner table td img.card-img,.slide-inner table th img.card-img{display:block;max-width:150px;max-height:105px;width:auto;height:auto;margin:6px auto;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+.slide-inner table td img.card-img-sm,.slide-inner table th img.card-img-sm{display:block;max-width:96px;max-height:66px;margin:4px auto;border-radius:4px}
+/* 竞赛照片三图并排 */
+.contest-row{display:flex;gap:12px;justify-content:center;margin:16px 0;flex-wrap:wrap}
+.contest-row img{flex:1;min-width:0;max-width:280px;max-height:200px;object-fit:cover;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer}
+.card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.12);transform:translateY(-1px)}
+.card h3{margin-top:0}
+
+/* 代码块 */
+.prompt-box{background:var(--bg-input);border:1px solid rgba(0,212,170,0.2);border-left:3px solid var(--accent);overflow:hidden;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03)}
+.code-toolbar{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.04)}
+.code-lang{font-size:10px;color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.copy-btn{background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2);color:var(--accent);padding:3px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-family:inherit;transition:all .2s}
+.copy-btn:hover{background:rgba(0,212,170,0.2);border-color:var(--accent)}
+.copy-btn.copied{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.prompt-box pre{background:transparent;padding:12px 16px;margin:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;overflow-x:auto}
+.prompt-box pre code{background:transparent;padding:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;font-family:'JetBrains Mono','Menlo','Monaco',monospace;color:#E2E8F0;border:none}
+
+/* ok-box / homework-card */
+.homework-card{background:linear-gradient(135deg,rgba(0,212,170,0.06),var(--bg-card));border:1px solid var(--teal-border);padding:14px 18px}
+.homework-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(0,212,170,0.08)}
+.homework-card h3{color:var(--teal)}
+.ok-box{background:linear-gradient(135deg,rgba(34,197,94,0.06),var(--bg-card));border:1px solid var(--green-border);padding:14px 18px}
+.ok-box:hover{border-color:var(--green);box-shadow:0 8px 24px rgba(34,197,94,0.08)}
+.ok-box ul,.ok-box ol{margin:6px 0;padding-left:1.5em}
+.ok-box li{margin:3px 0;line-height:1.7}
+
+/* 高亮标记 */
+.markable li,.markable p{cursor:pointer;transition:all .15s;border-radius:3px;padding:1px 3px}
+.markable li.marked,.markable p.marked{background:rgba(192,132,252,.12);border-left:3px solid var(--purple);padding-left:8px}
+
+/* ===== 折叠面板 ===== */
+.fold-toggle{display:inline-flex;align-items:center;gap:6px;background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:calc(var(--font-size) * 1.06);font-family:inherit;transition:all .2s;margin:8px 0;user-select:none}
+.fold-toggle:hover{background:rgba(0,212,170,0.15);box-shadow:0 2px 8px rgba(0,212,170,0.15)}
+.fold-toggle .arrow{display:inline-block;transition:transform .3s;font-size:10px}
+.fold-toggle.open .arrow{transform:rotate(90deg)}
+.fold-content{max-height:0;overflow:hidden;transition:max-height .4s ease;opacity:0}
+.fold-content.show{max-height:3000px;opacity:1}
+/* 提示折叠 绿色 */
+.fold-toggle.hint{color:var(--green);border-color:var(--green-border);background:var(--green-bg)}
+.fold-toggle.hint:hover{background:rgba(34,197,94,0.12)}
+/* 答案折叠 紫色 */
+.fold-toggle.solution{color:var(--purple);border-color:rgba(192,132,252,0.4);background:rgba(192,132,252,0.08)}
+.fold-toggle.solution:hover{background:rgba(192,132,252,0.15)}
+/* 问答折叠 橙色 */
+.fold-toggle.qa{color:var(--orange);border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.08)}
+.fold-toggle.qa:hover{background:rgba(245,158,11,0.15)}
+/* 填空代码 */
+.code-blank{color:var(--orange);background:rgba(245,158,11,0.1);padding:2px 6px;border-radius:4px;font-weight:600}
+
+/* ===== 导航按钮 ===== */
+.nav-buttons{position:fixed;bottom:24px;right:32px;display:flex;gap:8px;z-index:100}
+.nav-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:10px 22px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:500;transition:all .25s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 4px 16px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
+.progress-dots{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:100}
+.progress-dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:all .3s;cursor:pointer}
+.progress-dot:hover{background:var(--accent2)}
+.progress-dot.active{background:var(--accent);transform:scale(1.4);box-shadow:0 0 8px rgba(0,212,170,0.5)}
+
+/* ===== 搜索 ===== */
+.search-panel{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:300;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.search-panel.open{right:0}
+.search-panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.search-panel-header span{font-size:15px;font-weight:600;color:var(--text)}
+.search-panel-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.search-panel-close:hover{color:var(--text);background:var(--accent-dim)}
+
+/* ===== 课件目录 ===== */
+.catalog-panel{position:fixed;top:0;right:-320px;width:320px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:298;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.catalog-panel.open{right:0}
+.catalog-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.catalog-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.catalog-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.catalog-list{flex:1;overflow-y:auto;padding:8px 0}
+.catalog-item{display:flex;align-items:center;gap:10px;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.catalog-item:hover{background:var(--accent-dim);border-left-color:var(--accent)}
+.catalog-item.current{color:var(--accent)!important;background:var(--accent-dim);border-left-color:var(--accent);font-weight:600}
+.catalog-num{color:var(--accent);font-size:11px;font-weight:700;min-width:40px;white-space:nowrap}
+.search-input{width:100%;padding:14px 18px;background:var(--bg-input);border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:15px;outline:none;flex-shrink:0}
+.search-input::placeholder{color:var(--text-muted)}
+.search-results{flex:1;overflow-y:auto;padding:8px 0}
+.search-item{display:block;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.search-item:hover,.search-item.focus{background:var(--accent-dim);border-left-color:var(--accent)}
+.help-overlay{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:299;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.help-overlay.open{right:0}
+.help-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.help-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.help-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.help-body{flex:1;overflow-y:auto;padding:16px 22px 24px}
+.help-body h3{color:var(--accent);font-size:14px;margin:16px 0 8px;padding-left:0;border-left:none}
+.help-body p{font-size:13px;color:var(--text-muted);margin-bottom:8px}
+.help-body table{font-size:13px}
+.help-body table td{padding:4px 12px 4px 0}
+.help-body table td:first-child{white-space:nowrap;padding-right:16px}
+.search-item mark{background:rgba(0,212,170,0.2);color:var(--accent);border-radius:2px;padding:0 3px}
+
+/* ===== Toast ===== */
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:400;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);padding:16px 28px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.toast.show{opacity:1}
+
+/* ===== 浅色覆盖 ===== */
+.light body,.light html{background:var(--bg-primary)!important}
+.light .sidebar{background:var(--bg-secondary)!important;border-right-color:var(--border)!important}
+.light .sidebar-title{-webkit-text-fill-color:var(--text);font-weight:600}
+.light .goal-card,.light .card{background:var(--bg-card)!important;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.light .homework-card{background:var(--accent-dim)!important}
+.light .ok-box{background:var(--green-bg)!important;border-color:var(--green-border)!important;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.light .header-bar{background:var(--bg-secondary)!important;backdrop-filter:none!important}
+.light .slide-inner table th{background:var(--bg-input)!important;color:var(--text)!important}
+.light .slide-inner h1{color:var(--text)!important}
+.light .slide-inner h2{color:var(--accent)!important}
+.light .slide-inner h3{color:var(--accent2)!important}
+.light .slide-inner li,.light .slide-inner p{color:var(--text)!important}
+.light .nav-link.active{color:var(--accent)!important;background:var(--accent-dim)!important}
+.light .progress-fill{box-shadow:none!important}
+.light .cover{background:radial-gradient(ellipse at 30% 20%,rgba(9,105,218,0.08),transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(5,80,174,0.06),transparent 55%),var(--bg-primary)!important}
+.light .cover-tag{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-label{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-text{color:var(--text)!important}
+.light .cover-sub{color:var(--text-muted)!important}
+.light .end-thanks{background:var(--bg-card);border-color:rgba(9,105,218,0.15)}
+.light .end-title{color:var(--accent)!important}
+.light .prompt-box pre code{color:var(--text)!important}
+.light .code-toolbar{background:rgba(0,0,0,0.05)}
+/* 深色主题下注释颜色调亮（原atom-one-dark太暗） */
+.hljs-comment,.hljs-meta{color:#8b949e!important}
+.hljs-comment.cmt-new{color:#3DD68C!important;font-weight:600}
+.light .hljs-comment.cmt-new{color:#0B7A52!important;font-weight:600}
+
+/* ===== 封面 ===== */
+.cover{display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;height:100vh;box-sizing:border-box;background:radial-gradient(ellipse at 30% 20%,rgba(0,212,170,0.18) 0%,transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(79,195,247,0.12) 0%,transparent 55%),linear-gradient(180deg,#0A0E27 0%,#0D1430 100%);position:relative;overflow:hidden}
+.cover.active{display:flex!important}
+.cover::after{content:'';position:absolute;top:-120px;right:-120px;width:400px;height:400px;background:radial-gradient(circle,rgba(0,212,170,0.08),transparent 70%);border-radius:50%;pointer-events:none}
+.cover-tag{display:inline-block;font-size:14px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);border-radius:20px;padding:8px 22px;margin-bottom:24px;letter-spacing:2px}
+.cover h1{font-size:52px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;letter-spacing:-1px;border:none;line-height:1.2;max-width:800px}
+.cover-sub{font-size:16px;color:var(--text-muted);margin-bottom:40px;max-width:650px;line-height:1.8}
+.cover-meta{font-size:14px;color:#6B7280;line-height:2.2;display:flex;flex-direction:column;gap:8px;align-items:center}
+.cover-meta-row{display:flex;align-items:center;gap:8px}
+.cover-meta-label{font-size:13px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.3);border-radius:6px;padding:3px 12px}
+.cover-meta-text{font-size:16px;color:#CBD5E1}
+
+/* ===== 结束页 ===== */
+.end-page{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:100%;box-sizing:border-box;max-width:920px;margin:0 auto;padding:36px 48px}
+.end-page h2{text-align:center;border-bottom:none;margin-bottom:32px}
+.end-thanks{display:flex;align-items:center;justify-content:center;gap:60px;flex-wrap:wrap;padding:60px 56px;border:2px solid rgba(0,212,170,0.3);border-radius:16px;background:linear-gradient(135deg,rgba(0,212,170,0.06),rgba(17,24,39,0.95))}
+.end-left{flex:1;min-width:200px;text-align:center}
+.end-right{flex:0 0 auto;text-align:center;padding-left:24px;border-left:1px solid rgba(0,212,170,0.2)}
+.end-icon{font-size:48px;margin-bottom:16px}
+.end-title{font-size:24px;color:var(--accent);font-weight:700;margin-bottom:20px}
+.end-sub{font-size:18px;color:var(--text-muted)}
+.end-contact{margin-top:16px;font-size:13px;color:var(--text-muted);line-height:1.7}
+.end-right img{width:120px;height:120px;border-radius:10px;margin-bottom:10px;border:2px solid var(--border);transition:transform .2s}
+.end-right img:hover{transform:scale(1.05)}
+.end-right p{font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5}
+.end-link{display:inline-block;color:var(--accent);text-decoration:none;font-size:13px;border:1px solid rgba(0,212,170,0.3);padding:8px 16px;border-radius:8px;transition:all .25s;white-space:nowrap}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+.end-next-link{display:inline-block;margin-top:20px;color:var(--accent2);text-decoration:none;font-size:15px;font-weight:600;padding:10px 24px;border:2px solid var(--accent2);border-radius:10px;transition:all .25s}
+.end-next-link:hover{background:rgba(79,195,247,0.1);box-shadow:0 4px 20px rgba(79,195,247,0.2);transform:translateY(-2px)}
+/* 二维码放大 */
+.qr-zoom-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;cursor:pointer}
+.qr-zoom-overlay.show{display:flex}
+.qr-zoom-overlay img{max-width:80vw;max-height:80vh;border-radius:12px;box-shadow:0 8px 32px rgba(0,212,170,0.2)}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+
+/* ===== 学习目标 ===== */
+.goal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:8px}
+.goal-card{background:linear-gradient(135deg,var(--bg-card),var(--bg-secondary));border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:14px;transition:all .3s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.goal-card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.goal-icon{font-size:28px;flex-shrink:0;transition:transform .3s}
+.goal-card:hover .goal-icon{transform:scale(1.15)}
+.goal-text{font-size:calc(var(--font-size) * 1.05);color:var(--text);line-height:1.6}
+
+/* 侧边栏 - 特殊链接（无序号） */
+.nav-special{font-style:italic;color:var(--accent2)!important}
+/* 导航标签 */
+.nav-badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:6px;font-weight:600;vertical-align:1px}
+.nav-badge.practice{color:var(--accent2);background:rgba(79,195,247,0.12);border:1px solid rgba(79,195,247,0.25)}
+.nav-badge.comprehensive{color:var(--purple);background:rgba(192,132,252,0.12);border:1px solid rgba(192,132,252,0.25)}
+.nav-badge.homework{color:var(--orange);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25)}
+
+/* ===== 响应式 ===== */
+/* ===== 移动端 header 精简按钮 ===== */
+.mobile-info{display:none;font-size:13px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.mobile-info .mi-lesson{color:var(--accent);font-weight:600}
+.mobile-info .mi-sep{margin:0 4px;color:var(--text-muted);opacity:0.5}
+.mobile-info .mi-page{color:var(--text)}
+.mobile-more{display:none;position:relative}
+.mobile-more-menu{display:none;position:absolute;top:100%;right:0;margin-top:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:4px 0;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:50;min-width:160px}
+.mobile-more-menu.open{display:block}
+.mobile-more-menu .mm-item{display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--text);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.mobile-more-menu .mm-item:hover{background:var(--accent-dim);color:var(--accent)}
+@media(max-width:768px){.sidebar{display:none}.slide-inner{padding:18px 18px 80px}.cover{padding-left:40px;padding-right:40px}.cover h1{font-size:32px}.nav-buttons{right:12px;bottom:12px}.header-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap}.header-btn[onclick="toggleTheme()"]{padding:6px 6px}.progress-wrap{display:none}.header-dropdown{display:none}.header-btn[onclick^="changeFont"]{display:none}.header-btn[onclick="openSearch()"]{display:none}.header-btn[onclick="toggleHelp()"]{display:none}.mobile-info{display:flex;align-items:center;gap:2px}.mi-page{display:none}.mobile-more{display:inline-block}.slides-container{min-height:calc(100vh - 54px)}}
+/* ===== 平铺模式（连续显示全部页面，用于导出 PDF） ===== */
+html.flat-mode,body.flat-mode{height:auto;overflow:visible}
+.flat-mode .container{height:auto;overflow:visible}
+.flat-mode .main-area{overflow:visible}
+.flat-mode .sidebar{display:none}
+.flat-mode .slides-container{overflow:visible;height:auto;min-height:0!important}
+.flat-mode .slide{position:static;opacity:1!important;transform:none!important;pointer-events:auto;height:auto;overflow:visible;margin:0 0 28px}
+.flat-mode .slide::before{display:none}
+.flat-mode .slide,.flat-mode .cover{transition:none!important}
+.flat-mode .slide-inner{padding:36px 48px 32px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,0.02)}
+.flat-mode .cover{position:static;opacity:1!important;transform:none!important;pointer-events:auto;height:auto;overflow:visible;margin:0 0 28px;border:1px solid var(--border);border-radius:14px}
+.flat-mode .nav-buttons{display:none}
+.flat-mode .progress-dots{display:none}
+.flat-mode .header-bar{position:sticky;top:0}
+/* ===== 图片显示模式（右侧小图 / 下方大图） ===== */
+.img-bottom .card .card-img{float:none;display:block;width:100%;max-width:100%;max-height:none;margin:16px auto 4px}
+.img-bottom .card table .card-img{width:auto;max-width:100%;margin:4px auto}
+.img-bottom .card .card-img-sm{width:auto;max-width:120px;max-height:none}
+.img-bottom .side-card{flex-direction:column;align-items:stretch}
+/* 模型 fbx：侧图模式放大到合适缩略图；图下模式整宽但限高（避免竖图被拉成超高） */
+.card .card-img.model-img{float:right;width:130px;max-width:45%;max-height:none;margin:0 0 8px 16px}
+.img-bottom .card .card-img.model-img{float:none;display:block;width:100%;max-width:100%;max-height:560px;object-fit:contain;margin:8px auto}
+
+
+/* 平铺/PDF导出：并排多图改为单独一行放大显示（保持可点击放大） */
+.flat-mode .contest-row{display:block}
+.flat-mode .contest-row img{display:block;width:100%;max-width:100%;max-height:none;object-fit:contain;margin:16px auto 4px}
+
+/* ===== 缺图占位：老师还没放图时显示，文件名可一键复制 ===== */
+.img-missing{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;box-sizing:border-box;
+  width:100%;max-width:540px;margin:10px auto;padding:14px 16px;border:1.5px dashed var(--border);border-radius:10px;
+  background:var(--bg-input);color:var(--text-muted);font-size:13px;line-height:1.5;text-align:center}
+.img-missing .im-name{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--accent);
+  background:var(--bg-secondary);padding:3px 8px;border-radius:6px;border:1px solid var(--border);word-break:break-all}
+.img-missing button{cursor:pointer;font:inherit;font-size:12px;padding:4px 10px;border-radius:6px;
+  border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
+.img-missing button:hover{border-color:var(--accent);color:var(--accent)}
+.img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+</style>
+</head>
+<body>
+<script>
+// ========== 缺图占位：显示文件名 + 一键复制 ==========
+function imgMissing(img){
+    const src=img.getAttribute('src')||'';
+    const name=src.split('/').pop();
+    const dir=src.slice(0,src.lastIndexOf('/'));
+    const d=document.createElement('div');
+    d.className='img-missing';
+    d.innerHTML='<span>🖼️ 缺图</span>'
+        +'<code class="im-name">'+name+'</code>'
+        +'<button type="button" onclick="copyImgName(this)">复制文件名</button>'
+        +'<div class="im-dir">放到 '+dir+' 目录下，刷新页面即显示</div>';
+    if(img.parentNode) img.parentNode.replaceChild(d,img);
+}
+function copyImgName(btn){
+    const name=btn.parentNode.querySelector('.im-name').textContent;
+    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
+        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
+        try{document.execCommand('copy');}catch(e){}
+        document.body.removeChild(ta);done();};
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(name).then(done).catch(fb);
+    }else{fb();}
+}
+</script>
+
+<div class="container">
+<nav class="sidebar">
+    <div class="sidebar-title">📘 课件9_Fbx导入与脚本入门</div>
+    <a href="#" class="nav-link nav-special" data-page="1"><span class="nav-status"></span>封面</a>
+<a href="#" class="nav-link" data-page="2"><span class="nav-status"></span>1. 本节学习目标 </a>
+<a href="#" class="nav-link" data-page="3"><span class="nav-status"></span>2. Fbx 三要素 </a>
+<a href="#" class="nav-link" data-page="4"><span class="nav-status"></span>3. 导入 Fbx 流程 </a>
+<a href="#" class="nav-link" data-page="5"><span class="nav-status"></span>4. 预览与缩放模型 </a>
+<a href="#" class="nav-link" data-page="6"><span class="nav-status"></span>5. 替换导入模型的材质与贴图 </a>
+<a href="#" class="nav-link" data-page="7"><span class="nav-status"></span>6. 从 Poly Haven 下载免费模型 </a>
+<a href="#" class="nav-link" data-page="8"><span class="nav-status"></span>7. 给游戏对象挂载脚本组件 </a>
+<a href="#" class="nav-link" data-page="10"><span class="nav-status"></span>8. 脚本组件的生命周期与日志输出 </a>
+<a href="#" class="nav-link" data-page="11"><span class="nav-status"></span>9. 游戏对象、组件与常用 API </a>
+<a href="#" class="nav-link" data-page="13"><span class="nav-status"></span>10. 让游戏对象匀速运动：向量 · Transform · Time </a>
+<a href="#" class="nav-link" data-page="18"><span class="nav-status"></span>11. 作业 · 自选模型，搭一个会绕圈的场景 <span class="nav-badge homework">作业</span></a>
+<a href="#" class="nav-link nav-special" data-page="19"><span class="nav-status"></span>结束页</a>
+
+</nav>
+<div class="main-area" id="mainArea">
+    <div class="header-bar">
+        <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <span class="progress-text" id="progressText">0 / 11</span>
+        </div>
+        <div class="mobile-info" id="mobileInfo" onclick="mobileInfoTap()" style="cursor:pointer"><span class="mi-lesson"></span><span class="mi-sep">·</span><span class="mi-page"></span></div>
+                <button class="header-btn" id="flatBtn" onclick="toggleFlat()" title="切换分页 / 平铺（平铺便于打印导出 PDF）">📄 平铺</button>
+        <button class="header-btn" id="imgBtn" onclick="toggleImgBottom()" title="切换图片显示位置（右侧小图 / 下方大图）">🖼️ 图下</button>
+
+        <button class="header-btn" id="themeBtn" onclick="toggleTheme()">🌙 深色</button>
+        <div class="header-dropdown">
+          <button class="header-btn" id="ideBtn">💻 在线编辑器 ▾</button>
+          <div class="dropdown-menu" id="ideMenu">
+            <a href="#" class="dropdown-item" data-url="https://www.runoob.com/try/runcode.php?filename=helloworld&type=csharp">菜鸟教程</a>
+            <a href="#" class="dropdown-item" data-url="https://www.tutorialspoint.com/compilers/online-csharp-compiler.htm">Tutorialspoint（支持输入）</a>
+            <a href="#" class="dropdown-item" data-url="https://dotnetfiddle.net/">DotNetFiddle</a>
+          </div>
+        </div>
+        <button class="header-btn" onclick="changeFont(-1)">A-</button>
+        <button class="header-btn" onclick="changeFont(1)">A+</button>
+        <button class="header-btn" onclick="openSearch()">🔍</button>
+        <button class="header-btn" onclick="toggleHelp()" title="使用帮助">❓</button>
+        <button class="header-btn" onclick="toggleCatalog()" title="课件目录">📚</button>
+        <div class="mobile-more">
+          <button class="header-btn" onclick="toggleMobileMore()" title="更多">☰</button>
+          <div class="mobile-more-menu" id="mobileMoreMenu">
+            <div class="mm-item" onclick="mobileAction('ide')">💻 在线编辑器</div>
+            <div class="mm-item" onclick="mobileAction('fontDown')">🔤 A- 缩小字号</div>
+            <div class="mm-item" onclick="mobileAction('fontUp')">🔤 A+ 放大字号</div>
+            <div class="mm-item" onclick="mobileAction('search')">🔍 搜索</div>
+                        <div class="mm-item" onclick="mobileAction('flat')">📄 平铺/分页</div>
+            <div class="mm-item" onclick="mobileAction('imgbottom')">🖼️ 图下/侧图</div>
+
+            <div class="mm-item" onclick="mobileAction('help')">❓ 使用帮助</div>
+          </div>
+        </div>
+    </div>
+    <div class="cover" data-page="1">
+    <div class="cover-tag">数字产品设计</div>
+    <h1>Fbx 模型导入与 Unity 脚本</h1>
+    <div class="cover-sub">学会导入 Fbx 模型、调整外观，并用 C# 脚本让模型动起来（生命周期、Transform、Time 匀速运动）</div>
+    <div class="cover-meta">
+        <div class="cover-meta-row"><span class="cover-meta-label">授课教师</span><span class="cover-meta-text">彭堉斌</span></div>
+        <div class="cover-meta-row"><span class="cover-meta-label">学校</span><span class="cover-meta-text">汕头职业技术学院</span></div>
+    </div>
+</div>
+<div class="slide" data-page="2"><div class="slide-inner">
+<h1>本节学习目标</h1>
+<div class="goal-grid"><div class="goal-card"><span class="goal-icon">🎯</span><span class="goal-text">说出 Fbx 三要素，会把 Fbx 模型导入项目，并在 Project 里预览、按比例缩放</span></div><div class="goal-card"><span class="goal-icon">🔍</span><span class="goal-text">会给导入的模型替换材质与贴图（直接拖到物体 / 拖到反射率槽）</span></div><div class="goal-card"><span class="goal-icon">🧠</span><span class="goal-text">会从 Poly Haven 下载免费模型资源并导入 Unity</span></div><div class="goal-card"><span class="goal-icon">📝</span><span class="goal-text">会把 C# 脚本挂到游戏对象上（创建、类名与文件名一致、两种挂载方式）</span></div><div class="goal-card"><span class="goal-icon">💻</span><span class="goal-text">说清生命周期回调（Start / Update 等）各在什么时候被调用，会用日志输出观察运行结果</span></div><div class="goal-card"><span class="goal-icon">📐</span><span class="goal-text">会用 this / gameObject / transform 读取对象信息（位置、旋转、缩放、名称、标签）</span></div><div class="goal-card"><span class="goal-icon">✅</span><span class="goal-text">会用向量 + Transform + Time.deltaTime 让模型匀速移动、旋转并在 xz 平面绕圈，会用「对齐到视图」确定游戏视角</span></div></div>
+</div></div>
+<div class="slide" data-page="3"><div class="slide-inner markable">
+<h1>Fbx 三要素</h1>
+<div class="card"><p>一个 Fbx 模型文件，最少包含三样东西：</p></div><div class="card"><table><tr><th>要素</th><th>定义</th><th>决定什么</th></tr><tr><td>Mesh 网格</td><td>顶点 + 三角面</td><td>物体的<strong>形状</strong></td></tr><tr><td>Material 材质</td><td>表面光学属性</td><td>物体的<strong>质感</strong></td></tr><tr><td>Texture 贴图</td><td>像素颜色图（如 tga）</td><td>物体表面的<strong>图案</strong></td></tr></table></div><img src="images/课件9/fbx文件截图.png" alt="Fbx 文件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件9/场景窗口 - fbx.gif" alt="Fbx 在场景中使用" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 为什么导入后模型&quot;没贴图&quot;或&quot;全白&quot;？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">多半是 Material / Texture 没一起带进来，或路径丢了。后面教你补。</div></div>
+
+</div></div>
+<div class="slide" data-page="4"><div class="slide-inner markable">
+<h1>导入 Fbx 流程</h1>
+<div class="card"><img src="images/课件9/船fbx文件.png" alt="船.fbx 模型文件" class="card-img model-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><ol><li>在 Project 里建一个 <code>Models</code> 文件夹</li><li>把 <code>.fbx</code> 文件<strong>直接拖进</strong> <code>Models</code> 文件夹</li><li>再把模型从 Project <strong>拖到 Scene 视图</strong> → 场景中多了一个游戏对象</li><li>在 Hierarchy 里选中它，可改名、调 Transform</li></ol></div><img src="images/课件9/project --- 添加fbx文件.gif" alt="添加 fbx 文件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="contest-row"><img src="images/课件9/创建models文件夹.png" alt="创建 Models 文件夹" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件9/fbx拖入models文件夹.png" alt="把 fbx 拖入 Models 文件夹" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件9/从Project拖到Scene.png" alt="从 Project 拖到 Scene 视图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+
+</div></div>
+<div class="slide" data-page="5"><div class="slide-inner markable">
+<h1>预览与缩放模型</h1>
+<div class="card"><ul><li><strong>预览</strong>：选中 fbx，Inspector 顶部可看它包含的网格、材质等大图预览</li><li><strong>放大 / 列表</strong>：Project 底部滑动轴，拉到最右看大图，最左看列表</li></ul></div><div class="contest-row"><img src="images/课件9/project --- 预览fbx模型.gif" alt="预览 fbx 模型" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件9/project - fbx - 放大 与 列表.gif" alt="放大与列表切换" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><img src="images/课件9/模型太小看不见.png" alt="模型在场景中太小看不见" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)"><div class="card"><h3>模型太小看不见？</h3><ul><li>选中场景里的模型，把 Transform 的 Scale <strong>三个轴都 ×10</strong>（放大 10 倍）</li><li>再调整一下摄像机位置就能看清</li></ul></div><img src="images/课件9/project --- 放大缩小fbx模型.png" alt="放大缩小 fbx" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>三维度同步缩放</h3><p>Transform 的 <strong>Scale</strong> 有 X / Y / Z 三个轴。点开缩放属性旁的 <strong>Enable constrained proportions</strong>（约束比例，链条图标），三个维度就会<strong>同步设置</strong>——改一个轴，另外两个跟着等比例变，模型不会被拉变形。</p></div><img src="images/课件9/约束比例缩放.gif" alt="开启约束比例后三轴同步缩放演示" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)"><div class="ok-box">💡 导入的模型常常&quot;迷你&quot;，先整体放大再细调，别对着一个点找半天。</div>
+
+</div></div>
+<div class="slide" data-page="6"><div class="slide-inner markable">
+<h1>替换导入模型的材质与贴图</h1>
+<p>把模型拖进场景后，它的<strong>外观不是写死的</strong>——材质、贴图都能换。先直观看一个例子：</p>
+<img src="images/课件9/拖拽模型材质改外观.gif" alt="拖拽模型材质修改外观" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
+<div class="card"><h3>先分清：材质 vs 贴图</h3><ul><li><strong>材质（Material）</strong> = 物体表面的「光学配方」：颜色、金属度、光滑度……决定<strong>质感</strong>。</li><li><strong>贴图（Texture）</strong> = 贴进材质的像素图，决定表面的<strong>图案</strong>（木纹、砖缝、熊的毛色）。</li></ul><p>一句话：<strong>贴图是材质的「输入」，材质靠贴图长出图案</strong>。换贴图 = 改材质里的某个槽位。</p></div>
+<img src="images/课件9/熊模型与4个tga.png" alt="熊模型与配套的 4 张 tga 皮肤贴图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
+<div class="card"><p>一个模型往往配套一组贴图——像这只熊，<strong>一张贴图就能盖住整个身体</strong>。上面这张就是熊模型配套的 <strong>4 张 tga</strong>，它们是<strong>4 种不同皮肤（不同外观）</strong>：换哪张，熊就换一身颜色。导入的 Fbx 模型自带贴图多为 <code>.tga</code> 格式（建模软件 / 资源包导出习惯），<strong>png / jpg 同理，换成其他格式操作完全一样</strong>，下面以 tga 演示。</p></div>
+<div class="card"><h3>方法一：直接把贴图拖到物体上（最省事）</h3><p>在 Hierarchy 或 Scene 视图里<strong>先选中游戏对象</strong>，再把<strong>贴图</strong>（这里就是那张 tga）从 Project 窗口拖到它上面，Unity 会在<strong>该贴图所在目录下自动建一个 Materials 文件夹</strong>（没有就新建），并把<strong>生成的材质放进这个文件夹</strong>、把<strong>这张贴图填进材质的反射率（Albedo）槽</strong>。这是<strong>任意图片格式通用</strong>的行为。</p></div>
+<img src="images/课件9/拖tga到游戏对象.gif" alt="拖拽贴图到游戏对象" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
+<div class="card"><p>拖进去后，Unity 自动生成的材质被应用到了 Inspector 的 <strong>反射率（Albedo）</strong> 槽——也就是说，无论用哪种方式，贴图都是<strong>借助「材质」这个中间层</strong>贴到模型上的：</p></div>
+<img src="images/课件9/拖tga自动生成材质.png" alt="自动生成材质并应用到反射率" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
+<div class="card"><h3>方法二：把贴图拖到反射率槽（更精准）</h3><p>更可控的做法——先有材质，再把<strong>贴图</strong>直接拖到 Inspector 的 <strong>反射率（Albedo）</strong> 槽，立刻修改这个材质的外观，连材质都不用你手动建。想同时调金属度 / 光滑度，也在材质面板里调。</p></div>
+<img src="images/课件9/拖tga到反射率.gif" alt="拖拽贴图到反射率槽修改材质" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
+<div class="ok-box">💡 带 Alpha 的贴图拖进 <strong>反射率（Albedo）</strong>，立刻出现透明镂空，无需手动抠图；想整体换色，改材质颜色比改贴图更快。</div>
+<div class="card"><h3>回看课件7：殊途同归</h3><p><strong>课件7 的做法</strong>：先建一个材质，再把各类贴图分别拖进对应槽位——颜色图进反射率（Albedo）、法线图进法线槽、高度图进高度槽……</p><p><strong>本课的做法</strong>：直接把贴图拖到物体上，Unity 自动建好材质并填进反射率。</p><p>两条路<strong>起点不同、终点一样</strong>：贴图最终都进材质的属性槽，靠「材质」这个中间层贴到模型上。</p></div>
+</div></div>
+<div class="slide" data-page="7"><div class="slide-inner markable">
+<h1>6. 从 Poly Haven 下载免费模型</h1>
+<div class="ok-box">💡 自己建模很费时间。<strong>Poly Haven</strong> 提供大量<strong>免费（CC0）</strong>的 3D 模型，下载后直接导入 Unity 就能用。</div>
+<div class="card"><h3>Poly Haven 免费资源网站</h3><p>打开浏览器访问 <a href="https://polyhaven.com/zh" target="_blank" rel="noopener">https://polyhaven.com/zh</a>，这是一个完全免费、可商用的 3D 资源网站，可下载<strong>贴图</strong>、<strong>HDRI</strong> 和<strong>模型</strong>。</p></div>
+<img src="images/课件9/polyhaven访问网站.png" alt="访问 Poly Haven 网站" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>下载模型并导入 Unity</h3><p>按下面 6 步把免费模型下载并导入 Unity：</p></div>
+<div class="card"><ul><li><strong>步骤一</strong>：在网站顶部点击右上角<strong>「国旗」按钮</strong>，选择<strong>「中文」</strong>，网页切换为中文显示</li></ul></div>
+<img src="images/课件9/polyhaven切换中文.png" alt="切换网页为中文" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><ul><li><strong>步骤二</strong>：在网站顶部选择<strong>「模型」</strong></li></ul></div>
+<img src="images/课件9/polyhaven选择模型.png" alt="选择模型" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><ul><li><strong>步骤三</strong>：在模型列表里选一个目标模型，可按<strong>类别</strong>筛选，比如「交通工具与运输」→「水上交通工具」→「帆船」</li></ul></div>
+<img src="images/课件9/polyhaven筛选模型.png" alt="按类别筛选模型" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><ul><li><strong>步骤四</strong>：进入详情页，点 <strong>Download（下载）</strong>，<strong>格式选 fbx</strong>，分辨率任选（如 1K / 2K）</li></ul></div>
+<img src="images/课件9/polyhaven下载选fbx.png" alt="下载模型并选 fbx 格式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><ul><li><strong>步骤五</strong>：解压下载包，把 fbx 与配套贴图放进项目 <code>Assets</code> 或 <code>Models</code> 文件夹；若弹出<strong>「NormalMap 设置」</strong>窗口，点击 <strong>Fix now</strong></li></ul></div>
+<img src="images/课件9/polyhaven解压与FixNow.png" alt="解压并修复 NormalMap 设置" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><ul><li><strong>步骤六</strong>：把 fbx 从 Project 拖到 Scene / Hierarchy 即可使用</li></ul></div>
+<img src="images/课件9/polyhaven拖入场景.png" alt="把 fbx 拖入场景" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="ok-box">✅ 模型自带材质与贴图，导入后可直接用；想换皮肤，按「替换导入模型的材质与贴图」操作。</div>
+<img src="images/课件9/polyhaven模型自带贴图.png" alt="模型自带的材质与贴图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+</div></div>
+<div class="slide" data-page="8"><div class="slide-inner markable">
+<h1>给游戏对象挂载脚本组件</h1>
+<div class="card"><p>前面讲完模型与贴图，接下来让模型<strong>动起来、有逻辑</strong>。做法是：写一段 <strong>C# 脚本</strong>，<strong>挂载（Mount）</strong>到游戏对象上，脚本就成了它的「<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">行为组件</mark>」——每一帧告诉引擎这个对象该往哪走、该做什么。</p></div>
+<div class="card"><h3>创建脚本的标准流程</h3></div>
+<div class="card"><h3>① 新建 Scripts 文件夹</h3><p>在 Project 窗口 <code>Assets</code> 下，右键 → <code>Create（创建）</code> → <code>Folder（文件夹）</code>，命名为 <code>Scripts</code>。</p></div>
+<img src="images/课件9/新建Scripts文件夹.png" alt="新建 Scripts 文件夹" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
+<div class="card"><h3>② 创建 C# 脚本</h3><p>在 <code>Scripts</code> 文件夹里右键 → <code>Create（创建）</code> → <code>C# Script（C# 脚本）</code>，<strong>命名为 <code>MoveObject</code></strong>。</p></div>
+<img src="images/课件9/创建CSharp脚本.png" alt="创建 C# 脚本" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
+<div class="card"><h3>③ 重命名 + 类名必须与文件名一致</h3><p>创建时直接重命名（可连点两次脚本文件名进行重命名）。Unity 靠<strong>文件名</strong>找类——<strong>类名（class 后的名字）必须和文件名完全相同</strong>，否则挂载时会<strong>控制台报错</strong>；改了文件名，也要回代码把 <code>class</code> 后的名字一起改掉。<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">双击脚本文件</mark>可打开编辑器查看脚本内容。</p></div>
+<img src="images/课件9/重命名脚本与类名一致.png" alt="重命名脚本并检查类名与文件名一致" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4344032960',this)">复制</button></div>
+<pre id="c_4344032960"><code class="language-csharp">using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class MoveObject : MonoBehaviour {
+    void Start() { }
+    void Update() { }
+}</code></pre>
+</div><div class="ok-box">💡 双击脚本会自动启动 Visual Studio（或 VS Code）编写代码。脚本文件名 = 类名，是 Unity 的硬规矩，从一开始就要养成习惯。</div>
+<div class="card"><h3>把脚本挂到游戏对象上（两种方式）</h3><p>脚本写好后，必须<strong>挂载</strong>到游戏对象上才会生效。常用两种方式，任选其一即可：</p></div>
+<div class="card"><h3>方式一：选中对象后拖到检视器</h3><p>先在 Hierarchy / Scene 里<strong>选中游戏对象</strong>，再把 Project 里的脚本<strong>拖到右侧 Inspector（检视器）窗口</strong>中，松开即挂载。</p></div>
+<img src="images/课件9/挂载脚本_拖到检视器.gif" alt="拖拽脚本到检视器窗口" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
+<div class="card"><h3>方式二：用"添加组件"搜索添加</h3><p>选中游戏对象，在 Inspector 点 <strong>Add Component（添加组件）</strong>，搜索脚本名（如 <code>MoveObject</code>），从结果里<strong>点选目标脚本</strong>即可添加。</p></div>
+<img src="images/课件9/挂载脚本_添加组件.gif" alt="添加组件搜索脚本并添加" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
+<div class="ok-box">✅ 两种方式效果相同：挂载成功后，脚本名会出现在该游戏对象的 Inspector 底部。之后运行游戏，<code>Update()</code> 每帧执行，对象就会动起来。</div>
+</div></div>
+<div class="slide" data-page="10"><div class="slide-inner markable">
+<h1>脚本组件的生命周期与日志输出</h1>
+<div class="card"><p><strong>本页要做什么：</strong>前面已经把脚本挂载到了船模型上。这一页我们<strong>运行游戏</strong>，让脚本在 <strong>Console（控制台）</strong> 里打印日志，亲眼验证脚本在<strong>什么时候</strong>被引擎调用。</p></div>
+<div class="card">
+<h3>① 先回看脚本：Start / Update 在哪被调用？</h3>
+<p>前面挂在船模型上的脚本 <code>MoveObject</code>，只定义了下面两个方法：</p>
+<div style="background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:14px 16px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.84em;line-height:1.8;color:#c9d1d9;overflow:auto">
+<div style="color:#8b949e">// MoveObject.cs —— 挂在船模型上的脚本</div>
+<div><span style="color:#ff7b72">public class</span> <span style="color:#d2a8ff">MoveObject</span> <span style="color:#ff7b72">:</span> <span style="color:#79c0ff">MonoBehaviour</span> {</div>
+<div style="padding-left:1.4em"><span style="color:#ff7b72">void</span> <span style="color:#34d399;font-weight:600">Start()</span> { <span style="color:#8b949e">/* 游戏开始：自动跑一次 */</span> }</div>
+<div style="padding-left:1.4em"><span style="color:#ff7b72">void</span> <span style="color:#34d399;font-weight:600">Update()</span> { <span style="color:#8b949e">/* 每一帧：自动跑一次 */</span> }</div>
+<div>}</div>
+</div>
+<div style="border:1px solid rgba(245,158,11,.35);background:linear-gradient(135deg,rgba(245,158,11,.06),rgba(255,255,255,.02));border-radius:10px;padding:10px 14px;color:#fcd34d;font-size:.92em;margin-top:10px">🔍 翻遍整个脚本：<strong style="color:#fde68a">没有任何地方主动调用 Start() 或 Update()</strong>——没有别的代码写它们，也没有像 <code style="color:#fde68a">Main</code> 那样的入口。可游戏一运行，它们却在跑！</div>
+</div>
+<div class="card">
+<h3>② 谁在喊它们跑？</h3>
+<p>答案不在你写的代码里：是 <strong>Unity 引擎</strong>在运行游戏时，按一套<strong>固定的时刻表</strong>，自动去调用挂在游戏对象上的脚本方法。这套"<strong>引擎在什么时候、按什么顺序喊你的代码干活</strong>"的规则，到底叫什么、又长什么样？下面正式揭晓。</p>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;padding:10px 14px;border:1px dashed rgba(255,255,255,.22);border-radius:10px;background:rgba(255,255,255,.03)">
+<span style="font-size:1.5em">🕹️</span>
+<span style="color:#e2e8f0;font-weight:600">Unity 引擎（运行游戏 → 固定时刻表）</span>
+<span style="color:#34d399;font-weight:700">自动调用 ▶</span>
+<span style="color:#e2e8f0;font-weight:600">你的脚本 <code style="color:#34d399">Start()</code> / <code style="color:#34d399">Update()</code></span>
+</div>
+<p style="margin-top:8px">下面先把这条规则讲清楚，等会儿运行游戏、看 Console 打印的日志，你就能亲眼验证。</p>
+</div>
+<div class="card">
+<h3>③ 什么是生命周期？</h3>
+<p>一个脚本组件从"被加载"到"被销毁"，引擎会<strong>自动按固定顺序</strong>调用一系列方法（包括你写的 <code>Start()</code> / <code>Update()</code>，以及更多内置回调）。这套规则就叫做 <mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">脚本组件的生命周期</mark>。把它想成一条<strong>引擎替你自动跑的流水线</strong>——你只要在对应方法里写代码，到那个时刻它就被调用：</p>
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0">
+<span style="padding:5px 11px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.85em">Awake</span>
+<span style="color:#94a3b8">→</span>
+<span style="padding:5px 11px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.85em">OnEnable</span>
+<span style="color:#94a3b8">→</span>
+<span style="padding:5px 11px;border-radius:8px;border:1px solid #34d399;background:rgba(16,185,129,.18);color:#34d399;font-weight:600;font-size:.85em">Start</span>
+<span style="color:#94a3b8">→</span>
+<span style="padding:5px 11px;border-radius:8px;border:1px solid #34d399;background:rgba(16,185,129,.18);color:#34d399;font-weight:600;font-size:.85em">Update</span>
+<span style="color:#94a3b8">→</span>
+<span style="padding:5px 11px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.85em">…</span>
+<span style="color:#94a3b8">→</span>
+<span style="padding:5px 11px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.85em">OnDisable</span>
+<span style="color:#94a3b8">→</span>
+<span style="padding:5px 11px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.85em">OnDestroy</span>
+</div>
+<div class="ok-box">💡 绿色两个（<code>Start</code> / <code>Update</code>）不是你新发明的方法，而是<strong>脚本默认就有的生命周期回调</strong>——你只往里填"要做什么"，引擎到对应时刻就自动调用；其余是引擎在更细时刻点也会调用的回调。</div>
+</div>
+<h3>④ 生命周期各阶段与对应代码</h3>
+<div class="card"><p>最常用两个：</p></div><div class="card"><ul><li><code>Start()</code>：场景加载后、第一次 <code>Update</code> 之前调用一次，写初始化代码</li><li><code>Update()</code>：每一帧渲染前调用，大部分游戏逻辑写在这里</li></ul></div><div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4344032512',this)">复制</button></div>
+<pre id="c_4344032512"><code class="language-csharp">// MoveObject.cs —— 只写上 Start / Update 两个最常用的回调（完整脚本）
+// 整段可以直接复制、覆盖原文件；标 ① 的是这一页新加的
+using UnityEngine;
+
+public class MoveObject : MonoBehaviour {
+    void Start() {
+        Debug.Log("船启动！");      // ① 新增：游戏开始时只执行一次
+    }
+    void Update() {
+        // 每帧执行
+    }
+}</code></pre>
+</div>
+<div class="card"><p>其它几个回调：</p></div><div class="card"><table><tr><th>回调</th><th>调用时机</th><th>时机示意（截图）</th></tr><tr><td><code>Awake()</code></td><td>脚本实例被加载时调用一次，早于所有 Start</td><td>—</td></tr><tr><td><code>FixedUpdate()</code></td><td>固定时间间隔调用，物理代码写这里</td><td>—</td></tr><tr><td><code>OnEnable()</code></td><td>对象变为激活状态时</td><td><img src="images/课件9/OnEnable时机.png" alt="OnEnable 触发时机：对象被激活" onclick="zoomQR(this)" style="cursor:pointer;max-width:150px;width:100%;display:block;margin:0 auto" onerror="imgMissing(this)"></td></tr><tr><td><code>OnDisable()</code></td><td>对象变为非激活状态时</td><td><img src="images/课件9/OnDisable时机.png" alt="OnDisable 触发时机：对象被停用" onclick="zoomQR(this)" style="cursor:pointer;max-width:150px;width:100%;display:block;margin:0 auto" onerror="imgMissing(this)"></td></tr></table></div><div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4344031936',this)">复制</button></div>
+<pre id="c_4344031936"><code class="language-csharp">// MoveObject.cs —— 六个生命周期回调全写上（完整脚本）
+// 整段可以直接复制、覆盖原文件；标 ①②③④ 的是这一页新加的
+using UnityEngine;
+
+public class MoveObject : MonoBehaviour {
+    void Awake() {          // ① 新增：脚本被加载时调用一次，最早，早于所有 Start
+    }
+
+    void OnEnable() {       // ② 新增：对象变为激活状态时调用
+    }
+
+    void Start() {
+        Debug.Log("船启动！");
+    }
+
+    void Update() {
+        // 每帧执行
+    }
+
+    void FixedUpdate() {    // ③ 新增：固定时间间隔调用，物理相关代码写这里
+    }
+
+    void OnDisable() {      // ④ 新增：对象变为非激活状态时调用
+    }
+}</code></pre>
+</div>
+
+<div class="card">
+<h3>⑤ 游戏对象有生命周期吗？</h3>
+<p>严格说，<strong>游戏对象本身没有"生命周期"</strong>——它只是个装组件的容器（下面这张图看得更清楚）。但挂在它上面的<strong>脚本组件有</strong>，原因就一句话：你写的脚本 <code>MoveObject</code> 继承自 <code>MonoBehaviour</code>（回看①里的 <code>public class MoveObject : MonoBehaviour</code>）。</p>
+<div style="border:1px dashed rgba(255,255,255,.28);border-radius:12px;padding:14px 16px;margin:10px 0;background:rgba(255,255,255,.03)">
+<div style="font-weight:600;color:#e2e8f0;margin-bottom:10px">🚢 游戏对象（Game Object）<span style="font-weight:400;color:#94a3b8;font-size:.9em">　＝ 装组件的容器</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<span style="padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.92em">Transform 变换</span>
+<span style="padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.92em">Mesh Renderer 网格渲染</span>
+<span style="padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.92em">Rigidbody 刚体</span>
+<span style="padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.92em">Collider 碰撞器</span>
+<span style="padding:6px 12px;border-radius:8px;border:1px solid #34d399;background:rgba(16,185,129,.18);color:#34d399;font-weight:600;font-size:.92em">脚本组件 MonoBehaviour <span style="font-style:normal;font-weight:400;opacity:.9">★ 继承它 → 获得生命周期</span></span>
+</div>
+</div>
+<p>那这套回调<strong>什么时候、被谁触发</strong>？<strong>机制写在 MonoBehaviour 的内部实现里</strong>——你只需重写 <code>Start()</code> / <code>Update()</code> 等钩子，Unity 引擎运行时就会按固定顺序，向每个<strong>激活的游戏对象</strong>上的每个 MonoBehaviour 组件发送这些消息；对象被<strong>激活 / 停用</strong>，就触发组件的 <code>OnEnable</code> / <code>OnDisable</code>。</p>
+<p>用④刚讲的这几个回调，套回我们的船模型再理解一遍：</p>
+<div class="ok-box">💡 船喻🚢：把游戏对象想成<strong>一艘船</strong>，组件是船上的各种设备。脚本组件就像个<strong>继承了 MonoBehaviour 的"自动船员"</strong>——不用你盯着，引擎（船长）一拉响起航汽笛，就按"航行时刻表"自己干活：<br>⚓ <strong>船起航（激活）</strong> → 被 <code>OnEnable</code> 叫醒、就位待命；<br>🌅 <strong>第一次出港（Start）</strong> → 跑一次"开工点名"；<br>🔁 <strong>之后每一帧（Update）</strong> → 不停巡逻、干活；<br>🛏️ <strong>船停泊（停用）</strong> → 被 <code>OnDisable</code> 叫去休眠。<br>所以通俗地说：<strong>船上的脚本，运行时有一套生命周期</strong>；根子则在 MonoBehaviour。</div>
+</div>
+
+<h3>在脚本里打印日志（Debug.Log）</h3>
+<div class="card"><p><code>Debug.Log()</code> 把信息实时打到 <strong>Console（控制台）</strong>。调试脚本时，常用它打印：模型名（<code>this.name</code>）、坐标（<code>transform.position</code>）、时间（<code>Time.time</code> / <code>Time.deltaTime</code>）。下面在 <code>Start()</code> 里打印船模型名和初始坐标，在 <code>Update()</code> 里打印每帧的时间差：</p></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4344037726',this)">复制</button></div>
+<pre id="c_4344037726"><code class="language-csharp">// MoveObject.cs —— 用 Debug.Log 把运行情况打到控制台（完整脚本）
+// 整段可以直接复制、覆盖原文件；标 ①②③ 的是这一页新加的
+using UnityEngine;
+
+public class MoveObject : MonoBehaviour {
+    void Start() {
+        Debug.Log("船启动！");
+        Debug.Log("模型名：" + this.name);              // ① 新增：this.name → 对象名
+        Debug.Log("初始坐标：" + transform.position);    // ② 新增：transform.position → 世界坐标
+    }
+    void Update() {
+        // deltaTime：距上一帧的时间差；帧率不同也能稳定观察
+        Debug.Log("帧间隔：" + Time.deltaTime);          // ③ 新增：每帧都打一条
+    }
+}</code></pre>
+</div>
+<div class="ok-box">💡 坐标想只保留三位小数，用 <code>transform.position.ToString("F3")</code>。运行后 Console 会刷屏——调试完记得删掉或注释掉 <code>Update()</code> 里的日志。</div>
+
+<h3>运行游戏，看控制台打印日志</h3>
+<div class="card"><p>Unity 顶部<strong>播放工具条</strong>有三个按钮：<strong>运行（▶）</strong>、<strong>暂停（⏸）</strong>、<strong>单帧（⏭）</strong>。点击"运行"后，引擎按上面的生命周期调用脚本——先 <code>Awake</code> → <code>Start</code>，再每帧 <code>Update</code>，<code>Debug.Log()</code> 的内容实时出现在 Console 窗口；再次点击"运行"按钮即<strong>停止</strong>。写完代码记得先 <strong>Ctrl + S</strong> 保存再切回 Unity。</p></div><img src="images/课件9/脚本 --- 运行 --- update.gif" alt="运行游戏并在控制台打印日志" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box">⚠️ <strong>播放模式是临时的</strong>：运行中改的属性、加的物体，退出播放后都会重置；想保留改动要在停止播放后再改。</div>
+
+</div></div>
+<div class="slide" data-page="11"><div class="slide-inner markable">
+<h1>游戏对象、组件与常用 API</h1>
+<div class="card"><p><strong>本页要做什么：</strong>上一页知道脚本靠生命周期自动运行；要让船模型动起来，得先搞清楚"对象身上有什么、怎么从脚本访问它"。改它的 API——Transform 怎么改位姿、Time 怎么控节奏——留到下一页，正好接上本章的匀速移动。</p>
+<p>本页讲两块：<br>① 游戏对象由<strong>组件</strong>拼成<br>② 从脚本访问<strong>模型对象信息</strong></p></div>
+
+<h3>① 游戏对象由组件拼成</h3>
+<div class="card"><p>一个模型在 Unity 里就是个<strong>游戏对象（Game Object）</strong>——本质是个"容器"。想赋予它能力，就是往上面<strong>加组件</strong>：控制位姿的是 <strong>Transform</strong>，加行为的是 <strong>Script</strong>（就是上一页的 MonoBehaviour），其它组件各管一摊（参考原课件）：</p></div>
+<table>
+<tr><th>组件</th><th>负责的能力</th><th>组件截图</th></tr>
+<tr><td><code>Transform</code></td><td>位置（Position）/ 旋转（Rotation）/ 缩放（Scale）——物体的"位姿"</td><td><img src="images/课件9/组件_Transform.png" alt="Transform 组件截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td><code>Mesh Renderer</code></td><td>把网格（Mesh）渲染成可见物体，并设置材质</td><td><img src="images/课件9/组件_MeshRenderer.png" alt="Mesh Renderer 组件截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td><code>Rigidbody</code></td><td>物理效果：重力、碰撞、动力学</td><td><img src="images/课件9/组件_Rigidbody.png" alt="Rigidbody 组件截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td><code>Collider</code></td><td>碰撞检测，让物体能互相碰到</td><td><img src="images/课件9/组件_Collider.png" alt="Collider 组件截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td><code>Script</code>（MonoBehaviour）</td><td>用 C# 写自定义行为，挂到对象上就生效</td><td><img src="images/课件9/组件_Script.png" alt="Script 组件截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+</table>
+<div class="ok-box">💡 记住一句话：<strong>能力来自组件</strong>。后面让船移动、旋转，用的就是 <code>Transform</code>；让它有逻辑，用的就是 <code>Script</code>。</div>
+
+<h3>② 从脚本访问模型对象的信息</h3>
+<div class="card"><p>脚本挂在对象上，从代码里可以拿到"自己"、所属对象和组件，也能读取它的各种信息。常用的<strong>写法</strong>与<strong>含义</strong>如下：</p></div>
+<table>
+<tr><th>写法</th><th>代表什么</th><th>截图</th></tr>
+<tr><td><code>this</code></td><td>当前这个脚本组件自身（MonoBehaviour）</td><td><img src="images/课件9/对象信息_this.png" alt="this 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td><code>gameObject</code></td><td>它所属的游戏对象</td><td><img src="images/课件9/对象信息_gameObject.png" alt="gameObject 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td><code>transform</code></td><td>它所属的游戏对象上的 Transform 组件（最常用）</td><td><img src="images/课件9/对象信息_transform.png" alt="transform 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td style="padding-left:24px"><span style="color:#64748b">↳ </span><code>transform.position</code></td><td>世界坐标（Vector3）—— 物体在场景里的"地址"：从世界原点 (0,0,0) 指向它的三维坐标 (x,y,z)</td><td><img src="images/课件9/对象信息_position.png" alt="position 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td style="padding-left:24px"><span style="color:#64748b">↳ </span><code>transform.eulerAngles</code></td><td>旋转角度（单位：度）—— 物体绕 X / Y / Z 轴各转了多少度，眼睛能直接看出来</td><td><img src="images/课件9/对象信息_rotation.png" alt="rotation 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td style="padding-left:24px"><span style="color:#64748b">↳ </span><code>transform.localScale</code></td><td>本地缩放（Vector3）—— 物体的"大小倍率"：相对原始模型放大 / 缩小多少倍（x,y,z 三轴可独立）</td><td><img src="images/课件9/对象信息_localScale.png" alt="localScale 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td><code>this.name</code></td><td>对象的名字（Hierarchy 中显示的名称）</td><td><img src="images/课件9/对象信息_name.png" alt="name 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td><code>gameObject.activeSelf</code></td><td>是否激活（true / false）</td><td><img src="images/课件9/对象信息_activeSelf.png" alt="activeSelf 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td><code>this.tag</code></td><td>标签（字符串，用于分类、查找对象）</td><td><img src="images/课件9/对象信息_tag.png" alt="tag 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td><code>this.gameObject.layer</code></td><td>层级（整数 0–31，用于摄像机剔除、射线检测）</td><td><img src="images/课件9/对象信息_layer.png" alt="layer 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+</table>
+<div class="card"><p>呼应上一页 Debug.Log 里我们用过的 <code>this.name</code> 和 <code>transform.position</code>；下面在 <code>Start()</code> 里把它们一并打印出来看看：</p></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_obj_info',this)">复制</button></div>
+<pre id="c_obj_info"><code class="language-csharp">// MoveObject.cs —— 把对象身上的各项信息一次打印出来（完整脚本）
+// 整段可以直接复制、覆盖原文件；标 ① 的是这一页新加的
+using UnityEngine;
+
+public class MoveObject : MonoBehaviour {
+    void Start() {
+        // this = 当前脚本组件；gameObject = 所属对象；transform = 它的 Transform
+        Debug.Log("名字："   + this.name);               // ① 新增：下面这一串都是同一个写法
+        Debug.Log("标签："   + this.tag);
+        Debug.Log("层级："   + this.gameObject.layer);
+        Debug.Log("是否激活：" + gameObject.activeSelf);
+        Debug.Log("位置："   + transform.position);
+        Debug.Log("旋转："   + transform.eulerAngles);
+        Debug.Log("缩放："   + transform.localScale);
+        // 运行时开关对象：gameObject.SetActive(false);
+    }
+}</code></pre>
+</div>
+<img src="images/课件9/对象信息_运行日志.png" alt="代码运行后的 Console 日志" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:50%" onerror="imgMissing(this)">
+<div class="card"><p>上面用到的 <code>transform</code> 是 Unity 给的"快捷方式"（每个对象都自带）。想拿<strong>别的组件</strong>——比如 <code>Rigidbody</code>、<code>MeshRenderer</code>，或你写的另一个<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">脚本</mark>——就要用通用接口 <code>GetComponent&lt;T&gt;()</code>：</p></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_getcomp',this)">复制</button></div>
+<pre id="c_getcomp"><code class="language-csharp">// MoveObject.cs —— 用 GetComponent&lt;T&gt;() 拿别的组件（完整脚本）
+// 整段可以直接复制、覆盖原文件；标 ①② 的是这一页新加的
+using UnityEngine;
+
+public class MoveObject : MonoBehaviour {
+    void Start() {
+        Rigidbody rb = GetComponent&lt;Rigidbody&gt;();   // ① 新增：拿到同对象上的 Rigidbody
+        rb.AddForce(0, 10, 0);                     // ② 新增：给它一个向上的力
+    }
+}</code></pre>
+</div>
+<div class="ok-box">💡 记法：<code>transform</code> = 不用写 GetComponent 的"常驻快捷方式"；其它组件 = <code>GetComponent&lt;组件类型&gt;()</code> 现取现用。</div>
+
+</div></div>
+<div class="slide" data-page="13"><div class="slide-inner markable">
+<h1>让游戏对象匀速运动：向量 · Transform · Time</h1>
+<div class="card"><p><strong>本页要做什么：</strong>上一页认识了"对象由组件拼成、能从脚本读取它的信息"；这一页先学<strong>改位姿的 Transform 组件方法</strong>和<strong>控节奏的 Time 方法</strong>，再用它们让船模型真正<strong>动起来</strong>——匀速地移动或旋转，最后再拓展绕圈。先看效果：</p></div>
+<img src="images/课件9/脚本 --- 运行 --- 绕圈移动.gif" alt="船绕圈移动效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card">
+<p><strong>移动的本质（看着简单，其实有坑）：</strong>让船动起来，就是<strong>每一帧</strong>偷偷改一点点它的位置（或转一点角度）。</p>
+<div class="ok-box">⚠️ 别写"每帧 + 固定距离"：好电脑一秒 144 帧、老笔记本才 30 帧——同一段代码，别人的船飕飕跑，你的船慢吞吞。</div>
+<p>匀速移动 = 三件套凑齐 👇</p>
+<ul>
+<li>① <strong>向量 Vector3</strong>：先搞清"位置 / 方向"长啥样</li>
+<li>② <strong>Transform</strong>：再找对"改位置"的扳手（就是它）</li>
+<li>③ <strong>Time.deltaTime</strong>：把"每帧"换算成"每秒"，跟帧率脱钩</li>
+</ul>
+<p>三步齐活，<strong>第④步</strong>才能写出稳稳的匀速运动 ✅</p>
+</div>
+
+<h3>① 向量：位置、方向、速度都是向量</h3>
+<div class="card"><p>Unity 里三维空间的位置、方向、速度都是<strong>向量</strong>。常用类型：</p></div><div class="card"><ul><li><code>Vector2</code>（x, y）：平面坐标</li><li><code>Vector3</code>（x, y, z）：三维空间坐标，最常用</li></ul></div><div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4343311808',this)">复制</button></div>
+<pre id="c_4343311808"><code class="language-csharp">// MoveObject.cs —— 向量字段的两种赋值方式（完整脚本）
+// 整段可以直接复制、覆盖原文件；标 ①②③ 的是这一页新加的
+using UnityEngine;
+
+public class MoveObject : MonoBehaviour {
+    public Vector3 position1 = new Vector3(1, 2, 2); // ① 新增：声明时就赋值（实例化时赋值）
+    public Vector3 position2 = new Vector3();        // ② 新增：先建一个 (0,0,0)，之后再填
+
+    void Start() {
+        position2.x = 1; position2.y = 2; position2.z = 2;  // ③ 新增：逐个分量赋值
+    }
+}</code></pre>
+</div>
+<div class="card"><p>Unity 还内置了一组<strong>方向 / 位置常量</strong>，直接写、不用手算：</p></div>
+<table>
+<tr><th>常量</th><th>值</th><th>含义</th></tr>
+<tr><td><code>Vector3.zero</code></td><td>(0,0,0)</td><td>原点，常作初始位置</td></tr>
+<tr><td><code>Vector3.one</code></td><td>(1,1,1)</td><td>各轴统一缩放 / 操作</td></tr>
+<tr><td><code>Vector3.up</code></td><td>(0,1,0)</td><td>向上方向</td></tr>
+<tr><td><code>Vector3.down</code></td><td>(0,-1,0)</td><td>向下方向</td></tr>
+<tr><td><code>Vector3.left</code></td><td>(-1,0,0)</td><td>向左方向</td></tr>
+<tr><td><code>Vector3.right</code></td><td>(1,0,0)</td><td>向右方向</td></tr>
+<tr><td><code>Vector3.forward</code></td><td>(0,0,1)</td><td>向前方向（最常用）</td></tr>
+<tr><td><code>Vector3.back</code></td><td>(0,0,-1)</td><td>向后方向</td></tr>
+</table>
+<div class="card"><p>常用<strong>方法</strong>（游戏里最爱用这几个）：</p></div>
+<div class="card"><ul>
+<li><code>Vector3.Distance(a, b)</code>：两点之间的距离（用 <code>transform.position</code> 演示见 ②）</li>
+<li><code>Vector3.Lerp(a, b, t)</code>：从 a 到 b 的线性插值（t 取 0~1）</li>
+<li><code>Vector3.MoveTowards(a, b, step)</code>：从 a 朝 b 每步移 step</li>
+<li><code>Vector3.Angle(a, b)</code>：两向量的夹角（度）</li>
+<li><code>vector.normalized</code>：把向量长度归一化成 1（只留方向）</li>
+<li><code>Vector3.ClampMagnitude(v, max)</code>：限制向量长度不超过 max</li>
+</ul></div>
+<div class="card"><p>回到 Unity 看一眼就明白了：每个对象都挂着 <strong>Transform 组件</strong>，里面的 <strong>Position（位置）、Rotation（旋转）、Scale（缩放）</strong>，每个都是 (x, y, z) 三个数——它们正是三个<strong>向量</strong>。</p></div>
+<img src="images/课件9/Transform组件.png" alt="Inspector 中的 Transform 组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+
+<h3>② Transform 组件方法（改位置 / 旋转）</h3>
+<div class="card"><p><strong>所有位移、旋转都通过修改 Transform 实现，且按帧计算</strong>。脚本里用 <code>transform</code> 就能拿到它；常用写法：</p></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_trans_methods',this)">复制</button></div>
+<pre id="c_trans_methods"><code class="language-csharp">// MoveObject.cs —— 三种改位姿的写法，全都写在 Update 里（完整脚本）
+// 整段可以直接复制、覆盖原文件；标 ①②③ 的是这一页新加的
+using UnityEngine;
+
+public class MoveObject : MonoBehaviour {
+    void Update() {
+        // ① 新增：直接改位置（赋一个新坐标）
+        transform.position = new Vector3(0, 1, 0);
+
+        // ② 新增：增量移动——往"对象自身的前方"移动 1 个单位（本地 +z 轴，Unity 里的蓝色箭头）
+        transform.Translate(0, 0, 1);
+
+        // ③ 新增：增量旋转——绕 y 轴转 90 度
+        transform.Rotate(0, 90, 0);
+    }
+}</code></pre>
+</div>
+<div class="card"><ul><li><code>transform.position</code>：对象的位置（世界坐标）</li><li><code>transform.Translate(x, y, z)</code>：在当前基础上增量移动</li><li><code>transform.Rotate(x, y, z)</code>：在当前基础上增量旋转</li></ul></div>
+<div class="ok-box">💡 <code>transform.position</code> 本身就是一个 <code>Vector3</code>，所以它既能被<strong>读取</strong>（拿去计算）、也能被<strong>修改</strong>（让对象移动）——下面各看一个例子。</div>
+<div class="card"><p>用法一「<strong>读取计算</strong>」：既然是向量，就能用第①步学过的向量方法。比如算"自己离目标对象还有多远"：</p></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4343311680',this)">复制</button></div>
+<pre id="c_4343311680"><code class="language-csharp">// MoveObject.cs —— 用向量算「自己离目标还有多远」（完整脚本）
+// 整段可以直接复制、覆盖原文件；标 ①② 的是这一页新加的
+using UnityEngine;
+
+public class MoveObject : MonoBehaviour {
+    public Transform target;   // ① 新增：目标对象，在检查器（Inspector）里把目标拖进来
+
+    void Start() {
+        // transform 是 MonoBehaviour 自带的属性，不用自己声明
+        // target 是你声明的字段；target.position = 目标对象的位置
+        float d = Vector3.Distance(transform.position, target.position);  // ② 新增：算两点直线距离
+    }
+}</code></pre>
+</div>
+<div class="card"><p>这句在算什么：<code>Vector3.Distance(a, b)</code> 返回两点 a、b 之间的<strong>直线距离</strong>（一个 <code>float</code> 数）；<code>transform.position</code> 是"自己"的位置，<code>target.position</code> 是目标对象的位置。合起来 <code>d</code> = 自己离目标还有多远——常用来判断"够不够近、该不该触发某事"。</p></div>
+<div class="card"><p>用法二「<strong>修改移动</strong>」：把上面刚学的 <code>transform.Translate</code> 用起来——它除了能传三个数，也能直接吃一个<strong>位移向量</strong>。而这个向量怎么来？记住一句：<strong>速度 = 方向 × 大小</strong>——算出这一帧该位移多少，交给它去挪对象（真正的匀速写法见<strong>第④步</strong>，要乘 <code>Time.deltaTime</code>）：</p></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_vec_move',this)">复制</button></div>
+<pre id="c_vec_move"><code class="language-csharp">// MoveObject.cs —— 把「方向 × 大小」交给 Translate（完整脚本）
+// 整段可以直接复制、覆盖原文件；标 ①②③④ 的是这一页新加的
+using UnityEngine;
+
+public class MoveObject : MonoBehaviour {
+    public Vector3 direction = Vector3.forward; // ① 新增：移动方向
+    public float speed = 0.01f;                 // ② 新增：每帧移动大小（注意是「每帧」，不是「每秒」）
+
+    void Update() {
+        // 方向 × 大小 = 这一帧的相对位移
+        Vector3 step = direction * speed;       // ③ 新增
+        transform.Translate(step);              // ④ 新增：按向量平移对象
+    }
+}</code></pre>
+</div>
+<img src="images/课件9/脚本 --- 运行 --- 向量位移.gif" alt="用法二：向量位移效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>🎥 操作教学：对齐到视图（Align With View）</h3><p>运行脚本前，建议先把<strong>摄像头（Main Camera）</strong>的视角对齐成你当前在场景里看的角度，否则一按播放，<strong>游戏视图</strong>可能和你想看的角度不一样、甚至看不到船。做法：</p>
+<ul>
+<li>① 在 <strong>Hierarchy</strong> 窗口里<strong>选中 Main Camera</strong>（摄像头）；</li>
+<li>② 顶部菜单栏 <strong>游戏对象（GameObject）→ 对齐到视图（Align With View）</strong>。</li>
+</ul>
+<p>执行后，摄像头的位姿会<strong>瞬间跳到场景视图当前的视角</strong>——也就是<strong>游戏视图</strong>对齐到了<strong>场景视图</strong>：你场景里怎么看，运行时就怎么看（快捷键 Ctrl / Cmd + Shift + F）。</p></div>
+<img src="images/课件9/对齐到视图_操作步骤.png" alt="对齐到视图操作步骤" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:66.67%" onerror="imgMissing(this)">
+
+<h3>③ Time 方法（控制每帧节奏）</h3>
+<div class="card"><p><strong>为什么需要 Time？</strong><code>Update()</code> 每帧执行一次，但<strong>每帧之间隔多久并不固定</strong>——帧率越高，每帧间隔越短。所以要用 <strong>Time</strong> 类把"帧"换算成"真实时间"，运动才不会忽快忽慢。</p></div>
+<div class="card"><h3>Time.time —— 游戏已经进行了多少秒</h3><p>从<strong>游戏开始到现在</strong>累计经过的秒数，<strong>只增不减</strong>。适合：计时、倒计时、判断"过了几秒"、按时间做周期运动等。</p></div>
+<div class="card"><h3>Time.deltaTime —— 这一帧花了多少秒</h3><p><strong>上一帧到这一帧</strong>的时间差（秒），<strong>每帧都在变</strong>：帧率越高它越小、帧率越低它越大。乘上它，就把"每帧做多少"换算成"每秒做多少"，让结果<strong>与帧率无关</strong>。</p></div>
+<div class="card"><h3>一眼看懂区别</h3>
+<table>
+<tr><th>属性</th><th>含义</th><th>怎么变</th><th>典型用途</th></tr>
+<tr><td><code>Time.time</code></td><td>游戏开始到现在的累计秒数</td><td>一直增大</td><td>计时 / 倒计时 / 周期运动</td></tr>
+<tr><td><code>Time.deltaTime</code></td><td>上一帧到这一帧的时间差</td><td>每帧都不同</td><td>让移动、旋转与帧率无关</td></tr>
+</table></div>
+<div class="card"><p><strong>小例子：</strong>想让物体"每秒走 2 米"。某一帧花了 0.02 秒，这一帧就走 <code>2 × 0.02 = 0.04</code> 米；下一帧花了 0.04 秒，就走 <code>2 × 0.04 = 0.08</code> 米。<strong>每帧走的距离不一样，但每秒合起来始终是 2 米</strong>——这就是 <code>Time.deltaTime</code> 的功劳。</p></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_time_methods',this)">复制</button></div>
+<pre id="c_time_methods"><code class="language-csharp">// MoveObject.cs —— Time 的两个属性各打一条日志（完整脚本）
+// 整段可以直接复制、覆盖原文件；标 ①② 的是这一页新加的
+using UnityEngine;
+
+public class MoveObject : MonoBehaviour {
+    void Update() {
+        // ① 新增：Time.time —— 游戏开始到现在的累计秒数（只增不减）
+        Debug.Log("已运行 " + Time.time + " 秒");
+
+        // ② 新增：Time.deltaTime —— 距上一帧的时间差（秒），每帧都在变
+        Debug.Log("这一帧用了 " + Time.deltaTime + " 秒");
+    }
+}</code></pre>
+</div>
+<div class="ok-box">⏱️ 关键点：<strong>凡是"按每秒"控制的东西（移动、旋转、计时），都要乘 <code>Time.deltaTime</code></strong>，这样不管电脑快慢，速度都一样。下面第④步就用它让船匀速动起来。</div>
+<img src="images/课件9/Time_运行日志.png" alt="Time.time 与 Time.deltaTime 的日志输出" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+
+<h3>④ 实现匀速移动（关键：Time.deltaTime）</h3>
+<div class="card"><p>先看<strong>平移</strong>。还是第②步用法二那段 <code>direction * speed</code>，只改一处：把 speed 从"每帧移动大小"换成"<strong>每秒</strong>移动的距离"，再乘上第③步的 <code>Time.deltaTime</code>——<strong>每帧位移 = 每秒速度 × 这一帧的秒数</strong>，其实就是物理里的 <strong>s = v · t</strong>（路程 = 速度 × 时间），这里的"时间 t"正好是 <code>Time.deltaTime</code>：</p></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_uniform_move',this)">复制</button></div>
+<pre id="c_uniform_move"><code class="language-csharp">// MoveObject.cs —— 乘上 Time.deltaTime，变成真正的匀速（完整脚本）
+// 整段可以直接复制、覆盖原文件；标 ①② 的是这一页新加的
+using UnityEngine;
+
+public class MoveObject : MonoBehaviour {
+    public Vector3 direction = Vector3.forward; // 移动方向
+    public float speed = 10f;                   // ① 改成「每秒」移动多少米（上一段写的是「每帧」）
+
+    void Update() {
+        // 方向 × 每秒速度 × 这一帧的秒数 = 这一帧的位移
+        Vector3 step = direction * speed * Time.deltaTime;  // ② 新增：× Time.deltaTime
+        transform.Translate(step);              // 按向量平移对象
+    }
+}</code></pre>
+</div>
+<img src="images/课件9/脚本 --- 运行 --- 匀速移动.gif" alt="匀速移动效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><p>⚠️ 注意上面标绿的 <code>* Time.deltaTime</code>：算出来的 <code>step</code> 不是"终点位置"，而是<strong>这一帧新增加的一小段位移（增量）</strong>——<code>Translate</code> 做的就是把它<strong>叠加</strong>到对象当前的位置上（和 ② 里"增量移动"是同一个意思）。所以帧快时每帧增量小、帧慢时每帧增量大，但每秒加起来恒为 10 米，这才叫"匀速"。</p></div>
+<div class="card"><p><strong>旋转</strong>同理，也能匀速——把"每秒转多少度"乘上 <code>Time.deltaTime</code> 即可：</p></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4344028352',this)">复制</button></div>
+<pre id="c_4344028352"><code class="language-csharp">// MoveObject.cs —— 旋转同样能匀速（完整脚本）
+// 整段可以直接复制、覆盖原文件；标 ①② 的是这一页新加的
+using UnityEngine;
+
+public class MoveObject : MonoBehaviour {
+    public float turn = 20f;                    // ① 新增：每秒转多少度（暴露到检查器里随时调）
+
+    void Update() {
+        // ② 新增：绕 y 轴均匀旋转（度 / 秒 × 这一帧的秒数）
+        this.transform.Rotate(0, turn * Time.deltaTime, 0);
+    }
+}</code></pre>
+</div>
+<img src="images/课件9/脚本 --- 运行 --- 匀速旋转.gif" alt="船模型匀速旋转效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box">⚠️ 移动 / 旋转代码要写在 <code>Update()</code> 里（每帧执行）。<code>Time.deltaTime</code>（就是第③步讲的）让"每秒走多远"与帧率无关，是做匀速运动的标配写法。</div>
+
+<h3>5. 拓展：让船在 xz 平面绕圈</h3>
+<div class="card"><p>匀速运动不只有"直线前进"。想让船在地面上<strong>绕圈</strong>，思路是：<strong>一边前进、一边绕 y 轴慢慢转向</strong>——前进方向持续改变，路径就弯成了圆（y 高度保持不变，所以是在 xz 平面上）。</p></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_circle_move',this)">复制</button></div>
+<pre id="c_circle_move"><code class="language-csharp">// MoveObject.cs —— 一边前进一边转向，路径就弯成圆（完整脚本）
+// 整段可以直接复制、覆盖原文件；标 ①② 的是这一页新加的
+using UnityEngine;
+
+public class MoveObject : MonoBehaviour {
+    public Vector3 direction = Vector3.forward; // 移动方向
+    public float speed = 10f;                   // 每秒移动大小（米 / 秒）
+    public float turn  = 20f;                   // ① 新增：转向速度（度 / 秒）
+
+    void Update() {
+        // ② 新增：绕 y 轴持续转向 → 前进方向不断改变
+        transform.Rotate(0, turn * Time.deltaTime, 0);
+        // 方向 × 每秒速度 × 这一帧的秒数 = 这一帧的位移
+        Vector3 step = direction * speed * Time.deltaTime;
+        transform.Translate(step);              // 按向量平移对象
+    }
+}</code></pre>
+</div>
+<img src="images/课件9/脚本 --- 运行 --- 绕圈移动.gif" alt="船绕圈移动效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><p>转向越快、前进越慢，圈就越小；两者配合决定<strong>圆的半径</strong>。想精确给定圆心和半径，也可直接用角度算坐标（就是作业里提过的 <code>Mathf.Sin / Cos</code> 思路）：</p></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_circle_param',this)">复制</button></div>
+<pre id="c_circle_param"><code class="language-csharp">// MoveObject.cs —— 用角度直接算坐标，圆心和半径都能定量（完整脚本）
+// 整段可以直接复制、覆盖原文件；标 ①②③ 的是这一页新加的
+using UnityEngine;
+
+public class MoveObject : MonoBehaviour {
+    public float speed = 10f;   // 与上一段相同：每秒移动大小（米 / 秒）
+    public float turn  = 20f;   // 与上一段相同：角速度（度 / 秒）
+    float radius;               // 圆半径（由上面两个算出）
+    Vector3 center;             // 圆心
+    float angle = 0;            // 已经转过的角度
+
+    void Start() {
+        // ① 新增：圆半径 = 线速度 ÷ 角速度(弧度)：和上一段转出来的圈一样大
+        radius = speed / (turn * Mathf.Deg2Rad);
+        // ② 新增：圆心取在船的右侧，船正好落在圆周上
+        center = transform.position + transform.right * radius;
+    }
+
+    void Update() {
+        // ③ 新增：角度也是「增量」——每帧按角速度累加，同样要乘 Time.deltaTime
+        angle += turn * Time.deltaTime;
+        // 圆心 + 半径向量（绕 y 轴转过 angle）= 圆周上的坐标
+        transform.position = center + new Vector3(
+            -radius * Mathf.Cos(angle * Mathf.Deg2Rad),  // x
+             0,                                          // 高度不变
+             radius * Mathf.Sin(angle * Mathf.Deg2Rad)); // z
+        // 船头沿切线一起转
+        transform.Rotate(0, turn * Time.deltaTime, 0);
+    }
+}</code></pre>
+</div>
+<img src="images/课件9/脚本 --- 运行 --- 角度绕圈.gif" alt="角度算坐标绕圈效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="ok-box">🔄 两种方式都是<strong>匀速</strong>运动：第一种"转向 + 前进"最直观，只用了已学的 <code>Translate</code> / <code>Rotate</code>；第二种"角度算坐标"能精确给定圆心和半径，作业进阶挑战用它做圆周运动最稳。</div>
+
+</div></div><div class="slide" data-page="18"><div class="slide-inner markable">
+<h1>作业 · 自选模型，搭一个会绕圈的场景</h1>
+<div class="card"><h3>基本要求</h3><ul><li><strong>自选模型</strong>：从 <strong>Poly Haven</strong> 下载，或用自己的模型（做法见<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">第 6 页</mark>）</li><li><strong>导入并摆好</strong>：模型放进场景，位置、旋转、缩放都调好，比例自然、不悬空</li><li><strong>添加其他模型</strong>：再放一两个丰富场景，别让模型孤零零（做法见<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">第 6 页</mark>）</li><li><strong>换上天空盒背景</strong>：用 HDRI 给场景换片真实天空（做法见<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">课件7</mark>）</li><li><strong>对齐到视图</strong>（Align With View）：确定运行时看到的游戏视角（做法见<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">第 10 页</mark>）</li><li><strong>让它绕圈移动</strong>：用「5. 拓展」的两种写法之一（转向 + 前进 / 角度算坐标），匀速绕圈</li></ul></div>
+<img src="images/课件9/作业_基础效果.gif" alt="作业基础效果：自选模型绕圈移动" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>核心要求</h3><ul><li>用 <code>Time.deltaTime</code> 保证"与帧率无关"的匀速——换台电脑快慢一致</li><li>速度、角速度（Turn）用 <code>public</code> 暴露到 Inspector，能现场调快慢</li></ul></div>
+<div class="ok-box">⚠️ 改了脚本里 <code>public</code> 变量的默认值，场景里已挂的组件<strong>不会</strong>跟着变（Inspector 里还是旧值）。把该脚本组件移除后<strong>重新添加</strong>，或点组件右上角 <strong>⋮ → Reset</strong>，新值才会生效。</div>
+<div class="card"><h3>进阶挑战：在绕圈上加判断</h3><ul><li><strong>基础实现就是"匀速绕圈"</strong>：用「5. 拓展」的两种写法之一，先把它跑通。</li><li><strong>进阶不换运动方式</strong>，只在绕圈代码里加<strong>逻辑判断</strong>——碰到边界就掉头、转满一圈就换圆心，轨迹自然长出新花样。下面两种写法可以直接改着用：</li></ul></div>
+<div class="card"><p><strong>① 绕圈 + 上下浮沉</strong>：高度用变量存着，用 <code>if</code> 判断上下限就掉头，船像在浪里一起一伏（在「5. 拓展」②的代码上加 3 行判断）：</p></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_hw_bob',this)">复制</button></div>
+<pre id="c_hw_bob"><code class="language-csharp">public float speed = 10f;   // 与「5. 拓展」相同：每秒移动大小（米 / 秒）
+public float turn  = 20f;   // 与「5. 拓展」相同：角速度（度 / 秒）
+float radius;               // 圆半径（由上面两个算出）
+Vector3 center;             // 圆心
+float angle = 0;            // 已经转过的角度
+float y;                    // 船当前高度
+float vy = 1f;              // 垂直方向：1 上升，-1 下降
+
+void Start() {
+    // 和「5. 拓展」②一样：算出半径和圆心
+    radius = speed / (turn * Mathf.Deg2Rad);
+    center = transform.position + transform.right * radius;
+    y = transform.position.y;
+}
+
+void Update() {
+    // ① 绕圈：x、z 按角度走圆，高度交给变量 y
+    angle += turn * Time.deltaTime;
+    transform.position = center + new Vector3(
+        -radius * Mathf.Cos(angle * Mathf.Deg2Rad),
+         y,
+         radius * Mathf.Sin(angle * Mathf.Deg2Rad));
+
+    // ② 逻辑判断：碰到上下限就掉头 —— 船在浪里一起一伏
+    y += vy * Time.deltaTime;
+    if (y &gt; 6f) vy = -1f;
+    if (y &lt; -3f) vy = 1f;
+
+    // ③ 船头沿切线一起转
+    transform.Rotate(0, turn * Time.deltaTime, 0);
+}</code></pre>
+</div>
+<img src="images/课件9/作业_进阶_上下浮沉.gif" alt="绕圈 + 上下浮沉效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><p><strong>② 8 字航道</strong>：船头转满 360° 就换到另一侧的圆心、同时改成反向转，左右两个圆在起点相切，拼起来正好是一个"8"字：</p></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_hw_eight',this)">复制</button></div>
+<pre id="c_hw_eight"><code class="language-csharp">public float speed = 60f;   // 每秒移动大小（米 / 秒）
+public float turn  = 50f;   // 角速度大小（度 / 秒）
+float radius;               // 圆半径
+Vector3 centerR, centerL;   // 右侧圆、左侧圆的圆心
+Vector3 center;             // 当前正在走的那个圆心
+float angle = 0;            // 从换圆心起转过的角度
+float side = 1f;            // 1 → 右侧圆，-1 → 左侧圆
+float y;                    // 保持不变的飞行高度
+
+void Start() {
+    radius  = speed / (turn * Mathf.Deg2Rad);
+    // 两个圆在起点相切：圆心一个在船右侧、一个在船左侧
+    centerR = transform.position + transform.right * radius;
+    centerL = transform.position - transform.right * radius;
+    center  = centerR;
+    y = transform.position.y;
+}
+
+void Update() {
+    angle += turn * Time.deltaTime;
+
+    // 逻辑判断：转满一整圈 → 换到另一侧的圆心，同时改成反向转
+    if (angle &gt;= 360f) {
+        angle -= 360f;
+        side = -side;
+        if (side &gt; 0) center = centerR;
+        else           center = centerL;
+    }
+
+    // 按当前圆心走圆：side 决定从圆心的哪一侧起步
+    transform.position = center + new Vector3(
+        -radius * Mathf.Cos(angle * Mathf.Deg2Rad) * side,
+         y,
+         radius * Mathf.Sin(angle * Mathf.Deg2Rad));
+
+    // 船头沿切线转，转向也跟着 side 翻
+    transform.Rotate(0, turn * side * Time.deltaTime, 0);
+}</code></pre>
+</div>
+<img src="images/课件9/作业_进阶_8字航道.gif" alt="8 字航道效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>还能怎么变</h3><ul><li><strong>螺旋上升 / 下潜</strong>：把 ① 的"碰到上下限就掉头"换成"每转一圈抬高一点"，轨迹就是螺旋线</li><li><strong>绕圈 + 自转</strong>：绕圈的同时再多 <code>Rotate</code> 一个角度，船边绕圈边自己打转</li><li><strong>忽快忽慢</strong>：让 <code>turn</code> 按 <code>Mathf.Sin</code> 变化，转弯时快时慢</li><li><strong>巡逻航道</strong>：给 <code>angle</code> 数圈数，跑够 3 圈就换一个圆心（换一片水域再绕）</li></ul></div>
+<div class="ok-box">💬 验收标准：场景里有自选模型（材质 / 贴图正确、比例与摆放合理），并另放一两个模型丰富场景；天空盒已换成 HDRI；运行前用<strong>对齐到视图</strong>定好视角，运行时看到的画面正确；模型能<strong>匀速绕圈移动</strong>，速度不随电脑快慢变化（乘 <code>Time.deltaTime</code>），<code>speed</code> / <code>turn</code> 暴露在 Inspector 里能现场调快慢。进阶：在 <strong>① 绕圈 + 上下浮沉</strong>、<strong>② 8 字航道</strong> 中任选一种完成。</div>
+</div></div>
+<div class="slide" data-page="19"><div class="slide-inner end-page">
+
+<div class="end-thanks">
+    <div class="end-left">
+        <div class="end-icon">💪</div>
+        <div class="end-title">感谢各位同学的参与!</div>
+        <div class="end-sub">祝大家学习进步</div>
+    </div>
+    <div class="end-right">
+        <img src="images/tencent-docs-qrcode.png" alt="腾讯文档二维码" onerror="imgMissing(this)" onclick="zoomQR(this)" style="cursor:pointer">
+        <p>扫码查看作业完成情况</p>
+        <a href="https://docs.qq.com/sheet/DV2tKZ2pSTUNwUFpX?tab=bo2p4o" target="_blank" class="end-link">📊 查看作业完成情况文档</a>
+    </div>
+</div>
+<a href="课件10_资源商店与模型资源.html" class="end-next-link">📖 下一节：课件10 · 资源商店与模型资源 →</a>
+
+</div></div>
+</div>
+</div>
+
+<div class="search-panel" id="searchPanel">
+    <div class="search-panel-header">
+        <span>🔍 全局搜索</span>
+        <button class="search-panel-close" onclick="closeSearch()">✕</button>
+    </div>
+    <input class="search-input" id="searchInput" placeholder="输入关键词搜索..." oninput="doSearch()" autocomplete="off">
+    <div class="search-results" id="searchResults"></div>
+</div>
+
+<div class="help-overlay" id="helpOverlay">
+    <div class="help-header"><span>📖 使用帮助</span><button class="help-close-btn" onclick="closeHelp()">✕</button></div>
+    <div class="help-body">
+            <h3>⌨️ 快捷键</h3>
+            <table><tr><td><code>Ctrl+K</code></td><td>打开搜索</td></tr><tr><td><code>← →</code></td><td>上一页 / 下一页</td></tr><tr><td><code>Esc</code></td><td>关闭弹窗</td></tr></table>
+            <h3>🎯 导航</h3>
+            <p>左侧边栏点击切换页面；底部圆点快速跳转；进度条显示学习完成度。</p>
+            <h3>💻 在线编辑器</h3>
+            <p>顶部「在线编辑器」下拉提供菜鸟教程、Tutorialspoint、DotNetFiddle 三个在线 C# 编译器。</p>
+            <h3>🌙 主题与字号</h3>
+            <p>深色/浅色切换；A- / A+ 调整字号；刷新后保留设置。</p>
+            <h3>🔍 搜索</h3>
+            <p>支持中英文关键词，匹配结果高亮显示，点击跳转到对应页面。</p>
+        </div>
+</div>
+
+<div class="catalog-panel" id="catalogPanel">
+    <div class="catalog-header">
+        <span>📚 课件目录</span>
+        <button class="catalog-close-btn" onclick="closeCatalog()">✕</button>
+    </div>
+    <div class="catalog-list" id="catalogList"></div>
+</div>
+
+<div class="qr-zoom-overlay" id="qrZoom" onclick="closeZoom()">
+    <img id="qrZoomImg" src="" alt="二维码放大">
+</div>
+
+<div class="nav-buttons">
+    <button class="nav-btn" id="prevBtn" onclick="goSlide(-1)">◀ 上一页</button>
+    <button class="nav-btn" id="nextBtn" onclick="goSlide(1)">下一页 ▶</button>
+</div>
+<div class="progress-dots" id="progressDots"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+window.__CATALOG__ = [{"file": "课件1_认识Unity与课程介绍.html", "label": "课件1 · 认识Unity与课程介绍"}, {"file": "课件2_注册与安装软件.html", "label": "课件2 · 注册与安装软件"}, {"file": "课件3_Unity引擎概览.html", "label": "课件3 · Unity引擎概览"}, {"file": "课件4_场景与物体.html", "label": "课件4 · 场景与物体"}, {"file": "课件5_移动视野与物体.html", "label": "课件5 · 移动视野与物体"}, {"file": "课件6_旋转缩放多选.html", "label": "课件6 · 旋转缩放多选"}, {"file": "课件7_网格与材质.html", "label": "课件7 · 网格与材质"}, {"file": "课件8_C#核心语法.html", "label": "课件8 · C#核心语法"}, {"file": "课件9_Fbx导入与脚本入门.html", "label": "课件9 · Fbx导入与脚本入门"}, {"file": "课件10_资源商店与模型资源.html", "label": "课件10 · 资源商店与模型资源"}, {"file": "课件11_键盘控制移动.html", "label": "课件11 · 键盘控制移动"}, {"file": "课件12_刚体与碰撞体.html", "label": "课件12 · 刚体与碰撞体"}, {"file": "课件13_角色移动与视角.html", "label": "课件13 · 角色移动与视角"}, {"file": "课件14_访问其他游戏对象.html", "label": "课件14 · 访问其他游戏对象"}, {"file": "课件15_游戏管理器与生成物体.html", "label": "课件15 · 游戏管理器与生成物体"}, {"file": "课件16_动物自由巡游与定点巡逻.html", "label": "课件16 · 动物自由巡游与定点巡逻"}, {"file": "课件17_走近动物跟着走.html", "label": "课件17 · 走近动物跟着走"}, {"file": "课件18_动物交互动画切换.html", "label": "课件18 · 动物交互动画切换"}, {"file": "课件19_视线检测与图层.html", "label": "课件19 · 视线检测与图层"}, {"file": "课件20_玩家血条与被接触攻击.html", "label": "课件20 · 玩家血条与被接触攻击"}, {"file": "课件21_死亡与游戏管理器.html", "label": "课件21 · 死亡与游戏管理器"}, {"file": "课件22_撤离点与粒子系统.html", "label": "课件22 · 撤离点与粒子系统"}, {"file": "课件23_启动页面.html", "label": "课件23 · 启动页面"}, {"file": "课件24_FPS场景玩家武器.html", "label": "课件24 · FPS场景玩家武器"}, {"file": "课件25_射击准心与鼠标锁定.html", "label": "课件25 · 射击准心与鼠标锁定"}, {"file": "课件26_消灭敌人与孵化器.html", "label": "课件26 · 消灭敌人与孵化器"}, {"file": "课件27_拾取物品.html", "label": "课件27 · 拾取物品"}, {"file": "课件28_更换枪械.html", "label": "课件28 · 更换枪械"}, {"file": "课件29_修改动画状态机.html", "label": "课件29 · 修改动画状态机"}, {"file": "课件30_NPC对话.html", "label": "课件30 · NPC对话"}, {"file": "课件31_NPC对话进阶.html", "label": "课件31 · NPC对话进阶"}, {"file": "课件32_任务队列.html", "label": "课件32 · 任务队列"}];
+let LESSON_LABEL='';(function(){
+  let cur=window.location.pathname.split('/').pop();
+  let items=window.__CATALOG__||[];
+  for(let i=0;i<items.length;i++){if(items[i].file===cur){LESSON_LABEL=items[i].label;break}}
+  if(!LESSON_LABEL)LESSON_LABEL=document.title.split(' — ')[0]||'';
+})();
+
+// ========== 移动端 "更多" 菜单 ==========
+function toggleMobileMore(){document.getElementById('mobileMoreMenu').classList.toggle('open')}
+function mobileAction(act){
+  document.getElementById('mobileMoreMenu').classList.remove('open');
+  if(act==='ide'){let m=document.getElementById('ideMenu');if(m)m.classList.add('show')}
+  else if(act==='fontDown')changeFont(-1);
+  else if(act==='fontUp')changeFont(1);
+  else if(act==='search')openSearch();
+  else if(act==='flat')toggleFlat();
+  else if(act==='imgbottom')toggleImgBottom();
+  else if(act==='help')toggleHelp();
+}
+document.addEventListener('click',function(e){
+  let mm=document.getElementById('mobileMoreMenu');
+  if(mm&&mm.classList.contains('open')&&!e.target.closest('.mobile-more'))mm.classList.remove('open');
+});
+// 点击移动端信息条跳转下一页
+function mobileInfoTap(){goSlide(1)}
+
+// ========== localStorage ==========
+const LS=(k,d)=>localStorage.getItem(k)||d;
+const LSset=(k,v)=>localStorage.setItem(k,v);
+
+// ========== 主题 ==========
+// ========== 在线编辑器下拉 ==========
+document.addEventListener('DOMContentLoaded',function(){
+    var ideBtn=document.getElementById('ideBtn');
+    if(ideBtn){
+        ideBtn.onclick=function(e){
+            e.stopPropagation();
+            document.getElementById('ideMenu').classList.toggle('show');
+        };
+    }
+    document.querySelectorAll('.dropdown-item').forEach(function(el){
+        el.onclick=function(e){
+            e.preventDefault();
+            window.open(this.dataset.url,'_blank');
+            document.getElementById('ideMenu').classList.remove('show');
+        };
+    });
+    document.addEventListener('click',function(){
+        document.getElementById('ideMenu').classList.remove('show');
+    });
+});
+
+// ========== 主题 ==========
+if(LS('theme','dark')==='light')document.body.classList.add('light');
+function toggleTheme(){
+    const il=document.body.classList.toggle('light');
+    LSset('theme',il?'light':'dark');
+    document.getElementById('themeBtn').textContent=il?'☀️浅色':'🌙深色';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('themeBtn').textContent=document.body.classList.contains('light')?'☀️浅色':'🌙深色';
+    let mi=document.getElementById('mobileInfo');
+    if(mi){
+        mi.querySelector('.mi-lesson').textContent=LESSON_LABEL;
+        mi.querySelector('.mi-page').textContent='第1页 / 共'+total+'页';
+    }
+});
+
+
+// ========== 平铺模式（连续显示全部页面，导出 PDF 用） ==========
+function toggleFlat(){
+    const on=document.body.classList.toggle('flat-mode');
+    document.documentElement.classList.toggle('flat-mode',on);
+    const btn=document.getElementById('flatBtn');
+    if(btn)btn.textContent=on?'🗂️ 分页':'📄 平铺';
+    LSset('flat',on?'1':'0');
+    if(!on)showSlide(curr);   // 切回分页时回到当前页
+}
+// ========== 图片显示模式（右侧小图 / 下方大图） ==========
+function toggleImgBottom(){
+    const on=document.body.classList.toggle('img-bottom');
+    document.documentElement.classList.toggle('img-bottom',on);
+    const btn=document.getElementById('imgBtn');
+    if(btn)btn.textContent=on?'🖼️ 侧图':'🖼️ 图下';
+    LSset('imgmode',on?'1':'0');
+}
+
+
+// ========== 字号 ==========
+const FONT_SIZES=['xs','sm','md','lg','xl'];
+let fontIdx=FONT_SIZES.indexOf(LS('font','md'));
+if(fontIdx<0)fontIdx=2;
+if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+function changeFont(d){
+    document.body.classList.remove('font-'+FONT_SIZES[fontIdx]);
+    fontIdx=Math.max(0,Math.min(FONT_SIZES.length-1,fontIdx+d));
+    if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+    LSset('font',FONT_SIZES[fontIdx]);
+}
+
+// ========== 幻灯片 ==========
+let slides=document.querySelectorAll('.slide,.cover'),
+    navLinks=document.querySelectorAll('.nav-link'),
+    curr=0,total=13,contentTotal=11;
+
+// 进度圆点
+// 侧边栏点击
+navLinks.forEach((l,i)=>l.addEventListener('click',e=>{e.preventDefault();showSlide(i);}));
+let dotsHtml='';
+for(let i=0;i<total;i++)dotsHtml+=`<span class="progress-dot" data-idx="${i}" onclick="showSlide(${i})"></span>`;
+document.getElementById('progressDots').innerHTML=dotsHtml;
+let dots=document.querySelectorAll('.progress-dot');
+
+function showSlide(idx){
+    if(idx<0||idx>=total)return;
+    slides.forEach((s,i)=>s.classList.toggle('active',i===idx));
+    navLinks.forEach((l,i)=>l.classList.toggle('active',i===idx));
+    dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
+    curr=idx;
+    let cp=Math.max(0,Math.min(idx,contentTotal));
+    document.getElementById('progressFill').style.width=(cp/contentTotal*100)+'%';
+    document.getElementById('progressText').textContent=cp+' / '+contentTotal;
+    let mi=document.getElementById('mobileInfo');
+    if(mi){
+        mi.querySelector('.mi-lesson').textContent=LESSON_LABEL;
+        mi.querySelector('.mi-page').textContent='第'+(idx+1)+'页 / 共'+total+'页';
+    }
+    document.getElementById('mainArea').scrollTop=0;
+    document.querySelectorAll('.nav-status')[idx]?.classList.add('seen');
+    updateNav();
+}
+function goSlide(d){ showSlide(curr+d); }
+function updateNav(){
+    document.getElementById('prevBtn').disabled=curr===0;
+    document.getElementById('nextBtn').disabled=curr===total-1;
+    LSset('page_'+window.location.pathname.split('/').pop(), curr);
+}
+
+// 键盘
+document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')goSlide(1);
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')goSlide(-1);
+    if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openSearch();}
+    if(e.key==='Escape'){closeSearch();closeHelp();closeZoom();closeCatalog();}
+});
+
+// ========== 搜索 ==========
+function openSearch(){document.getElementById('searchPanel').classList.add('open');document.getElementById('searchInput').focus();document.getElementById('searchInput').value='';document.getElementById('searchResults').innerHTML=''}
+function closeSearch(){document.getElementById('searchPanel').classList.remove('open')}
+function toggleHelp(){document.getElementById('helpOverlay').classList.toggle('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+// 课件目录
+function toggleCatalog(){
+    let p=document.getElementById('catalogPanel');
+    if(!p.classList.contains('open')){loadCatalog();p.classList.add('open')}else{p.classList.remove('open')}
+}
+function closeCatalog(){document.getElementById('catalogPanel').classList.remove('open')}
+function loadCatalog(){
+    let c=document.getElementById('catalogList');
+    if(c.children.length>0)return;
+    let current=decodeURIComponent(window.location.pathname.split('/').pop());
+    let items=window.__CATALOG__||[];
+    if(!items.length){c.innerHTML='<div class="catalog-item" style="color:var(--text-muted)">暂无课件</div>';return}
+    items.forEach(item=>{
+        let a=document.createElement('a');a.className='catalog-item';a.href=encodeURIComponent(item.file);
+        if(item.file===current)a.classList.add('current');
+        a.innerHTML=`<span class="catalog-num">${item.label.split(' · ')[0]}</span><span>${item.label.split(' · ').slice(1).join(' · ')||item.label}</span>`;
+        c.appendChild(a);
+    });
+}
+function zoomQR(img){document.getElementById('qrZoomImg').src=img.src;document.getElementById('qrZoom').classList.add('show')}
+function closeZoom(){document.getElementById('qrZoom').classList.remove('show')}
+function doSearch(){
+    let q=document.getElementById('searchInput').value,qLower=q.toLowerCase(),c=document.getElementById('searchResults');
+    c.innerHTML='';if(q.length<2)return;
+    let r=[];
+    slides.forEach((s,i)=>{
+        let raw=s.textContent,lower=raw.toLowerCase(),idx=lower.indexOf(qLower);
+        if(idx<0)return;
+        let start=Math.max(0,idx-15),end=Math.min(raw.length,idx+q.length+30);
+        let ex=raw.substring(start,end);
+        if(start>0)ex='...'+ex;
+        if(end<raw.length)ex=ex+'...';
+        // 高亮匹配词
+        let re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+        ex=ex.replace(re,'<mark>$1</mark>');
+        r.push({idx:i,excerpt:ex,slide:s});
+    });
+    r.slice(0,20).forEach(x=>{
+        let a=document.createElement('a');a.className='search-item';a.href='#';
+        let title=navLinks[x.idx]?.textContent.replace(/^\d+\.\s*/,'')||('页面'+(x.idx+1));
+        a.innerHTML=`<div class="sr-lesson">${x.idx+1}. ${title}</div><div class="sr-text">${x.excerpt}</div>`;
+        a.onclick=e=>{e.preventDefault();showSlide(x.idx);closeSearch();};
+        c.appendChild(a);
+    });
+}
+
+// ========== 复制 ==========
+function copyCode(cid,btn){
+    let code=document.getElementById(cid).textContent;
+    navigator.clipboard.writeText(code).then(()=>{
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    }).catch(()=>{
+        // fallback
+        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
+        document.execCommand('copy');document.body.removeChild(ta);
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    });
+}
+
+// ========== 初始化 ==========
+hljs.highlightAll();
+// 标了 ①②③④ 的新增行注释标绿：hljs 会重建代码块内容，只能等高亮跑完再标
+function markNewComments(){
+    document.querySelectorAll('pre code .hljs-comment').forEach(el=>{
+        if(/[①②③④⑤]\s*新增/.test(el.textContent)) el.classList.add('cmt-new');
+    });
+}
+window.addEventListener('DOMContentLoaded',markNewComments);
+window.addEventListener('load',markNewComments);
+
+// 代码块内重点标注（必须等 hljs 高亮完成后再执行：高亮会重建代码块内容，先标的会被冲掉）
+function markCodeTokens(){
+    const MARK_STYLE='background:rgba(16,185,129,.18);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:700';
+    const targets={ 'c_uniform_move':['* Time.deltaTime'] };
+    Object.keys(targets).forEach(function(id){
+        const pre=document.getElementById(id);if(!pre)return;
+        // 先收集文本节点，避免替换过程中遍历失效
+        const nodes=[],walker=document.createTreeWalker(pre,NodeFilter.SHOW_TEXT,null);
+        while(walker.nextNode())nodes.push(walker.currentNode);
+        nodes.forEach(function(node){
+            const text=node.nodeValue,out=[];
+            let pos=0,found=false;
+            while(pos<text.length){
+                let best=-1,bestTk=null;
+                targets[id].forEach(function(tk){
+                    const i=text.indexOf(tk,pos);
+                    if(i>=0&&(best<0||i<best)){best=i;bestTk=tk;}
+                });
+                if(best<0)break;
+                if(best>pos)out.push(document.createTextNode(text.slice(pos,best)));
+                const mark=document.createElement('mark');
+                mark.setAttribute('style',MARK_STYLE);
+                mark.textContent=bestTk;
+                out.push(mark);
+                pos=best+bestTk.length;found=true;
+            }
+            if(!found)return;
+            if(pos<text.length)out.push(document.createTextNode(text.slice(pos)));
+            const frag=document.createDocumentFragment();
+            out.forEach(function(n){frag.appendChild(n);});
+            node.parentNode.replaceChild(frag,node);
+        });
+    });
+}
+// hljs 可能在 load 前后完成，放在 load 之后统一标注
+if(document.readyState==='complete'){markCodeTokens();}else{window.addEventListener('load',markCodeTokens);}
+// 折叠面板
+function toggleFold(btn){
+    btn.classList.toggle('open');
+    let content=btn.nextElementSibling;
+    if(!content||!content.classList.contains('fold-content')) content=content.nextElementSibling;
+    if(content&&content.classList.contains('fold-content')) content.classList.toggle('show');
+}
+let savedPage=parseInt(LS('page_'+window.location.pathname.split('/').pop(),'0'));
+if(savedPage>0&&savedPage<total)showSlide(savedPage);else showSlide(0);
+// 恢复上次的平铺/分页模式
+if(LS('flat','0')==='1')toggleFlat();
+if(LS('imgmode','0')==='1')toggleImgBottom();
+
+
+</script>
+</body>
+</html>

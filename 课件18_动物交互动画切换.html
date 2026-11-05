@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>课件18_动物交互动画切换 — C#先知课堂</title>
+<link rel="stylesheet" href="vendor/atom-one-dark.min.css">
+<script src="vendor/highlight.min.js"></script>
+<style>
+/* ===== 色彩变量 ===== */
+:root{
+--bg-primary:#0A0E27;--bg-secondary:#0D1430;--bg-card:rgba(17,24,39,0.95);
+--bg-input:#0B1020;--border:rgba(255,255,255,0.06);
+--text:#E8EAED;--text-muted:#9AA0A6;
+--accent:#00D4AA;--accent2:#4FC3F7;--accent-dim:rgba(0,212,170,0.08);
+--orange:#F59E0B;--blue:#818CF8;
+--green:#22C55E;--green-bg:rgba(34,197,94,0.08);--green-border:rgba(34,197,94,0.3);
+--red:#EF4444;--red-bg:rgba(239,68,68,0.08);--red-border:rgba(239,68,68,0.3);
+--yellow:#F59E0B;--purple:#C084FC;--teal:#86EFAC;--teal-border:rgba(34,197,94,0.3);
+--font-size:16px;
+}
+.light{
+--bg-primary:#ffffff;--bg-secondary:#f6f8fa;--bg-card:#f6f8fa;--bg-input:#ffffff;
+--border:#d0d7de;--text:#24292f;--text-muted:#656d76;
+--accent:#0969da;--accent2:#0550ae;--accent-dim:rgba(9,105,218,0.08);
+--orange:#cf222e;--blue:#0550ae;
+--green:#1a7f37;--green-bg:#eefdf2;--green-border:#86d9a0;
+--red:#cf222e;--red-bg:#ffebe9;--red-border:#fdaeb7;
+--yellow:#9a6700;--purple:#8250df;--teal:#0550ae;--teal-border:#4ac26b;
+}
+body.font-xs{--font-size:12px}body.font-sm{--font-size:14px}body.font-md{--font-size:16px}body.font-lg{--font-size:19px}body.font-xl{--font-size:22px}
+
+/* ===== 全局 ===== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microsoft YaHei',sans-serif;background:linear-gradient(180deg,var(--bg-primary),var(--bg-secondary));color:var(--text);line-height:1.6;font-size:var(--font-size)}
+.container{display:flex;height:100vh}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.02)}
+::-webkit-scrollbar-thumb{background:rgba(0,212,170,0.2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,212,170,0.4)}
+
+/* ===== 侧边栏 ===== */
+.sidebar{width:260px;min-width:260px;height:100vh;background:linear-gradient(180deg,rgba(10,14,39,0.98),rgba(13,20,48,0.95));border-right:1px solid var(--border);overflow-y:auto;padding:12px 0;flex-shrink:0;backdrop-filter:blur(10px);position:relative;z-index:10}
+.sidebar-title{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-size:16px;font-weight:700;padding:0 14px 10px;border-bottom:1px solid rgba(0,212,170,0.15);margin-bottom:6px}
+.nav-link{display:flex;align-items:center;color:var(--text-muted);text-decoration:none;padding:8px 14px;font-size:12px;border-left:3px solid transparent;transition:all .2s}
+.nav-link:hover{color:var(--accent);background:var(--accent-dim);border-left-color:rgba(0,212,170,0.4)}
+.nav-link.active{color:#fff!important;background:linear-gradient(90deg,rgba(0,212,170,0.18),transparent);border-left:3px solid var(--accent);font-weight:600}
+.nav-status{width:7px;height:7px;border-radius:50%;margin-right:7px;flex-shrink:0;background:rgba(255,255,255,0.1);transition:all .3s}
+.nav-status.seen{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,0.5)}
+
+/* ===== Header ===== */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header-bar{display:flex;align-items:center;gap:16px;padding:10px 24px;background:rgba(10,14,39,0.95);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;position:relative;z-index:5}
+.progress-wrap{flex:1;min-width:200px;display:flex;align-items:center;gap:12px}
+.progress-bar{flex:1;height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,0.3)}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .5s ease;width:0;box-shadow:0 0 8px rgba(0,212,170,0.4)}
+.progress-text{font-size:11px;color:var(--text-muted);white-space:nowrap}
+.header-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .25s;white-space:nowrap}
+.header-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 8px rgba(0,212,170,0.1);transform:translateY(-1px)}
+.header-dropdown{position:relative;display:inline-block}
+.dropdown-menu{display:none;position:absolute;top:100%;right:0;margin-top:6px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;min-width:180px;z-index:100;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.dropdown-menu.show{display:block}
+.dropdown-item{display:block;padding:10px 16px;color:var(--text);font-size:13px;text-decoration:none;transition:background .2s;cursor:pointer;white-space:nowrap}
+.dropdown-item:hover{background:var(--accent-dim);color:var(--accent)}
+.dropdown-item:not(:last-child){border-bottom:1px solid var(--border)}
+
+/* ===== 幻灯片 ===== */
+.slides-container{flex:1;position:relative !important;overflow:hidden}
+#mainArea .slides-container{position:relative !important;overflow:hidden !important;min-height:calc(100vh - 60px)}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transform:translateX(30px);transition:opacity .35s,transform .35s;pointer-events:none;overflow-y:auto}
+.slide::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:.6;z-index:10}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto;z-index:1}
+.slide-inner{max-width:920px;margin:0 auto;padding:56px 48px 80px}
+
+/* 标题 */
+.slide-inner h1{color:#fff;font-size:26px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid rgba(0,212,170,0.2);letter-spacing:-0.3px}
+.slide-inner h2{color:var(--accent2);font-size:20px;margin:28px 0 14px;font-weight:600}
+.slide-inner h3{color:var(--accent);font-size:calc(var(--font-size) * 1.06);margin:20px 0 10px;font-weight:600;padding-left:10px;border-left:3px solid var(--accent)}
+.slide-inner h3.h-example{color:var(--accent2);border-left-color:var(--accent2)}
+.slide-inner h3.h-practice{color:var(--orange);border-left-color:var(--orange)}
+.slide-inner p{color:var(--text);margin-bottom:10px;line-height:1.85}
+.slide-inner ul,.slide-inner ol{margin-left:22px;margin-bottom:14px}
+.slide-inner li{color:#CBD5E1;margin-bottom:6px;line-height:1.75}
+
+/* 内联代码 */
+.slide-inner strong{color:var(--accent2);font-weight:700}
+.slide-inner em{color:var(--orange);font-style:normal;font-weight:500}
+.slide-inner code{background:rgba(0,212,170,0.08);color:var(--accent);padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:90%;border:1px solid rgba(0,212,170,0.15);font-weight:600}
+
+/* 表格 */
+.slide-inner table{width:100%;border-collapse:collapse;font-size:calc(var(--font-size) * 0.94);margin:12px 0;border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.slide-inner table td,.slide-inner table th{padding:8px 14px;border:1px solid var(--border);text-align:left}
+.slide-inner table th{background:linear-gradient(135deg,rgba(17,24,39,0.9),rgba(15,23,41,0.9));color:var(--accent);font-weight:600;font-size:calc(var(--font-size) * 1.0);text-transform:uppercase;letter-spacing:.5px}
+.slide-inner table tr:nth-child(odd){background:rgba(255,255,255,0.015)}
+.slide-inner table tr:hover{background:var(--accent-dim)}
+
+/* 链接 */
+.slide-inner a{color:var(--accent2);text-decoration:underline;text-decoration-color:rgba(79,195,247,0.3);text-underline-offset:3px;transition:all .2s}
+.slide-inner a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+
+/* ===== 卡片 ===== */
+.card,.homework-card,.ok-box,.prompt-box{margin:10px 0;border-radius:12px;transition:all .3s}
+.card{background:linear-gradient(135deg,var(--bg-card),rgba(13,20,48,0.85));border:1px solid var(--border);padding:14px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.2);overflow:hidden}
+.card .card-img{float:right;max-width:200px;max-height:250px;margin:0 0 8px 16px;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 标题+图片+列表 类型的卡片：确定性两栏（左文右图），不依赖 float 环绕 */
+.card.side-card{display:flex;align-items:flex-start;gap:18px;overflow:hidden}
+.card.side-card .side-body{flex:1;min-width:0}
+.card.side-card .side-body h3{margin-top:0}
+.card.side-card .card-img{float:none;flex:0 0 auto;max-width:200px;max-height:250px;margin:0;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.card.side-card .side-body ul,.card.side-card .side-body ol{margin:8px 0 0;padding-left:22px}
+.card.side-card .side-body ul li,.card.side-card .side-body ol li{margin:4px 0}
+.card table .card-img{float:none;max-width:280px;max-height:none;margin:4px auto;display:block;border-radius:4px}
+.card table .card-img-sm{float:none;max-width:100px;max-height:none;margin:4px 0;display:inline-block;border-radius:4px}
+.card-img{display:block;max-width:100%;margin:16px auto;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 表格单元格内图片（发展四时代等）：小图居中，破图自动隐藏 */
+.slide-inner table td img.card-img,.slide-inner table th img.card-img{display:block;max-width:150px;max-height:105px;width:auto;height:auto;margin:6px auto;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+.slide-inner table td img.card-img-sm,.slide-inner table th img.card-img-sm{display:block;max-width:96px;max-height:66px;margin:4px auto;border-radius:4px}
+/* 竞赛照片三图并排 */
+.contest-row{display:flex;gap:12px;justify-content:center;margin:16px 0;flex-wrap:wrap}
+.contest-row img{flex:1;min-width:0;max-width:280px;max-height:200px;object-fit:cover;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer}
+.card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.12);transform:translateY(-1px)}
+.card h3{margin-top:0}
+
+/* 代码块 */
+.prompt-box{background:var(--bg-input);border:1px solid rgba(0,212,170,0.2);border-left:3px solid var(--accent);overflow:hidden;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03)}
+.code-toolbar{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.04)}
+.code-lang{font-size:10px;color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.copy-btn{background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2);color:var(--accent);padding:3px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-family:inherit;transition:all .2s}
+.copy-btn:hover{background:rgba(0,212,170,0.2);border-color:var(--accent)}
+.copy-btn.copied{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.prompt-box pre{background:transparent;padding:12px 16px;margin:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;overflow-x:auto}
+.prompt-box pre code{background:transparent;padding:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;font-family:'JetBrains Mono','Menlo','Monaco',monospace;color:#E2E8F0;border:none}
+
+/* ok-box / homework-card */
+.homework-card{background:linear-gradient(135deg,rgba(0,212,170,0.06),var(--bg-card));border:1px solid var(--teal-border);padding:14px 18px}
+.homework-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(0,212,170,0.08)}
+.homework-card h3{color:var(--teal)}
+.ok-box{background:linear-gradient(135deg,rgba(34,197,94,0.06),var(--bg-card));border:1px solid var(--green-border);padding:14px 18px}
+.ok-box:hover{border-color:var(--green);box-shadow:0 8px 24px rgba(34,197,94,0.08)}
+.ok-box ul,.ok-box ol{margin:6px 0;padding-left:1.5em}
+.ok-box li{margin:3px 0;line-height:1.7}
+
+/* 高亮标记 */
+.markable li,.markable p{cursor:pointer;transition:all .15s;border-radius:3px;padding:1px 3px}
+.markable li.marked,.markable p.marked{background:rgba(192,132,252,.12);border-left:3px solid var(--purple);padding-left:8px}
+
+/* ===== 折叠面板 ===== */
+.fold-toggle{display:inline-flex;align-items:center;gap:6px;background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:calc(var(--font-size) * 1.06);font-family:inherit;transition:all .2s;margin:8px 0;user-select:none}
+.fold-toggle:hover{background:rgba(0,212,170,0.15);box-shadow:0 2px 8px rgba(0,212,170,0.15)}
+.fold-toggle .arrow{display:inline-block;transition:transform .3s;font-size:10px}
+.fold-toggle.open .arrow{transform:rotate(90deg)}
+.fold-content{max-height:0;overflow:hidden;transition:max-height .4s ease;opacity:0}
+.fold-content.show{max-height:3000px;opacity:1}
+/* 提示折叠 绿色 */
+.fold-toggle.hint{color:var(--green);border-color:var(--green-border);background:var(--green-bg)}
+.fold-toggle.hint:hover{background:rgba(34,197,94,0.12)}
+/* 答案折叠 紫色 */
+.fold-toggle.solution{color:var(--purple);border-color:rgba(192,132,252,0.4);background:rgba(192,132,252,0.08)}
+.fold-toggle.solution:hover{background:rgba(192,132,252,0.15)}
+/* 问答折叠 橙色 */
+.fold-toggle.qa{color:var(--orange);border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.08)}
+.fold-toggle.qa:hover{background:rgba(245,158,11,0.15)}
+/* 填空代码 */
+.code-blank{color:var(--orange);background:rgba(245,158,11,0.1);padding:2px 6px;border-radius:4px;font-weight:600}
+
+/* ===== 导航按钮 ===== */
+.nav-buttons{position:fixed;bottom:24px;right:32px;display:flex;gap:8px;z-index:100}
+.nav-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:10px 22px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:500;transition:all .25s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 4px 16px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
+.progress-dots{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:100}
+.progress-dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:all .3s;cursor:pointer}
+.progress-dot:hover{background:var(--accent2)}
+.progress-dot.active{background:var(--accent);transform:scale(1.4);box-shadow:0 0 8px rgba(0,212,170,0.5)}
+
+/* ===== 搜索 ===== */
+.search-panel{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:300;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.search-panel.open{right:0}
+.search-panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.search-panel-header span{font-size:15px;font-weight:600;color:var(--text)}
+.search-panel-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.search-panel-close:hover{color:var(--text);background:var(--accent-dim)}
+
+/* ===== 课件目录 ===== */
+.catalog-panel{position:fixed;top:0;right:-320px;width:320px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:298;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.catalog-panel.open{right:0}
+.catalog-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.catalog-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.catalog-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.catalog-list{flex:1;overflow-y:auto;padding:8px 0}
+.catalog-item{display:flex;align-items:center;gap:10px;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.catalog-item:hover{background:var(--accent-dim);border-left-color:var(--accent)}
+.catalog-item.current{color:var(--accent)!important;background:var(--accent-dim);border-left-color:var(--accent);font-weight:600}
+.catalog-num{color:var(--accent);font-size:11px;font-weight:700;min-width:40px;white-space:nowrap}
+.search-input{width:100%;padding:14px 18px;background:var(--bg-input);border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:15px;outline:none;flex-shrink:0}
+.search-input::placeholder{color:var(--text-muted)}
+.search-results{flex:1;overflow-y:auto;padding:8px 0}
+.search-item{display:block;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.search-item:hover,.search-item.focus{background:var(--accent-dim);border-left-color:var(--accent)}
+.help-overlay{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:299;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.help-overlay.open{right:0}
+.help-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.help-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.help-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.help-body{flex:1;overflow-y:auto;padding:16px 22px 24px}
+.help-body h3{color:var(--accent);font-size:14px;margin:16px 0 8px;padding-left:0;border-left:none}
+.help-body p{font-size:13px;color:var(--text-muted);margin-bottom:8px}
+.help-body table{font-size:13px}
+.help-body table td{padding:4px 12px 4px 0}
+.help-body table td:first-child{white-space:nowrap;padding-right:16px}
+.search-item mark{background:rgba(0,212,170,0.2);color:var(--accent);border-radius:2px;padding:0 3px}
+
+/* ===== Toast ===== */
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:400;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);padding:16px 28px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.toast.show{opacity:1}
+
+/* ===== 浅色覆盖 ===== */
+.light body,.light html{background:var(--bg-primary)!important}
+.light .sidebar{background:var(--bg-secondary)!important;border-right-color:var(--border)!important}
+.light .sidebar-title{-webkit-text-fill-color:var(--text);font-weight:600}
+.light .goal-card,.light .card{background:var(--bg-card)!important;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.light .homework-card{background:var(--accent-dim)!important}
+.light .ok-box{background:var(--green-bg)!important;border-color:var(--green-border)!important;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.light .header-bar{background:var(--bg-secondary)!important;backdrop-filter:none!important}
+.light .slide-inner table th{background:var(--bg-input)!important;color:var(--text)!important}
+.light .slide-inner h1{color:var(--text)!important}
+.light .slide-inner h2{color:var(--accent)!important}
+.light .slide-inner h3{color:var(--accent2)!important}
+.light .slide-inner li,.light .slide-inner p{color:var(--text)!important}
+.light .nav-link.active{color:var(--accent)!important;background:var(--accent-dim)!important}
+.light .progress-fill{box-shadow:none!important}
+.light .cover{background:radial-gradient(ellipse at 30% 20%,rgba(9,105,218,0.08),transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(5,80,174,0.06),transparent 55%),var(--bg-primary)!important}
+.light .cover-tag{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-label{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-text{color:var(--text)!important}
+.light .cover-sub{color:var(--text-muted)!important}
+.light .end-thanks{background:var(--bg-card);border-color:rgba(9,105,218,0.15)}
+.light .end-title{color:var(--accent)!important}
+.light .prompt-box pre code{color:var(--text)!important}
+.light .code-toolbar{background:rgba(0,0,0,0.05)}
+.hljs-comment.cmt-new{color:#3DD68C!important;font-weight:600}
+.light .hljs-comment.cmt-new{color:#0B7A52!important;font-weight:600}
+/* 深色主题下注释颜色调亮（原atom-one-dark太暗） */
+.hljs-comment,.hljs-meta{color:#8b949e!important}
+
+/* ===== 封面 ===== */
+.cover{display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;height:100vh;box-sizing:border-box;background:radial-gradient(ellipse at 30% 20%,rgba(0,212,170,0.18) 0%,transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(79,195,247,0.12) 0%,transparent 55%),linear-gradient(180deg,#0A0E27 0%,#0D1430 100%);position:relative;overflow:hidden}
+.cover.active{display:flex!important}
+.cover::after{content:'';position:absolute;top:-120px;right:-120px;width:400px;height:400px;background:radial-gradient(circle,rgba(0,212,170,0.08),transparent 70%);border-radius:50%;pointer-events:none}
+.cover-tag{display:inline-block;font-size:14px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);border-radius:20px;padding:8px 22px;margin-bottom:24px;letter-spacing:2px}
+.cover h1{font-size:52px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;letter-spacing:-1px;border:none;line-height:1.2;max-width:800px}
+.cover-sub{font-size:16px;color:var(--text-muted);margin-bottom:40px;max-width:650px;line-height:1.8}
+.cover-meta{font-size:14px;color:#6B7280;line-height:2.2;display:flex;flex-direction:column;gap:8px;align-items:center}
+.cover-meta-row{display:flex;align-items:center;gap:8px}
+.cover-meta-label{font-size:13px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.3);border-radius:6px;padding:3px 12px}
+.cover-meta-text{font-size:16px;color:#CBD5E1}
+
+/* ===== 结束页 ===== */
+.end-page{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:100%;box-sizing:border-box;max-width:920px;margin:0 auto;padding:36px 48px}
+.end-page h2{text-align:center;border-bottom:none;margin-bottom:32px}
+.end-thanks{display:flex;align-items:center;justify-content:center;gap:60px;flex-wrap:wrap;padding:60px 56px;border:2px solid rgba(0,212,170,0.3);border-radius:16px;background:linear-gradient(135deg,rgba(0,212,170,0.06),rgba(17,24,39,0.95))}
+.end-left{flex:1;min-width:200px;text-align:center}
+.end-right{flex:0 0 auto;text-align:center;padding-left:24px;border-left:1px solid rgba(0,212,170,0.2)}
+.end-icon{font-size:48px;margin-bottom:16px}
+.end-title{font-size:24px;color:var(--accent);font-weight:700;margin-bottom:20px}
+.end-sub{font-size:18px;color:var(--text-muted)}
+.end-contact{margin-top:16px;font-size:13px;color:var(--text-muted);line-height:1.7}
+.end-right img{width:120px;height:120px;border-radius:10px;margin-bottom:10px;border:2px solid var(--border);transition:transform .2s}
+.end-right img:hover{transform:scale(1.05)}
+.end-right p{font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5}
+.end-link{display:inline-block;color:var(--accent);text-decoration:none;font-size:13px;border:1px solid rgba(0,212,170,0.3);padding:8px 16px;border-radius:8px;transition:all .25s;white-space:nowrap}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+.end-next-link{display:inline-block;margin-top:20px;color:var(--accent2);text-decoration:none;font-size:15px;font-weight:600;padding:10px 24px;border:2px solid var(--accent2);border-radius:10px;transition:all .25s}
+.end-next-link:hover{background:rgba(79,195,247,0.1);box-shadow:0 4px 20px rgba(79,195,247,0.2);transform:translateY(-2px)}
+/* 二维码放大 */
+.qr-zoom-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;cursor:pointer}
+.qr-zoom-overlay.show{display:flex}
+.qr-zoom-overlay img{max-width:80vw;max-height:80vh;border-radius:12px;box-shadow:0 8px 32px rgba(0,212,170,0.2)}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+
+/* ===== 学习目标 ===== */
+.goal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:8px}
+.goal-card{background:linear-gradient(135deg,var(--bg-card),var(--bg-secondary));border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:14px;transition:all .3s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.goal-card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.goal-icon{font-size:28px;flex-shrink:0;transition:transform .3s}
+.goal-card:hover .goal-icon{transform:scale(1.15)}
+.goal-text{font-size:calc(var(--font-size) * 1.05);color:var(--text);line-height:1.6}
+/* ===== 三段动画对比（待机 / 跳跃 / 攻击） ===== */
+.state-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0 14px}
+.state-cell{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:10px 12px 12px;text-align:center}
+.state-name{font-size:calc(var(--font-size) * 0.95);font-weight:700;color:var(--accent);margin-bottom:8px;letter-spacing:.3px}
+.state-cell img{display:block;width:100%;max-width:100%;height:auto;margin:0 auto 8px;border-radius:8px;border:1px solid var(--border)}
+.state-cell p{font-size:calc(var(--font-size) * 0.86);color:var(--text-muted);margin:0;line-height:1.65;text-align:left}
+.light .state-cell{background:#fff}
+
+/* 侧边栏 - 特殊链接（无序号） */
+.nav-special{font-style:italic;color:var(--accent2)!important}
+/* 导航标签 */
+.nav-badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:6px;font-weight:600;vertical-align:1px}
+.nav-badge.practice{color:var(--accent2);background:rgba(79,195,247,0.12);border:1px solid rgba(79,195,247,0.25)}
+.nav-badge.comprehensive{color:var(--purple);background:rgba(192,132,252,0.12);border:1px solid rgba(192,132,252,0.25)}
+.nav-badge.homework{color:var(--orange);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25)}
+
+/* ===== 响应式 ===== */
+/* ===== 移动端 header 精简按钮 ===== */
+.mobile-info{display:none;font-size:13px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.mobile-info .mi-lesson{color:var(--accent);font-weight:600}
+.mobile-info .mi-sep{margin:0 4px;color:var(--text-muted);opacity:0.5}
+.mobile-info .mi-page{color:var(--text)}
+.mobile-more{display:none;position:relative}
+.mobile-more-menu{display:none;position:absolute;top:100%;right:0;margin-top:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:4px 0;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:50;min-width:160px}
+.mobile-more-menu.open{display:block}
+.mobile-more-menu .mm-item{display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--text);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.mobile-more-menu .mm-item:hover{background:var(--accent-dim);color:var(--accent)}
+@media(max-width:768px){.sidebar{display:none}.slide-inner{padding:18px 18px 80px}.cover{padding-left:40px;padding-right:40px}.cover h1{font-size:32px}.nav-buttons{right:12px;bottom:12px}.header-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap}.header-btn[onclick="toggleTheme()"]{padding:6px 6px}.progress-wrap{display:none}.header-dropdown{display:none}.header-btn[onclick^="changeFont"]{display:none}.header-btn[onclick="openSearch()"]{display:none}.header-btn[onclick="toggleHelp()"]{display:none}.mobile-info{display:flex;align-items:center;gap:2px}.mi-page{display:none}.mobile-more{display:inline-block}.slides-container{min-height:calc(100vh - 54px)}}
+/* ===== 平铺模式（连续显示全部页面，用于导出 PDF） ===== */
+html.flat-mode,body.flat-mode{height:auto;overflow:visible}
+.flat-mode .container{height:auto;overflow:visible}
+.flat-mode .main-area{overflow:visible}
+.flat-mode .sidebar{display:none}
+.flat-mode .slides-container{overflow:visible;height:auto;min-height:0!important}
+.flat-mode .slide{position:static;opacity:1!important;transform:none!important;pointer-events:auto;height:auto;overflow:visible;margin:0 0 28px}
+.flat-mode .slide::before{display:none}
+.flat-mode .slide,.flat-mode .cover{transition:none!important}
+.flat-mode .slide-inner{padding:36px 48px 32px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,0.02)}
+.flat-mode .cover{display:flex!important;position:static;opacity:1!important;transform:none!important;pointer-events:auto;height:auto;overflow:visible;margin:0 0 28px;border:1px solid var(--border);border-radius:14px}
+.flat-mode .nav-buttons{display:none}
+.flat-mode .progress-dots{display:none}
+.flat-mode .header-bar{position:sticky;top:0}
+/* ===== 图片显示模式（右侧小图 / 下方大图） ===== */
+.img-bottom .card .card-img{float:none;display:block;width:100%;max-width:100%;max-height:none;margin:16px auto 4px}
+.img-bottom .card table .card-img{width:auto;max-width:100%;margin:4px auto}
+.img-bottom .card .card-img-sm{width:auto;max-width:120px;max-height:none}
+.img-bottom .side-card{flex-direction:column;align-items:stretch}
+
+
+/* 平铺/PDF导出：并排多图改为单独一行放大显示（保持可点击放大） */
+.flat-mode .contest-row{display:block}
+.flat-mode .contest-row img{display:block;width:100%;max-width:100%;max-height:none;object-fit:contain;margin:16px auto 4px}
+
+/* ===== 缺图占位：老师还没放图时显示，文件名可一键复制 ===== */
+.img-missing{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;box-sizing:border-box;
+  width:100%;max-width:540px;margin:10px auto;padding:14px 16px;border:1.5px dashed var(--border);border-radius:10px;
+  background:var(--bg-input);color:var(--text-muted);font-size:13px;line-height:1.5;text-align:center}
+.img-missing .im-name{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--accent);
+  background:var(--bg-secondary);padding:3px 8px;border-radius:6px;border:1px solid var(--border);word-break:break-all}
+.img-missing button{cursor:pointer;font:inherit;font-size:12px;padding:4px 10px;border-radius:6px;
+  border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
+.img-missing button:hover{border-color:var(--accent);color:var(--accent)}
+.img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+</style>
+</head>
+<body>
+<script>
+// ========== 缺图占位：显示文件名 + 一键复制 ==========
+function imgMissing(img){
+    const src=img.getAttribute('src')||'';
+    const name=src.split('/').pop();
+    const dir=src.slice(0,src.lastIndexOf('/'));
+    const d=document.createElement('div');
+    d.className='img-missing';
+    d.innerHTML='<span>🖼️ 缺图</span>'
+        +'<code class="im-name">'+name+'</code>'
+        +'<button type="button" onclick="copyImgName(this)">复制文件名</button>'
+        +'<div class="im-dir">放到 '+dir+' 目录下，刷新页面即显示</div>';
+    if(img.parentNode) img.parentNode.replaceChild(d,img);
+}
+function copyImgName(btn){
+    const name=btn.parentNode.querySelector('.im-name').textContent;
+    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
+        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
+        try{document.execCommand('copy');}catch(e){}
+        document.body.removeChild(ta);done();};
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(name).then(done).catch(fb);
+    }else{fb();}
+}
+</script>
+
+<div class="container">
+<nav class="sidebar">
+    <div class="sidebar-title">📘 课件18_动物交互动画切换</div>
+<a href="#" class="nav-link nav-special" data-page="1"><span class="nav-status"></span>封面</a>
+<a href="#" class="nav-link" data-page="2"><span class="nav-status"></span>1. 本节学习目标</a>
+<a href="#" class="nav-link" data-page="3"><span class="nav-status"></span>2. 动画 · 一帧一帧连起来</a>
+<a href="#" class="nav-link" data-page="4"><span class="nav-status"></span>3. 三段动画 · 待机、跳跃、攻击</a>
+<a href="#" class="nav-link" data-page="5"><span class="nav-status"></span>4. 动画器（Animator）· 播放器与剧本</a>
+<a href="#" class="nav-link" data-page="6"><span class="nav-status"></span>5. 动画控制器（Animator Controller）</a>
+<a href="#" class="nav-link" data-page="7"><span class="nav-status"></span>6. 状态、过渡、参数 · 三样怎么配合</a>
+<a href="#" class="nav-link" data-page="8"><span class="nav-status"></span>7. 加参数 · 两个触发器</a>
+<a href="#" class="nav-link" data-page="9"><span class="nav-status"></span>8. 连过渡 · 四条箭头</a>
+<a href="#" class="nav-link" data-page="10"><span class="nav-status"></span>9. 设条件 · 何时切</a>
+<a href="#" class="nav-link" data-page="11"><span class="nav-status"></span>10. 用代码触发动画 · SetTrigger</a>
+<a href="#" class="nav-link" data-page="12"><span class="nav-status"></span>11. 把动画接到 F 键上</a>
+<a href="#" class="nav-link" data-page="13"><span class="nav-status"></span>12. 作业 · 靠近就攻击 <span class="nav-badge homework">作业</span></a>
+<a href="#" class="nav-link nav-special" data-page="14"><span class="nav-status"></span>结束页</a>
+
+</nav>
+<div class="main-area" id="mainArea">
+    <div class="header-bar">
+        <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <span class="progress-text" id="progressText">0 / 12</span>
+        </div>
+        <div class="mobile-info" id="mobileInfo" onclick="mobileInfoTap()" style="cursor:pointer"><span class="mi-lesson"></span><span class="mi-sep">·</span><span class="mi-page"></span></div>
+                <button class="header-btn" id="flatBtn" onclick="toggleFlat()" title="切换分页 / 平铺（平铺便于打印导出 PDF）">📄 平铺</button>
+        <button class="header-btn" id="imgBtn" onclick="toggleImgBottom()" title="切换图片显示位置（右侧小图 / 下方大图）">🖼️ 图下</button>
+
+        <button class="header-btn" id="themeBtn" onclick="toggleTheme()">🌙 深色</button>
+        <div class="header-dropdown">
+          <button class="header-btn" id="ideBtn">💻 在线编辑器 ▾</button>
+          <div class="dropdown-menu" id="ideMenu">
+            <a href="#" class="dropdown-item" data-url="https://www.runoob.com/try/runcode.php?filename=helloworld&type=csharp">菜鸟教程</a>
+            <a href="#" class="dropdown-item" data-url="https://www.tutorialspoint.com/compilers/online-csharp-compiler.htm">Tutorialspoint（支持输入）</a>
+            <a href="#" class="dropdown-item" data-url="https://dotnetfiddle.net/">DotNetFiddle</a>
+          </div>
+        </div>
+        <button class="header-btn" onclick="changeFont(-1)">A-</button>
+        <button class="header-btn" onclick="changeFont(1)">A+</button>
+        <button class="header-btn" onclick="openSearch()">🔍</button>
+        <button class="header-btn" onclick="toggleHelp()" title="使用帮助">❓</button>
+        <button class="header-btn" onclick="toggleCatalog()" title="课件目录">📚</button>
+        <div class="mobile-more">
+          <button class="header-btn" onclick="toggleMobileMore()" title="更多">☰</button>
+          <div class="mobile-more-menu" id="mobileMoreMenu">
+            <div class="mm-item" onclick="mobileAction('ide')">💻 在线编辑器</div>
+            <div class="mm-item" onclick="mobileAction('fontDown')">🔤 A- 缩小字号</div>
+            <div class="mm-item" onclick="mobileAction('fontUp')">🔤 A+ 放大字号</div>
+            <div class="mm-item" onclick="mobileAction('search')">🔍 搜索</div>
+                        <div class="mm-item" onclick="mobileAction('flat')">📄 平铺/分页</div>
+            <div class="mm-item" onclick="mobileAction('imgbottom')">🖼️ 图下/侧图</div>
+
+            <div class="mm-item" onclick="mobileAction('help')">❓ 使用帮助</div>
+          </div>
+        </div>
+    </div>
+    <div class="slides-container"><div class="cover" data-page="1">
+    <div class="cover-tag">数字产品设计</div>
+    <h1>动物交互动画切换</h1>
+    <div class="cover-sub">动物平时待机，被召唤时跳一下，贴太近会攻击——把上一课的 <strong>F</strong> 键接到动画上，顺便搞懂「动画」和「移动」到底谁管谁。</div>
+    <div class="cover-meta">
+        <div class="cover-meta-row"><span class="cover-meta-label">授课教师</span><span class="cover-meta-text">彭堉斌</span></div>
+        <div class="cover-meta-row"><span class="cover-meta-label">学校</span><span class="cover-meta-text">汕头职业技术学院</span></div>
+    </div>
+</div>
+<div class="slide" data-page="2"><div class="slide-inner markable">
+<h1>本节学习目标</h1>
+<img src="images/课件18/作业_靠近就攻击.gif" alt="最终效果：发现 → 跳一下 → 追 → 咬" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>本课要做出来的效果</h3><p>平时动物自己在场地里待着（待机）；你一走近，它先<strong>跳一下</strong>（发现你了），然后<strong>冲过来追你</strong>；贴得太近，它就<strong>咬</strong>。</p></div><div class="ok-box">⚠️ 先说清楚一件事：<strong>动画 ≠ 移动</strong>。动画只管「看起来怎么样」，「往哪儿走、走多快」是导航代理的事——两码事，各管各的。这一课只动动画，不动移动。</div>
+<div class="goal-grid"><div class="goal-card"><span class="goal-icon">🎞️</span><span class="goal-text">搞懂「动画」是什么：<strong>几个关键帧 + 一条时间轴</strong>，不是录好的视频</span></div><div class="goal-card"><span class="goal-icon">🐾</span><span class="goal-text">认清动物身上的三段动作：<strong>待机（Idle）</strong>、<strong>跳跃（Jump）</strong>、<strong>攻击（Attack）</strong></span></div><div class="goal-card"><span class="goal-icon">🎬</span><span class="goal-text">分清<strong>动画器组件</strong>和<strong>动画控制器</strong>，看懂状态、过渡、参数三样怎么配合</span></div><div class="goal-card"><span class="goal-icon">🔧</span><span class="goal-text">给它加两个「触发器（Trigger）」参数：<code>Jump</code> 和 <code>Attack</code>，再连好四条过渡</span></div><div class="goal-card"><span class="goal-icon">💻</span><span class="goal-text">写 <code>AnimalAnim.cs</code>，用 <code>SetTrigger</code> 驱动动画——先在 <code>F</code> 键上试通</span></div><div class="goal-card"><span class="goal-icon">⚔️</span><span class="goal-text">作业：把「按 <code>F</code>」升级成「走近就自己发现、追、咬」——敌人「会伤人的雏形」</span></div></div>
+</div></div>
+<div class="slide" data-page="3"><div class="slide-inner markable">
+<h1>动画 · 一帧一帧连起来</h1>
+<div class="card"><h3>动画不是一段视频</h3><p>动画片是一秒钟翻过去几十张画，每张只差一点点。翻得够快，眼睛就跟不上了，脑子把这一串画面连成一个<strong>动起来的动作</strong>——画面本身一张都没动，动的是翻它的速度。</p><p>游戏里更省事：不存每一张画，只存<strong>几个关键的画面（关键帧，Keyframe）</strong>，中间那些由引擎自己算出来补上。所以一段动画在 Unity 里就是<strong>一条时间轴</strong>：横着是时间，上面钉着「第几秒，某个属性是多少」。</p></div>
+<svg viewBox="0 0 680 272" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:14px auto 8px;font-family:inherit">
+<rect x="1" y="1" width="678" height="270" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
+<text x="26" y="34" font-size="13.5" font-weight="700" fill="var(--accent2)">① 动画片段（Clip）里真正存的 —— 只有几个关键帧</text>
+<line x1="56" y1="96" x2="624" y2="96" stroke="var(--text-muted)" stroke-width="1.2" opacity="0.35"/>
+<g stroke="var(--accent)" stroke-width="2" stroke-dasharray="7 6" opacity="0.45"><line x1="64" y1="96" x2="192" y2="96"/><line x1="208" y1="96" x2="336" y2="96"/><line x1="352" y1="96" x2="480" y2="96"/><line x1="496" y1="96" x2="616" y2="96"/></g>
+<g fill="var(--accent)"><circle cx="56" cy="96" r="7"/><circle cx="200" cy="96" r="7"/><circle cx="344" cy="96" r="7"/><circle cx="488" cy="96" r="7"/><circle cx="624" cy="96" r="7"/></g>
+<g font-size="11.5" fill="var(--text-muted)" text-anchor="middle"><text x="56" y="122">0 s</text><text x="200" y="122">0.25 s</text><text x="344" y="122">0.5 s</text><text x="488" y="122">0.75 s</text><text x="608" y="122">1 s</text></g>
+<text x="340" y="150" font-size="12" fill="var(--text-muted)" text-anchor="middle">中间那些时刻，片段里什么都没存 —— 播放时由引擎按前后两个关键帧补出来</text>
+<line x1="26" y1="168" x2="654" y2="168" stroke="var(--border)"/>
+<text x="26" y="196" font-size="13.5" font-weight="700" fill="var(--accent2)">② 播放的时候 —— 一秒 60 帧，一帧都不缺</text>
+<g fill="var(--accent)" opacity="0.8"><rect x="66" y="210" width="9" height="22" rx="2"/><rect x="78" y="210" width="9" height="22" rx="2"/><rect x="90" y="210" width="9" height="22" rx="2"/><rect x="102" y="210" width="9" height="22" rx="2"/><rect x="114" y="210" width="9" height="22" rx="2"/><rect x="126" y="210" width="9" height="22" rx="2"/><rect x="138" y="210" width="9" height="22" rx="2"/><rect x="150" y="210" width="9" height="22" rx="2"/><rect x="162" y="210" width="9" height="22" rx="2"/><rect x="174" y="210" width="9" height="22" rx="2"/><rect x="186" y="210" width="9" height="22" rx="2"/><rect x="198" y="210" width="9" height="22" rx="2"/><rect x="210" y="210" width="9" height="22" rx="2"/><rect x="222" y="210" width="9" height="22" rx="2"/><rect x="234" y="210" width="9" height="22" rx="2"/><rect x="246" y="210" width="9" height="22" rx="2"/><rect x="258" y="210" width="9" height="22" rx="2"/><rect x="270" y="210" width="9" height="22" rx="2"/><rect x="282" y="210" width="9" height="22" rx="2"/><rect x="294" y="210" width="9" height="22" rx="2"/><rect x="306" y="210" width="9" height="22" rx="2"/><rect x="318" y="210" width="9" height="22" rx="2"/><rect x="330" y="210" width="9" height="22" rx="2"/><rect x="342" y="210" width="9" height="22" rx="2"/><rect x="354" y="210" width="9" height="22" rx="2"/><rect x="366" y="210" width="9" height="22" rx="2"/><rect x="378" y="210" width="9" height="22" rx="2"/><rect x="390" y="210" width="9" height="22" rx="2"/><rect x="402" y="210" width="9" height="22" rx="2"/><rect x="414" y="210" width="9" height="22" rx="2"/><rect x="426" y="210" width="9" height="22" rx="2"/><rect x="438" y="210" width="9" height="22" rx="2"/><rect x="450" y="210" width="9" height="22" rx="2"/><rect x="462" y="210" width="9" height="22" rx="2"/><rect x="474" y="210" width="9" height="22" rx="2"/><rect x="486" y="210" width="9" height="22" rx="2"/><rect x="498" y="210" width="9" height="22" rx="2"/><rect x="510" y="210" width="9" height="22" rx="2"/><rect x="522" y="210" width="9" height="22" rx="2"/><rect x="534" y="210" width="9" height="22" rx="2"/><rect x="546" y="210" width="9" height="22" rx="2"/><rect x="558" y="210" width="9" height="22" rx="2"/><rect x="570" y="210" width="9" height="22" rx="2"/><rect x="582" y="210" width="9" height="22" rx="2"/><rect x="594" y="210" width="9" height="22" rx="2"/></g>
+<text x="340" y="254" font-size="12" fill="var(--text-muted)" text-anchor="middle">眼睛看到的：一个完整、连续的动作</text>
+</svg>
+<div class="card"><h3>动的其实是一堆数字</h3><p>模型能动，是因为身上一根根<strong>骨骼</strong>在转。动画片段（<strong>Animation Clip</strong>）记的不是画面，而是<strong>每条骨骼在每个时刻转到多少度</strong>；播放时引擎把这些数字一帧一帧填给模型，模型就动了。</p>
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:14px auto 8px;font-family:inherit">
+<rect x="1" y="1" width="678" height="218" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
+<text x="24" y="26" font-size="12" font-weight="700" fill="var(--accent2)">左边：看得见的动作　→　右边：片段里存的是这条角度曲线</text>
+<g><animateTransform attributeName="transform" type="rotate" values="0 100 62;30 100 62;0 100 62;-30 100 62;0 100 62" dur="4s" repeatCount="indefinite" calcMode="linear"/><line x1="100" y1="62" x2="100" y2="148" stroke="var(--accent)" stroke-width="9" stroke-linecap="round"/><circle cx="100" cy="148" r="7" fill="var(--accent)"/></g>
+<circle cx="100" cy="62" r="9" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="100" cy="62" r="3" fill="var(--text)"/>
+<text x="100" y="178" font-size="11.5" fill="var(--text-muted)" text-anchor="middle">一根骨骼，绕关节转</text>
+<line x1="196" y1="46" x2="196" y2="168" stroke="var(--border)" stroke-width="1"/>
+<g font-size="10.5" fill="var(--text-muted)" text-anchor="end"><text x="244" y="76">+30°</text><text x="244" y="110">0°</text><text x="244" y="144">−30°</text></g>
+<line x1="262" y1="106" x2="630" y2="106" stroke="var(--text-muted)" stroke-width="1" opacity="0.22"/><path id="c18angle" d="M262 106 L354 72 L446 106 L538 140 L630 106" fill="none" stroke="var(--accent2)" stroke-width="2.4" stroke-linejoin="round"/>
+<g fill="var(--accent2)"><circle cx="262" cy="106" r="4"/><circle cx="354" cy="72" r="4"/><circle cx="446" cy="106" r="4"/><circle cx="538" cy="140" r="4"/><circle cx="630" cy="106" r="4"/></g>
+<g><animateTransform attributeName="transform" type="translate" values="0 0;368 0" dur="4s" repeatCount="indefinite" calcMode="linear"/><line x1="262" y1="58" x2="262" y2="154" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="3 4" opacity="0.65"/></g>
+<circle r="5.5" fill="var(--accent)"><animateMotion dur="4s" repeatCount="indefinite" rotate="0" calcMode="linear"><mpath href="#c18angle"/></animateMotion></circle>
+<g font-size="10.5" fill="var(--text-muted)" text-anchor="middle"><text x="262" y="172">0 s</text><text x="354" y="172">1 s</text><text x="446" y="172">2 s</text><text x="538" y="172">3 s</text><text x="630" y="172">4 s</text></g>
+</svg>
+<p>数字是通用的：同一段动画给大模型、小模型播都行。也正因为它是「数字」而不是「位置」，动画才能和移动<strong>分开</strong>——走路靠导航代理改坐标，动作靠动画改骨骼，两套各管各的。</p></div>
+<div class="ok-box">💡 一句话：<strong>动画 ＝ 几个关键帧 ＋ 一条时间轴</strong>，中间的画面由引擎补出来。</div>
+</div></div>
+<div class="slide" data-page="4"><div class="slide-inner markable">
+<h1>三段动画 · 待机、跳跃、攻击</h1>
+<div class="card"><h3>三段动作，模型自带</h3><p><code>Cartoon Animal Pack 01</code> 里的每只动物，身上都挂着 <strong>Animator（动画器）</strong> 组件，里面管着三段做好的动作。</p><p>这三段不是我们做的——打开 <code>Cartoon Animal Pack 01/Meshes/</code> 里任意一只动物的 fbx，把它展开、或者看<strong>检查器（Inspector）</strong>的<strong>动画（Animation）</strong>页签，三段片段都列在里面，跟着模型一起带过来的。</p><img src="images/课件18/FBX里的三段动画.png" alt="FBX 里的三段动画" class="card-img" onclick="zoomQR(this)" style="float:none;max-width:100%;max-height:none;margin:14px auto 4px;cursor:pointer" onerror="imgMissing(this)">
+
+</div>
+<div class="card"><h3>三段各管什么</h3><div class="state-grid"><div class="state-cell"><div class="state-name">待机（Idle）</div><img src="images/课件18/待机Idle.gif" alt="待机（Idle）" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><p>站着不动：这段里没有任何小动作，就是一直保持同一个姿势。</p></div> <div class="state-cell"><div class="state-name">跳跃（Jump）</div><img src="images/课件18/跳跃Jump.gif" alt="跳跃（Jump）" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><p>整个身子腾空一下，再落回地面。</p></div> <div class="state-cell"><div class="state-name">攻击（Attack）</div><img src="images/课件18/攻击Attack.gif" alt="攻击（Attack）" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><p>往前扑一下，再退回原处。</p></div></div><table><tr><th>状态</th><th>什么时候播</th><th>播完怎么办</th></tr><tr><td><strong>待机（Idle）</strong></td><td>默认状态，闲着就播</td><td>循环播放，画面不动</td></tr><tr><td><strong>跳跃（Jump）</strong></td><td>被叫住、要动一下的时候</td><td>播一遍，自己回待机</td></tr><tr><td><strong>攻击（Attack）</strong></td><td>玩家贴得太近的时候</td><td>播一遍，自己回待机</td></tr></table></div>
+<div class="ok-box">💡 三段是<strong>分开存</strong>的，谁也不会自己切换：动物一开局就只会一直播「待机」。想让它该跳的时候跳、该攻击的时候攻击，得有个东西替它做决定。<br>还有一件事要记住：三段里<strong>没有「走路」</strong>——动物包里没做这个动作，动物移动时只能「滑」过去，这件事本课最后再处理。</div>
+</div></div>
+<div class="slide" data-page="5"><div class="slide-inner markable">
+<h1>动画器（Animator）· 播放器与剧本</h1>
+<div class="card"><h3>一个负责播，一个负责排</h3><p><strong>动画器（Animator）组件</strong>挂在动物身上，是个<strong>播放器</strong>：它自己不带内容，只管把动作按指令播出来。</p><p><strong>动画控制器（Animator Controller）</strong>是项目窗口里的一个<strong>资源文件</strong>（后缀 <code>.controller</code>），是<strong>剧本</strong>：里面排好了有几段动作、什么时候换、听谁的。</p><p>两者靠组件上的<strong>控制器（Controller）</strong>槽位连起来——槽位里填的就是那个文件。换一个控制器，同一只动物就换一套动作。</p></div>
+<div class="card"><h3>在检查器里认一下</h3><ol><li>选中动物预制体，在<strong>检查器（Inspector）</strong>里找到 <strong>Animator</strong> 组件</li><li>看它的<strong>控制器（Controller）</strong>槽位：里面填的是一个 <code>.controller</code> 文件——那是<strong>资源</strong>，不是组件</li></ol><img src="images/课件18/动画器组件.png" alt="Animator 组件与 Controller 槽位" class="card-img" onclick="zoomQR(this)" style="float:none;max-width:100%;max-height:none;margin:14px auto 4px;cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="card"><h3>两样东西，别再混</h3><table><tr><th></th><th style="text-transform:none">动画器（Animator）组件</th><th style="text-transform:none">动画控制器（Animator Controller）</th></tr><tr><td><strong>是什么</strong></td><td>挂在物体上的<strong>组件</strong></td><td>项目窗口里的<strong>资源文件</strong>，后缀 <code>.controller</code></td></tr><tr><td><strong>在哪看</strong></td><td>选中物体 → 检查器里</td><td>双击打开 → 弹出 Animator 窗口</td></tr><tr><td><strong>管什么</strong></td><td>把动作<strong>播出来</strong></td><td>决定<strong>什么时候播哪一段</strong></td></tr><tr><td><strong>几个</strong></td><td>每个物体一个</td><td>一个文件可以被多个物体共用</td></tr></table></div>
+<div class="ok-box">💡 写代码只跟<strong>组件</strong>打交道：代码里拿到的是<strong>播放器</strong>（<code>Animator</code> 组件）。Unity 里<strong>没有</strong>叫 <code>AnimatorController</code> 的组件——控制器是<strong>文件</strong>，不是组件，平时不用在代码里碰它。</div>
+</div></div>
+<div class="slide" data-page="6"><div class="slide-inner markable">
+<h1>动画控制器（Animator Controller）</h1>
+<div class="card"><h3>先认识这个文件</h3><p>组件里那个槽位指向的，就是这个 <code>.controller</code> 文件——一张<strong>「谁、什么时候、切成谁」的图</strong>。它<strong>本身不装动作</strong>（动作存在另外几个片段里），只管<strong>切换</strong>。</p><p>资源包交到我们手上的其实是<strong>半成品</strong>：三段动作都摆上桌了，<strong>切换一条也没连</strong>。打开就能看出来。</p></div><div class="card"><h3>怎么把这张图打开</h3><ol><li>选中动物预制体，检查器里找到 <strong>Animator</strong> 组件<img src="images/课件18/选中动物_检查器Animator.png" alt="选中动物预制体，检查器里出现 Animator 组件" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:62%;max-width:100%;max-height:none;margin:12px auto 6px;cursor:pointer" onerror="imgMissing(this)"></li><li>点组件里的<strong>控制器（Controller）</strong>槽位——项目窗口会跳到那个 <code>.controller</code> 文件，并把它高亮<img src="images/课件18/点控制器_项目窗口高亮.png" alt="点控制器槽位后，项目窗口里该文件被高亮" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:62%;max-width:100%;max-height:none;margin:12px auto 6px;cursor:pointer" onerror="imgMissing(this)"></li><li>对着高亮的那一项<strong>双击</strong>（或按 <code>Enter</code> 回车），才会弹出 <strong>Animator</strong> 窗口<img src="images/课件18/双击打开Animator窗口.png" alt="双击后弹出 Animator 窗口" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:62%;max-width:100%;max-height:none;margin:12px auto 6px;cursor:pointer" onerror="imgMissing(this)"></li></ol><p>⚠️ <strong>单击只是选中，双击才打开</strong>。只点一下，屏幕上不会多出任何窗口——卡在这一步很常见，不是没生效，是还差一下。</p><p>也可以跳过组件，直接在项目窗口里找到这个 <code>.controller</code> 文件双击，打开的是同一个窗口。</p></div><div class="ok-box">💡 打不开的时候，回头对照这三步：<strong>选中动物 → 点控制器槽位 → 双击那一项</strong>。</div>
+<div class="card"><h3>回头确认：包过壳的预制体，控制器槽位还在吗</h3><p>前面说的是<strong>资源包原本的样子</strong>：模型自带动画，控制器也挂好了。但<strong>我们自己的预制体动过手脚</strong>，所以先回头确认一遍：选中动物，检查器里找到 <strong>Animator</strong>，看「<strong>控制器（Controller）</strong>」这一栏。</p><img src="images/课件18/检查控制器槽位.png" alt="Animator 组件里 Controller 一栏显示 None，说明没有挂控制器" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:72%;max-width:100%;max-height:none;margin:12px auto 6px;cursor:pointer" onerror="imgMissing(this)"><p>显示 <code>Cat Controller</code> 就对了；显示 <code>None (Runtime Animator Controller)</code> 就是<strong>空槽</strong>——这种情况下动画一条都不会播，连原地待机都不动，后面怎么点都打不开控制器窗口。</p><p>为什么会空：前面为了让动物<strong>贴地、把中心点挪到脚下</strong>，在模型外面套了一层空壳（<code>NewCat</code>），模型连同它的动画组件都成了<strong>子物体</strong>。换父级、重新拖一次模型、从别的工程拷过来，这个槽位都很容易丢——而丢了不会报错，只是「动物站着不动」，最难查。</p><ol><li>把项目窗口里的 <strong>Cat Controller</strong> 直接<strong>拖到这一栏</strong>（松手就挂上）；也可以点栏位右边的 <strong>◎ 圆点</strong>，在弹出列表里选 <code>Cat Controller</code><img src="images/课件18/拖入CatController.png" alt="把 Cat Controller 拖进 Controller 槽位后的样子" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:62%;max-width:100%;max-height:none;margin:12px auto 6px;cursor:pointer" onerror="imgMissing(this)"></li><li>挂上后这一栏就变成 <strong>Cat Controller</strong>（不再是 <code>None</code>）——回到场景里看，动物<strong>动起来</strong>就说明通了。这时它默认一直播「跳跃」是正常的，后面把默认状态改成待机就好</li></ol><p><strong>六只动物都要挂，而且各挂各的</strong>：<code>NewCat</code>→<code>Cat Controller</code>、<code>NewChiken</code>→<code>Chiken Controller</code>、<code>NewCow</code>→<code>Cow Controller</code>、<code>NewElephent</code>→<code>Elephent Controller</code>、<code>NewLLama</code>→<code>LLama Controller</code>、<code>NewPig</code>→<code>Pig_pink1 Controller</code>。别图省事全拖 <code>Cat Controller</code>——每个控制器里的动作都是配着自己那副骨架做的，挂错容易出现姿势错乱、动作对不上。</p></div>
+</div></div>
+<div class="slide" data-page="7"><div class="slide-inner markable">
+<h1>状态、过渡、参数 · 三样东西怎么配合</h1>
+<div class="card"><h3>先看面板长什么样</h3><img src="images/课件18/Animator窗口四个区域.png" alt="Animator 窗口的四个区域：图层、参数、状态机、过渡" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:78%;max-width:100%;max-height:none;margin:6px auto 14px;cursor:pointer" onerror="imgMissing(this)"><ul><li><strong>参数（Parameters）</strong>：给脚本用的「开关」，现在是空的。这一课要加两个：<code>Jump</code> 按一下切到<strong>跳跃</strong>、<code>Attack</code> 按一下切到<strong>攻击</strong>，类型都选<strong>触发器（Trigger）</strong></li><li><strong>状态（States）</strong>：三段动作摆成三个方块。<strong>橙色底色</strong>的那块是<strong>默认状态</strong>——一进游戏先播它（这里是跳跃）；真正在播时，那一块上还会多一条进度条</li><li><strong>过渡（Transitions）</strong>：状态之间那些箭头，规定「什么情况下去哪个状态」</li><li><strong>图层（Layers）</strong>：先不管，后面讲换枪动画时再说</li></ul></div>
+<div class="card"><h3>打开后你会看到：三块、零条线</h3><img src="images/课件18/控制器初始状态_三块零条线.png" alt="打开后的动画控制器：三块状态、零条过渡，橙色为默认状态" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:88%;max-width:100%;max-height:none;margin:6px auto 14px;cursor:pointer" onerror="imgMissing(this)"><p>对照上图，窗口中间只摆着三块：<strong>Idle</strong>、<strong>Jump</strong>、<strong>Attack</strong>——三段动作各一块。<strong>但三块之间一条箭头都没有</strong>：谁都切不到谁。</p><ul><li><strong>橙色底色的那一块</strong>是<strong>默认状态</strong>：一进游戏先播它。这里橙色的是 <strong>Jump</strong>，所以动物一开场就在跳——正常应该待机，这个待会儿要改。</li><li><strong>Entry（入口）</strong>（绿色块）不是动作，是 Unity 的<strong>起点</strong>，那条 <strong>Entry → Jump</strong> 就是「先播哪一段」的默认指向。</li><li><strong>Any State</strong>（浅青块）也是 Unity 自带的特殊块，意思是「不管停在哪都能跳过去」，本课用不上，别动它。</li><li>左侧页签里的<strong>参数（Parameters）</strong>现在是<strong>空的</strong>——一个开关都没有。</li></ul><p>所以结论是：<strong>动作摆好了，逻辑一条没写</strong>。这不是作者漏了，而正是这一课要干的活——<strong>连箭头 → 加条件 → 用代码去按它</strong>。</p></div>
+<svg viewBox="0 0 760 400" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:760px;margin:16px auto 10px;font-family:inherit">
+<rect x="1" y="1" width="758" height="398" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
+<text x="26" y="40" font-size="18" font-weight="700" fill="var(--accent2)">参数是条件　→　过渡是路　→　状态是终点</text>
+<rect x="22" y="62" width="252" height="212" rx="10" fill="none" stroke="var(--border)" stroke-width="1"/>
+<text x="38" y="90" font-size="15" font-weight="700" fill="var(--text-muted)">参数（Parameters）</text>
+<text x="38" y="112" font-size="13.5" fill="var(--text-muted)">控制器对外的开关，脚本按它</text>
+<rect x="38" y="122" width="220" height="42" rx="6" fill="rgba(0,212,170,0.10)" stroke="var(--accent)" stroke-width="1"/>
+<text x="52" y="150" font-size="16.5" font-weight="700" fill="var(--accent)">Jump</text>
+<text x="246" y="149" font-size="12" fill="var(--text-muted)" text-anchor="end">Trigger</text>
+<text x="38" y="186" font-size="14" fill="var(--text-muted)">按一下，才允许切到「跳跃」</text>
+<rect x="38" y="196" width="220" height="42" rx="6" fill="rgba(0,212,170,0.10)" stroke="var(--accent)" stroke-width="1"/>
+<text x="52" y="224" font-size="16.5" font-weight="700" fill="var(--accent)">Attack</text>
+<text x="246" y="223" font-size="12" fill="var(--text-muted)" text-anchor="end">Trigger</text>
+<text x="38" y="262" font-size="14" fill="var(--text-muted)">按一下，才允许切到「攻击」</text>
+<text x="316" y="90" font-size="15" font-weight="700" fill="var(--text-muted)">状态（States）：方块＝一段动作</text>
+<rect x="316" y="182" width="140" height="80" rx="8" fill="var(--bg-secondary)" stroke="var(--border)" stroke-width="1.5"/>
+<text x="386" y="216" font-size="17" fill="var(--text)" text-anchor="middle">待机 Idle</text>
+<text x="386" y="242" font-size="13.5" fill="var(--text-muted)" text-anchor="middle">平时停在这</text>
+<rect x="566" y="64" width="156" height="80" rx="8" fill="rgba(245,158,11,0.16)" stroke="var(--orange)" stroke-width="2"/>
+<text x="644" y="98" font-size="17" font-weight="700" fill="var(--orange)" text-anchor="middle">跳跃 Jump</text>
+<text x="644" y="124" font-size="13.5" fill="var(--orange)" text-anchor="middle">默认状态（先播它）</text>
+<rect x="566" y="252" width="156" height="80" rx="8" fill="var(--bg-secondary)" stroke="var(--border)" stroke-width="1.5"/>
+<text x="644" y="286" font-size="17" fill="var(--text)" text-anchor="middle">攻击 Attack</text>
+<text x="644" y="312" font-size="13.5" fill="var(--text-muted)" text-anchor="middle">贴太近时播</text>
+<defs>
+<marker id="ar18a" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--accent2)"/></marker>
+<marker id="ar18b" markerWidth="8.5" markerHeight="8.5" refX="8.5" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--text-muted)"/></marker>
+</defs>
+<path d="M456 190 C 504 176, 522 140, 562 112" fill="none" stroke="var(--accent2)" stroke-width="2.2" marker-end="url(#ar18a)"/>
+<path d="M562 138 C 520 176, 500 208, 456 224" fill="none" stroke="var(--text-muted)" stroke-width="1.8" stroke-dasharray="6 5" marker-end="url(#ar18b)"/>
+<path d="M456 236 C 504 250, 522 284, 562 312" fill="none" stroke="var(--accent2)" stroke-width="2.2" marker-end="url(#ar18a)"/>
+<path d="M562 322 C 520 306, 500 274, 456 262" fill="none" stroke="var(--text-muted)" stroke-width="1.8" stroke-dasharray="6 5" marker-end="url(#ar18b)"/>
+<text x="380" y="350" font-size="14.5" fill="var(--text-muted)" text-anchor="middle">按一下参数 → 过渡放行 → 状态切过去；演完，再由「回来」那条过渡送回待机</text>
+<text x="380" y="376" font-size="13.5" fill="var(--text-muted)" text-anchor="middle">实线＝出去的（要条件）　　虚线＝回来的（不要条件，等播完）</text>
+</svg>
+<div class="ok-box">💡 一句话：<strong>参数是条件，过渡是路，状态是终点</strong>。按一下参数，对应的过渡才放行，状态才切过去。下面动手就是这三步：<strong>加参数 → 给箭头加条件 → 用代码去按它</strong>。</div>
+</div></div>
+<div class="slide" data-page="8"><div class="slide-inner markable">
+<h1>加参数 · 给动作装上开关</h1>
+<div class="card"><h3>加两个触发器参数</h3><p>点「参数（Parameters）」面板右上角的 <code>+</code>，菜单里有四项：<strong>Float / Int / Bool / Trigger</strong>。这里<strong>必须选最下面的 <code>Trigger</code></strong>，别选成 <code>Bool</code>——两者长得像，但关的方式不一样，下一张卡讲。</p><ol><li>点 <code>+</code> → 选 <strong>触发器（Trigger）</strong> → 命名 <code>Jump</code></li><li>再加一个，命名 <code>Attack</code></li></ol><img src="images/课件18/添加Trigger参数.png" alt="在参数面板添加两个 Trigger 参数 Jump 与 Attack" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:84%;max-width:100%;max-height:none;margin:6px auto 4px;cursor:pointer" onerror="imgMissing(this)"></div><div class="card"><h3>为什么选触发器，不选布尔</h3><p>两种都能「打开」，差别在<strong>谁来关</strong>：<strong>Bool 打开后一直开着</strong>，得有人把它关掉；<strong>Trigger 被过渡用掉就自动关</strong>，不用管。</p><svg viewBox="0 0 760 350" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:760px;margin:14px auto 8px;font-family:inherit">
+<rect x="1" y="1" width="758" height="348" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
+<text x="26" y="38" font-size="17" font-weight="700" fill="var(--accent2)">Bool 是开关，Trigger 是「按一下就弹回」的按钮</text>
+<text x="26" y="96" font-size="15" font-weight="700" fill="var(--text)">Bool（布尔）</text>
+<text x="26" y="118" font-size="13.5" fill="var(--text-muted)">一直保持 true</text>
+<path d="M240 132 H330 V100 H580 V132 H730" fill="none" stroke="var(--orange)" stroke-width="2.2" stroke-linejoin="round"/>
+<circle cx="330" cy="100" r="4" fill="var(--orange)"/><circle cx="580" cy="100" r="4" fill="var(--orange)"/>
+<text x="338" y="88" font-size="13.5" fill="var(--text-muted)">SetBool(&quot;Jump&quot;, true)</text>
+<text x="588" y="88" font-size="13.5" fill="var(--text-muted)">得自己补一句设回 false</text>
+<text x="455" y="154" font-size="13.5" fill="var(--text-muted)" text-anchor="middle">这期间它一直是 true —— 再按一次等于没按</text>
+<text x="26" y="216" font-size="15" font-weight="700" fill="var(--text)">Trigger（触发器）</text>
+<text x="26" y="238" font-size="13.5" fill="var(--text-muted)">用掉就自动清零</text>
+<path d="M240 252 H330 V220 H372 V252 H730" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linejoin="round"/>
+<circle cx="330" cy="220" r="4" fill="var(--accent)"/><circle cx="372" cy="220" r="4" fill="var(--accent)"/>
+<text x="338" y="208" font-size="13.5" fill="var(--text-muted)">SetTrigger(&quot;Jump&quot;)</text>
+<text x="474" y="208" font-size="13.5" fill="var(--text-muted)">过渡用掉 → 动画器自己清零</text>
+<text x="470" y="276" font-size="13.5" fill="var(--text-muted)" text-anchor="middle">之后一直是 false，下次还能再按一次</text>
+<text x="380" y="322" font-size="14" fill="var(--text-muted)" text-anchor="middle">按一下播一次 → Trigger；按住期间一直保持（举枪、瞄准、蹲下）→ Bool</text>
+</svg><ul><li><strong>播完之后</strong>：Bool 还停在 true，<strong>第二次按 F 什么也不会发生</strong>（值没变，等于没按），必须在代码里补一句设回 false；Trigger 不用管。</li><li><strong>条件一直成立</strong>：Bool 会让状态被反复重新进入，动画<strong>卡在第一帧或来回闪</strong>；Trigger 进一次就清零，不会重复。</li><li><strong>反过来要当心</strong>：像「按住右键一直瞄准」这种<strong>需要保持</strong>的，就必须用 Bool——Trigger 自动清零，保持不住。</li></ul><p>这一课的跳跃、攻击都是<strong>按一下播一次</strong>，所以两个参数都选 <strong>Trigger</strong>。</p></div>
+</div></div>
+<div class="slide" data-page="9"><div class="slide-inner markable">
+<h1>连过渡 · 连上四条箭头</h1>
+<div class="card"><h3>先把三段动作连起来（控制器里那零条线，就是这里补）</h3><p>每个动作都要<strong>成对连</strong>：去一条、回一条，缺回程就卡在那儿出不来。这一课两个动作，所以是 <strong>2 + 2 = 4 条</strong>。</p><ol><li>先把默认状态改成<strong>待机</strong>：右键「<strong>Idle</strong>」→ <strong>设为默认状态（Set as Layer Default State）</strong>，橙色框会移到 Idle 上。不改的话，一进游戏动物就在跳<img src="images/课件18/右键Idle_设为默认状态.png" alt="右键 Idle，选择「设为默认状态」，橙色框移到 Idle 上" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:62%;max-width:100%;max-height:none;margin:12px auto 6px;cursor:pointer" onerror="imgMissing(this)"></li><li><strong>待机 ⇄ 跳跃，是一对来回，一共两条</strong>。先连<strong>去程</strong>：右键「<strong>Idle</strong>」→ 选「<strong>创建过渡（Make Transition）</strong>」→ 鼠标上会拖着一条线，<strong>再点一下「Jump」</strong> → 得到 <strong>待机 → 跳跃</strong><img src="images/课件18/创建过渡_待机到跳跃.png" alt="右键 Idle 选「创建过渡」，再点 Jump，生成一条带箭头的过渡" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:62%;max-width:100%;max-height:none;margin:12px auto 6px;cursor:pointer" onerror="imgMissing(this)"></li><li>再连<strong>回程</strong>：右键「<strong>Jump</strong>」→ 创建过渡 → 点「<strong>Idle</strong>」→ 得到 <strong>跳跃 → 待机</strong>。<span style="color:var(--accent2)">两条缺一不可</span>——只连去程，动物跳一下就永远卡在「跳跃」里回不来<img src="images/课件18/创建过渡_跳跃回待机.png" alt="右键 Jump 选「创建过渡」，再点 Idle，生成跳跃回待机的过渡" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:62%;max-width:100%;max-height:none;margin:12px auto 6px;cursor:pointer" onerror="imgMissing(this)"></li><li><strong>攻击同样是一对来回</strong>：右键 <strong>Idle</strong> → 创建过渡 → 点 <strong>Attack</strong>；再右键 <strong>Attack</strong> → 创建过渡 → 点 <strong>Idle</strong><img src="images/课件18/创建过渡_攻击两条.png" alt="用同样办法建立 Idle 与 Attack 之间的两条过渡" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:62%;max-width:100%;max-height:none;margin:12px auto 6px;cursor:pointer" onerror="imgMissing(this)"></li><li>数一数，<strong>你自己连的应该是 4 条</strong>：待机 ⇄ 跳跃 2 条、待机 ⇄ 攻击 2 条。另外 <strong>Entry</strong> 指向默认状态的那条是 Unity 自动画的，<strong>不用管</strong>；<strong>Any State</strong> 是个空节点，<strong>默认一条箭头都没有，这一课也不用连它</strong><img src="images/课件18/连好四条箭头.png" alt="四条过渡都连好后的样子：待机与跳跃两条、待机与攻击两条" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:62%;max-width:100%;max-height:none;margin:12px auto 6px;cursor:pointer" onerror="imgMissing(this)"></li></ol><p>⚠️ 点了「创建过渡」以后，鼠标上会拖着一条线，<strong>必须再点一下目标那块</strong>才算连上——只点了自己、或者按着左键乱拖完就松手，都<strong>不会</strong>生成箭头。</p><p>连错了怎么办：<strong>先在窗口里点一下那条箭头</strong>（选中的会变亮），检查器（Inspector）里就换成这条过渡的面板——在它的「<strong>过渡（Transitions）</strong>」列表<strong>下面点 <code>−</code></strong>，这条箭头就删掉了。删掉重连，比对着参数硬修快得多。<img src="images/课件18/删除过渡_检查器点减号.png" alt="选中一条过渡后，检查器的 Transitions 列表下方有减号按钮，点它删除" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:72%;max-width:100%;max-height:none;margin:12px auto 6px;cursor:pointer" onerror="imgMissing(this)"></p></div>
+</div></div>
+<div class="slide" data-page="10"><div class="slide-inner markable">
+<h1>设条件 · 什么时候才能切</h1>
+<div class="card"><h3>再给箭头加条件</h3><p>四条箭头已经连好了，但它们现在还<strong>没有任何条件</strong>——条件栏空着、又勾着退出时间，待机动画一播到头，就自己往跳跃/攻击跑过去了。这一步是给每条箭头<strong>定规矩：什么情况才准过</strong>；箭头本身<strong>不用再新建</strong>。注意只有<strong>出去</strong>的两条要动手，<strong>回来</strong>的两条保持默认、一处都不用改。</p><ol><li>点「待机 → 跳跃」那条箭头，在检查器的「<strong>条件（Conditions）</strong>」里点 <code>+</code>，选上 <code>Jump</code><img src="images/课件18/条件选Jump_待机到跳跃.png" alt="选中待机到跳跃的过渡，在条件列表里点 + 选上 Jump" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:62%;max-width:100%;max-height:none;margin:12px auto 6px;cursor:pointer" onerror="imgMissing(this)"></li><li>把这条过渡的「<strong>有退出时间（Has Exit Time）</strong>」<strong>取消勾选</strong>——不取消，得等当前动画播到某个时间点才肯切<img src="images/课件18/取消退出时间_待机到跳跃.png" alt="过渡面板里把「有退出时间」的勾去掉" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:62%;max-width:100%;max-height:none;margin:12px auto 6px;cursor:pointer" onerror="imgMissing(this)"></li><li>「跳跃 → 待机」是<strong>回来</strong>的那条——<strong>这一步什么都不用改</strong>：新建的过渡<strong>默认就是</strong>「条件为空、有退出时间打勾」，连过渡那页连好就行了。不放心就点开看一眼，确认这两处<strong>没被动过</strong>；动画播到末尾，它自己就把状态<strong>送回待机</strong><img src="images/课件18/回来不设条件_跳跃到待机.png" alt="跳跃到待机的过渡：条件列表为空、有退出时间勾着——这就是默认样子，不用改" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:62%;max-width:100%;max-height:none;margin:12px auto 6px;cursor:pointer" onerror="imgMissing(this)"></li><li>「攻击」那两条分开看：<strong>待机 → 攻击</strong> 和跳跃去程一样，加条件 <code>Attack</code> 并<strong>取消</strong>退出时间；<strong>攻击 → 待机</strong> 和跳跃回程一样，<strong>一处都不用动</strong><img src="images/课件18/设置过渡条件.png" alt="攻击两条过渡的条件设置：去程选 Attack 并取消退出时间，回程留空" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:62%;max-width:100%;max-height:none;margin:12px auto 6px;cursor:pointer" onerror="imgMissing(this)"></li></ol><p><strong>状态机不会自己「回家」</strong>：进了「跳跃」就停在「跳跃」，动画播完也只是停在最后一帧，Unity 不会自动把你送回待机——所以「跳跃 → 待机」「攻击 → 待机」这两条<strong>必须亲手连</strong>，它们就是「回去」的路。</p><p>一句话记住方向：<strong>「出去」的箭头要条件、要立刻（要改）；「回来」的箭头不要条件、要等播完（默认就长这样，不用动）</strong>。</p></div><div class="ok-box">⚠️ 为什么要取消「有退出时间」？勾着它，过渡必须等当前动画<strong>播到某个时间点</strong>才能发生——可待机动画是循环的，你可能状态切换得很迟、甚至切不过去。用 Trigger 做「立刻切换」时，<strong>一般都要把它取消</strong>。</div>
+<p>数不清连了几条时，<strong>点一下某个方块</strong>，检查器里的「<strong>过渡（Transitions）</strong>」列表会列出<strong>所有从它出发的箭头</strong>——待机应有 <strong>2 条</strong>（→跳跃、→攻击）、跳跃 <strong>1 条</strong>（→待机）、攻击 <strong>1 条</strong>（→待机），对得上就齐了。</p><img src="images/课件18/检查过渡条数_待机两条.png" alt="选中「待机」方块后，检查器「过渡（Transitions）」列表列出 2 条：→跳跃、→攻击" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:72%;max-width:100%;max-height:none;margin:12px auto 6px;cursor:pointer" onerror="imgMissing(this)"><p style="font-size:13px;color:var(--text-muted)">列表左边那两个 <strong>Solo</strong> / <strong>Mute</strong> 勾选框<strong>先别动</strong>，它们是调试用的：<strong>Mute</strong> 让这条箭头失效，<strong>Solo</strong> 只放这一条、其它自动静音；勾了会<strong>存进资源里</strong>，忘了取消，动画就死活不切换。窗口里箭头变成<strong>红色（Mute）或绿色（Solo）</strong>，就是被勾上了。</p><div class="ok-box">💡 只有 4 条够用吗？跳跃、攻击都从「待机」出发、又都回到「待机」，这 4 条就够跑通本课的交互。只有想让动物「跳到一半挨一下、立刻转攻击」时，才需要再加「跳跃 → 攻击」这类箭头，或者改用「Any State」——那是后面的事，这节课 4 条先跑通。</div>
+</div></div>
+<div class="slide" data-page="11"><div class="slide-inner markable">
+<h1>用代码触发动画 · SetTrigger</h1>
+<div class="card"><h3>新建 AnimalAnim.cs</h3><p>参数是「开关」，总得有人去按。写一个脚本挂在<strong>动物预制体</strong>上，把两个动作各包成一个方法。</p><img src="images/课件18/挂AnimalAnim脚本.png" alt="挂 AnimalAnim 脚本" class="card-img" onclick="zoomQR(this)" style="float:none;max-width:100%;max-height:none;margin:14px auto 4px;cursor:pointer" onerror="imgMissing(this)"></div><div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c18_anim',this)">复制</button></div><pre id="c18_anim"><code class="language-csharp">// AnimalAnim.cs —— 新建脚本：专管播动画，挂在动物的「壳」上
+// 整段都是新的：新建 C# 文件贴进去，然后挂到动物身上
+
+using UnityEngine;
+
+public class AnimalAnim : MonoBehaviour
+{
+    private Animator animator;
+
+    void Start()
+    {
+        animator = GetComponentInChildren&lt;Animator&gt;();   // 自己身上没有，往子物体里找
+    }
+
+    public void PlayJump()
+    {
+        animator.SetTrigger(&quot;Jump&quot;);     // 被召唤时跳一下
+    }
+
+    public void PlayAttack()
+    {
+        animator.SetTrigger(&quot;Attack&quot;);   // 玩家贴太近时攻击
+    }
+}</code></pre></div><div class="ok-box">⚠️ <strong>为什么是 <code>GetComponentInChildren&lt;Animator&gt;()</code>，不是 <code>GetComponent&lt;Animator&gt;()</code>？</strong><br>因为<strong>课件16 调整过中心点</strong>：动物的枢轴点不在身上，走起来会偏，当时给每只动物<strong>套了一个空壳</strong>——枢轴挪到壳上，模型整体偏一点当子物体（<code>(-0.3, 0, 0.2)</code>）。所以现在是两层结构：<div style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;line-height:1.9;margin:10px 0 8px">NewCat（壳）　← AnimalAnim、AnimalRoam、AnimalFollow、导航代理都挂在壳上<br>&nbsp;&nbsp;└─ Cat（模型）　← 动画器（Animator）挂在模型上</div>脚本和动画器<strong>根本不在同一个物体上</strong>。<code>GetComponent</code> 只在<strong>自己身上</strong>找——壳上没有动画器，拿到的是 <code>null</code>，第一次 <code>SetTrigger</code> 就报<strong>空引用</strong>；<code>GetComponentInChildren</code> 会<strong>连子物体一起找</strong>，才摸得到模型上那个动画器。<br>这个写法课件13 用过（摄像机跟随：相机是 Player 的子物体，只能用 <code>GetComponentInChildren</code> 取到）。<strong>只要脚本挂在父物体、组件在子物体，就得用 InChildren。</strong></div><div class="card"><h3>代码讲解</h3><ol><li><strong>挂在<u>壳</u>上，不挂在模型上</strong>：和 <code>AnimalRoam</code>、<code>AnimalFollow</code> 一样，脚本都挂在预制体根节点那个壳上；动画器却在里面的模型上——两层结构，所以才要往下找。</li><li><strong><code>animator</code> 写成 <code>private</code></strong>：它只是脚本内部要用的「遥控器」，没必要暴露到检查器里。</li><li><strong><code>GetComponentInChildren&lt;Animator&gt;()</code> 放在 <code>Start</code></strong>：动画器不会中途更换，取一次就够。写成 <code>GetComponent</code> 少个 InChildren，编译不报错、运行时才炸——最容易漏的就是这一个词。</li><li><strong>字符串必须和参数名一字不差</strong>：<code>SetTrigger(&quot;Jump&quot;)</code> 里的 <code>Jump</code> 要和动画控制器里的参数同名；大小写写错<strong>不会报错</strong>，只是动画不动——这是最常见的坑。</li><li><strong>两个方法都写 <code>public</code></strong>：<code>AnimalFollow</code> 和 <code>AnimalAttack</code> 要从外面喊它们。</li></ol></div><div class="card"><h3>按下开关之后，Unity 内部走了六步</h3><p>脚本能做的<strong>只有第一步</strong>——喊一声。剩下的<strong>全是动画控制器自己在跑</strong>：参数置位 → 条件满足 → 过渡放行 → 状态切换 → 播 → 播完回程。所以 <code>SetTrigger</code> <strong>不是「播放动画」的指令</strong>，它只是<strong>按下了控制器上的一个开关</strong>；开关按下去之后的事，Unity 会自己走完，一行代码都不用补。</p><svg viewBox="0 0 760 470" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:760px;margin:14px auto 8px;font-family:inherit"><rect x="1" y="1" width="758" height="468" rx="14" fill="var(--bg-input)" stroke="var(--border)"/><text x="26" y="40" font-size="18" font-weight="700" fill="var(--accent2)">一次 SetTrigger 的完整链路</text><text x="26" y="66" font-size="13.5" fill="var(--text-muted)">脚本只做第 ① 步——喊一声　②〜⑥ 全在动画控制器里自己跑，代码里一个字都没写</text><defs><marker id="ar18s" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="var(--text-muted)"/></marker></defs><path d="M64 104 L64 400" fill="none" stroke="var(--border)" stroke-width="2"/><path d="M64 126 L64 149" fill="none" stroke="var(--text-muted)" stroke-width="1.6" marker-end="url(#ar18s)"/><path d="M64 182 L64 205" fill="none" stroke="var(--text-muted)" stroke-width="1.6" marker-end="url(#ar18s)"/><path d="M64 238 L64 261" fill="none" stroke="var(--text-muted)" stroke-width="1.6" marker-end="url(#ar18s)"/><path d="M64 294 L64 317" fill="none" stroke="var(--text-muted)" stroke-width="1.6" marker-end="url(#ar18s)"/><path d="M64 350 L64 373" fill="none" stroke="var(--text-muted)" stroke-width="1.6" marker-end="url(#ar18s)"/><rect x="96" y="87" width="640" height="46" rx="8" fill="rgba(79,195,247,0.08)" stroke="var(--accent2)" stroke-width="1.4"/><circle cx="64" cy="110" r="16" fill="rgba(79,195,247,0.18)" stroke="var(--accent2)" stroke-width="1.4"/><text x="64" y="115" font-size="14" font-weight="700" fill="var(--accent2)" text-anchor="middle">①</text><text x="112" y="115" font-size="13.5" font-weight="700" fill="var(--text)" font-family="ui-monospace,Menlo,Consolas,monospace">SetTrigger(&quot;Jump&quot;)</text><text x="352" y="115" font-size="13" fill="var(--text-muted)">脚本里唯一的一句</text><rect x="666" y="99" width="58" height="22" rx="11" fill="rgba(79,195,247,0.16)" stroke="var(--accent2)" stroke-width="1"/><text x="695" y="114" font-size="11.5" fill="var(--accent2)" text-anchor="middle">脚本</text><rect x="96" y="143" width="640" height="46" rx="8" fill="var(--bg-secondary)" stroke="var(--border)" stroke-width="1.4"/><circle cx="64" cy="166" r="16" fill="rgba(0,212,170,0.14)" stroke="var(--accent)" stroke-width="1.4"/><text x="64" y="171" font-size="14" font-weight="700" fill="var(--accent)" text-anchor="middle">②</text><text x="112" y="171" font-size="14.5" font-weight="700" fill="var(--text)">参数 Jump 变成 true</text><text x="352" y="171" font-size="13" fill="var(--text-muted)">相当于开关被按下</text><rect x="666" y="155" width="58" height="22" rx="11" fill="var(--bg-input)" stroke="var(--border)" stroke-width="1"/><text x="695" y="170" font-size="11.5" fill="var(--text-muted)" text-anchor="middle">控制器</text><rect x="96" y="199" width="640" height="46" rx="8" fill="var(--bg-secondary)" stroke="var(--border)" stroke-width="1.4"/><circle cx="64" cy="222" r="16" fill="rgba(0,212,170,0.14)" stroke="var(--accent)" stroke-width="1.4"/><text x="64" y="227" font-size="14" font-weight="700" fill="var(--accent)" text-anchor="middle">③</text><text x="112" y="227" font-size="14.5" font-weight="700" fill="var(--text)">「待机 → 跳跃」放行</text><text x="352" y="227" font-size="13" fill="var(--text-muted)">条件成立，过渡才开门</text><rect x="666" y="211" width="58" height="22" rx="11" fill="var(--bg-input)" stroke="var(--border)" stroke-width="1"/><text x="695" y="226" font-size="11.5" fill="var(--text-muted)" text-anchor="middle">控制器</text><rect x="96" y="255" width="640" height="46" rx="8" fill="rgba(245,158,11,0.10)" stroke="var(--orange)" stroke-width="1.4"/><circle cx="64" cy="278" r="16" fill="rgba(245,158,11,0.18)" stroke="var(--orange)" stroke-width="1.4"/><text x="64" y="283" font-size="14" font-weight="700" fill="var(--orange)" text-anchor="middle">④</text><text x="112" y="283" font-size="14.5" font-weight="700" fill="var(--text)">状态切到「跳跃」</text><text x="352" y="283" font-size="13" fill="var(--text-muted)">状态机换到橙色方块</text><rect x="666" y="267" width="58" height="22" rx="11" fill="var(--bg-input)" stroke="var(--orange)" stroke-width="1"/><text x="695" y="282" font-size="11.5" fill="var(--text-muted)" text-anchor="middle">控制器</text><rect x="96" y="311" width="640" height="46" rx="8" fill="var(--bg-secondary)" stroke="var(--border)" stroke-width="1.4"/><circle cx="64" cy="334" r="16" fill="rgba(0,212,170,0.14)" stroke="var(--accent)" stroke-width="1.4"/><text x="64" y="339" font-size="14" font-weight="700" fill="var(--accent)" text-anchor="middle">⑤</text><text x="112" y="339" font-size="14.5" font-weight="700" fill="var(--text)">跳跃播到最后一帧</text><text x="352" y="339" font-size="13" fill="var(--text-muted)">回程等的就是这一刻</text><rect x="666" y="323" width="58" height="22" rx="11" fill="var(--bg-input)" stroke="var(--border)" stroke-width="1"/><text x="695" y="338" font-size="11.5" fill="var(--text-muted)" text-anchor="middle">控制器</text><rect x="96" y="367" width="640" height="46" rx="8" fill="var(--bg-secondary)" stroke="var(--border)" stroke-width="1.4"/><circle cx="64" cy="390" r="16" fill="rgba(0,212,170,0.14)" stroke="var(--accent)" stroke-width="1.4"/><text x="64" y="395" font-size="14" font-weight="700" fill="var(--accent)" text-anchor="middle">⑥</text><text x="112" y="395" font-size="14.5" font-weight="700" fill="var(--text)">回程箭头送回「待机」</text><text x="352" y="395" font-size="13" fill="var(--text-muted)">若无其事，继续待机</text><rect x="666" y="379" width="58" height="22" rx="11" fill="var(--bg-input)" stroke="var(--border)" stroke-width="1"/><text x="695" y="394" font-size="11.5" fill="var(--text-muted)" text-anchor="middle">控制器</text><text x="26" y="424" font-size="13.5" fill="var(--text-muted)">③ 放行的那一刻，这条过渡已经把 <tspan font-weight="700" fill="var(--accent)">Jump</tspan> 用掉了 → 自动清零；所以下次再按 F，照样能再跳一次。</text><text x="26" y="448" font-size="13.5" fill="var(--text-muted)">②〜⑥ 没有一行是代码写的——这就是 Trigger 和 Bool 的差别：它不用谁去关。</text></svg></div><div class="ok-box">💡 所以脚本这一层<strong>很薄</strong>：它只负责<strong>在正确的时机按开关</strong>（按下 F、玩家贴太近），怎么切、怎么回、播多长，全交给<strong>动画控制器</strong>。以后想让动物多做几个动作，改控制器、加参数就行，这段代码几乎不用动。</div>
+</div></div>
+<div class="slide" data-page="12"><div class="slide-inner markable">
+<h1>把动画接到 F 键上</h1>
+<img src="images/课件18/召唤跳一下.gif" alt="召唤时跳一下" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>被召唤时，先跳一下</h3><p>下面是<strong>改完的整段 <code>AnimalFollow.cs</code></strong>——点右上角「复制」就能把原文件<strong>整个替换</strong>掉，不用对照着改。跟课件17 那版比，只有标了 <strong>①②③④</strong> 的那几处是新的，其余一字没动。</p></div><div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c18_toggle',this)">复制</button></div><pre id="c18_toggle"><code class="language-csharp">// AnimalFollow.cs —— 课件18 版：在课件17 的脚本上加了「被召唤时跳一下」
+// 整段可以直接复制、覆盖原文件；只有标了 ①②③④ 的行是这节课新加的
+
+using UnityEngine;
+using UnityEngine.AI;
+
+public class AnimalFollow : MonoBehaviour
+{
+    public float followDistance = 2f;   // 跟随时离玩家保持多远
+
+    private NavMeshAgent agent;   // 导航代理：负责真的走过去
+    private AnimalRoam roam;      // 同一只动物身上的巡逻脚本
+    private Transform player;     // 玩家的位置（每帧都要重新读）
+    private bool isFollowing;     // 开关：现在是不是在跟随
+    private AnimalAnim anim;      // ① 新增：同一只动物身上的动画脚本
+
+    void Start()
+    {
+        // —— 开局把几样东西各取一次，之后不再找 ——
+        agent = GetComponent&lt;NavMeshAgent&gt;();
+        roam = GetComponent&lt;AnimalRoam&gt;();
+        player = GameObject.FindGameObjectWithTag(&quot;Player&quot;).transform;
+        anim = GetComponent&lt;AnimalAnim&gt;();   // ② 新增：动画脚本也在自己身上
+    }
+
+    // 由 PlayerCall 调用：切换「跟着走 / 自己溜达」
+    public void ToggleFollow()
+    {
+        isFollowing = !isFollowing;   // 开关翻一次：真变假、假变真
+
+        if (isFollowing)
+        {
+            transform.LookAt(player);   // ③ 新增：先转身面向你，再起步
+            // 跟着：走到离玩家 2 米的圈上，并把「自由溜达」关掉
+            agent.stoppingDistance = 0.2f;
+            roam.enabled = false;
+            anim.PlayJump();          // ④ 新增：被召唤 → 先跳一下
+        }
+        else
+        {
+            // 散开：恢复「走到点上」、把溜达打开，再主动叫它一声
+            agent.stoppingDistance = 0f;
+            agent.isStopped = false;   // 先解冻——还摁着的话，给了新目的地它也不走
+            roam.enabled = true;
+            roam.RestartRoam();
+        }
+    }
+
+    void Update()
+    {
+        // —— 只在跟随时干活 ——
+        if (isFollowing)
+        {
+            // 只在水平面上量距离：高度差不算，上下坡才不会误判
+            Vector3 me = transform.position;  me.y = 0f;
+            Vector3 you = player.position;    you.y = 0f;
+            float d = Vector3.Distance(me, you);
+
+            if (d &gt; followDistance)
+            {
+                // 目的地不是玩家本人，是「离玩家 2 米、靠我这一侧」的那个点
+                Vector3 dir = (me - you).normalized;
+                agent.isStopped = false;
+                agent.SetDestination(you + dir * followDistance);
+            }
+            else
+            {
+                // 已经站到圈上了：清路 + 立刻刹住，别靠惯性滑过去
+                agent.ResetPath();
+                agent.isStopped = true;
+            }
+        }
+    }
+}</code></pre></div><div class="card"><h3>代码讲解</h3><ol><li><strong>整段是完整脚本，可以直接覆盖原文件</strong>；和课件17 比只有四处新的：①字段区声明 ②<code>Start</code> 里取一次 ③「开始跟」分支里先转身 ④紧接着播跳跃。<code>Update</code> 和其它行都和课件17 一模一样，直接沿用。</li><li><strong><code>anim</code> 是「先声明、再赋值」，两步都不能少</strong>：只写 <code>anim.PlayJump()</code> 而没声明，编译直接报「当前上下文中不存在名称 anim」；声明了却忘了 <code>Start</code> 里那一行，运行时就是「未将对象引用设置到对象的实例」——空引用。</li><li><strong>类型是 <code>AnimalAnim</code>，不是 <code>Animator</code></strong>：<code>agent</code>↔<code>NavMeshAgent</code>、<code>roam</code>↔<code>AnimalRoam</code>、<code>anim</code>↔<code>AnimalAnim</code>，都是「同一只动物身上的组件」，三个写法一模一样。</li><li><strong>写成 <code>private</code></strong>：它只是脚本内部用的遥控器，不用拖进检查器。</li><li><strong><code>if (isFollowing)</code> 只在「开始跟」时播</strong>：再按一次 F 散开时不该跳。</li><li><strong>散开分支里那句 <code>agent.isStopped = false</code> 别漏</strong>：跟到 2 米时代理被摁住了，不解冻就再也不走，「按 F 没反应」十有八九是它（课件17 有专门一页讲）。</li><li><strong><code>anim.PlayJump()</code> 是调用 <code>AnimalAnim</code> 的 <code>public</code> 方法</strong>：脚本之间就是靠 <code>public</code> 方法互相喊话。</li><li><strong>播放 ≠ 等待</strong>：这一行只是「喊一声去播动画」，脚本不会停下来等它演完，跟随照常进行。</li><li><strong>回扣课件17：<code>Update</code> 里那两个距离各管一件事</strong>：<code>followDistance = 2</code> 是「<strong>我</strong>要离你 2 米」；<code>stoppingDistance = 0.2</code> 是「离<strong>目的地</strong>还剩 0.2 米才算到」。目的地早就不是玩家本人了，而是「离玩家 2 米、靠动物这一侧的那个点」——所以 <code>stoppingDistance</code> 只能给个小值，给 2 的话代理提前 2 米就刹死，永远走不到圈上。</li><li><strong><code>transform.LookAt(player)</code> 要写在 <code>PlayJump()</code> <u>前面</u></strong>：转向是<strong>手动补的一句</strong>——导航代理只负责「走起来之后」的朝向，按下 F 那一刻它还没起步，脸还朝着原来的巡逻方向；先转过来，跳起来才是<strong>看着你跳</strong>。顺序反过来，就成了「先背对着蹦一下，再扭头」。它同样只在「开始跟」这一帧执行一次，散开时不转。</li></ol></div><div class="ok-box">⚠️ 移动的时候<strong>没有「走路」动画</strong>能播（动物包里只有待机 / 跳跃 / 攻击），所以跟随时动物是「滑步」过去的。两种处理，你挑一个：<br><strong>甲</strong>：移动时也播待机——最简单，但滑步明显；<br><strong>乙</strong>：移动时循环播跳跃——看起来像<strong>一蹦一蹦地走</strong>，很卡通，正好把「没有走路动画」这件事藏起来。</div>
+</div></div>
+<div class="slide" data-page="13"><div class="slide-inner markable">
+<h1>作业 · 靠近就攻击</h1>
+<img src="images/课件18/作业_靠近就攻击.gif" alt="最终效果：发现 → 跳一下 → 追 → 咬" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>这次的作业，玩法换了</h3>
+<p>前面几页：你按 <code>F</code> 召唤，动物才动——它是<strong>被动</strong>的。<br>这次的作业：<strong>没有人按任何键</strong>。动物自己盯着周围——你走进它的视野，它先<strong>跳一下</strong>（发现你了），然后<strong>冲过来</strong>，贴太近就<strong>咬</strong>。</p>
+<p>它的脾气由三个距离决定，都做成 <code>public</code>，检查器里随时改：</p>
+<ul>
+<li><code>sightRange = 6f</code>　<strong>视野</strong>——走进 6 米，它发现你</li>
+<li><code>attackDistance = 1.5f</code>　<strong>咬</strong>——贴到 1.5 米内就开始咬</li>
+<li><code>attackInterval = 2f</code>　<strong>节奏</strong>——两次咬至少隔 2 秒</li>
+</ul></div>
+<div class="card"><h3>开工前：先把 AnimalFollow 关掉</h3>
+<p>动物身上现在挂着 <code>AnimalFollow</code>，它的 <code>Update</code> <strong>每帧也在给自己的导航代理下目的地</strong>。再挂一个同样下目的地的脚本，两个抢一个代理——表现就是<strong>原地抽搐、来回甩头</strong>（课件17 那页专门讲过这个坑）。</p>
+<p><strong>做法</strong>：检查器里把 <code>AnimalFollow</code> 组件左上角的勾<strong>取消</strong>（不是删）。想回头验旧的按 <code>F</code> 功能，再勾回来就行。<br><strong>保留</strong>：<code>NavMeshAgent</code>、<code>AnimalRoam</code>（发现之前照常巡逻）、<code>AnimalAnim</code>（播动画）。</p><img src="images/课件18/作业_关掉AnimalFollow勾选.png" alt="检查器里取消勾选 AnimalFollow 组件" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:100%;max-width:100%;max-height:none;margin:10px auto 4px;cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="card"><h3>六步做完</h3>
+<p>新建 <code>AnimalGuard.cs</code>，挂在<strong>动物本体</strong>上（和 <code>AnimalRoam</code> 同一个物体），然后按顺序往里填：</p>
+<ol>
+<li><strong>摆好成员：三个距离、四样引用、两个状态</strong>：三个 <code>public float</code> 就是上面那三个数；四样引用先只声明、留到 <code>Start</code> 里赋值（<code>agent</code> / <code>roam</code> / <code>anim</code> / <code>player</code>）；两个私有——<code>bool alerted</code>（发现没有，用来保证「跳一下」只跳一次）、<code>float timer</code>（咬的冷却）。<div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c18_s1',this)">复制</button></div><pre id="c18_s1"><code class="language-csharp">// ① 先摆好成员：三个距离 + 四样引用 + 两个状态
+public float sightRange = 6f;         // 视野：走进 6 米就发现你
+public float attackDistance = 1.5f;   // 咬：贴到 1.5 米内
+public float attackInterval = 2f;     // 节奏：两次咬至少隔 2 秒
+
+private NavMeshAgent agent;   // 负责走
+private AnimalRoam roam;      // 发现之前继续自己溜达
+private AnimalAnim anim;      // 负责播动画
+private Transform player;     // 玩家的位置
+
+private bool alerted;         // 发现没有 —— 「只跳一次」靠它
+private float timer;          // 咬的冷却：距上次过了多久</code></pre></div><img src="images/课件18/作业_步骤1_新建脚本与字段.png" alt="新建 AnimalGuard.cs，先摆好五个成员" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:100%;max-width:100%;max-height:none;margin:10px auto 4px;cursor:pointer" onerror="imgMissing(this)"></li>
+<li><strong><code>Start</code> 里取四样东西</strong>：<code>agent</code>、<code>roam</code>、<code>anim</code> 都是 <code>GetComponent</code>（都挂在自己身上），<code>player</code> 用标签找一次。<div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c18_s2',this)">复制</button></div><pre id="c18_s2"><code class="language-csharp">// ② Start 里把四样东西各取一次，之后每帧直接用
+void Start()
+{
+    agent  = GetComponent&lt;NavMeshAgent&gt;();   // 负责走
+    roam   = GetComponent&lt;AnimalRoam&gt;();     // 发现前继续溜达
+    anim   = GetComponent&lt;AnimalAnim&gt;();     // 负责播动画
+    player = GameObject.FindGameObjectWithTag("Player").transform;   // 按标签找一次
+}</code></pre></div></li>
+<li><strong>每帧先量一次水平距离</strong>：两边的 <code>y</code> 都摁成 <code>0</code> 再 <code>Vector3.Distance</code>——课件17 的老办法，上下坡才不会误判。<div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c18_s3',this)">复制</button></div><pre id="c18_s3"><code class="language-csharp">// ③ 每帧先量一次「水平距离」，后面三个判断都靠它
+void Update()
+{
+    timer += Time.deltaTime;                 // 秒表一直走
+
+    // 只在水平面上量：两边的 y 都摁成 0
+    Vector3 me  = transform.position;  me.y  = 0f;
+    Vector3 you = player.position;     you.y = 0f;
+    float d = Vector3.Distance(me, you);</code></pre></div></li>
+<li><strong>发现的那一帧</strong>：只有 <code>d &lt;= sightRange</code> 才进来，进来做三件事——<code>alerted = true</code>、<code>roam.enabled = false</code>（别再自己溜达）、<code>anim.PlayJump()</code>；然后 <code>return</code>，这一帧不再往下走。<strong><code>alerted</code> 就是「只跳一次」的保证</strong>——没有它，每帧都会跳。<div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c18_s4',this)">复制</button></div><pre id="c18_s4"><code class="language-csharp">    // ④ 还没发现：进了视野就跳一下，然后这一帧到此为止
+    if (!alerted)
+    {
+        if (d &lt;= sightRange)
+        {
+            alerted = true;          // 挡住后面每一帧 → 只跳一次
+            roam.enabled = false;    // 别再自己溜达
+            anim.PlayJump();         // 发现你了！
+        }
+        return;                      // 不管有没有发现，这一帧都先停
+    }</code></pre></div></li>
+<li><strong>够近就咬</strong>：<code>d &lt;= attackDistance</code> 时，先 <code>agent.ResetPath()</code> 清路、<code>agent.isStopped = true</code> 站住；再看 <code>timer &gt;= attackInterval</code>，成立才 <code>anim.PlayAttack()</code>，并且把 <code>timer</code> 清回 <code>0</code>。<div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c18_s5',this)">复制</button></div><pre id="c18_s5"><code class="language-csharp">    // ⑤ 够近：站住，秒表到点才咬
+    if (d &lt;= attackDistance)
+    {
+        agent.ResetPath();           // 清掉原来的路
+        agent.isStopped = true;      // 真刹车（光清路还会滑一段）
+
+        if (timer &gt;= attackInterval)
+        {
+            anim.PlayAttack();
+            timer = 0f;              // 咬了就清零，重新数
+        }
+        return;
+    }</code></pre></div></li>
+<li><strong>不够近就追</strong>：目的地不是玩家本人，是「离玩家 <code>attackDistance</code> 米、靠动物这一侧」的那个点（课件17 的圈圈写法）；追之前必须先 <code>agent.isStopped = false</code>——不然它还压在上一步那脚刹车上，给了新目的地也不走。<div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c18_s6',this)">复制</button></div><pre id="c18_s6"><code class="language-csharp">    // ⑥ 发现但还不够近：追「离玩家 attackDistance 米、靠我这一侧」的那个点
+    agent.isStopped = false;                       // 先解冻，不然给目的地也不走
+    Vector3 dir = (me - you).normalized;
+    agent.SetDestination(you + dir * attackDistance);
+}</code></pre></div></li>
+</ol></div>
+<div class="ok-box">⚠️ 写完先检查这五件事：<br>
+<strong>① 忘了 <code>alerted</code></strong>：只看距离就跳，<code>PlayJump()</code> 每帧喊一次，动画被反复打断——动物<strong>抖成筛子</strong>，永远卡在第一帧；<br>
+<strong>② 发现后忘了关 <code>roam</code></strong>：<code>AnimalRoam</code> 还在下目的地，两个脚本抢代理，动物边走边抽；<br>
+<strong>③ 追之前忘了 <code>isStopped = false</code></strong>：站住那一下之后它就<strong>再也动不了</strong>，只能原地干瞪眼；<br>
+<strong>④ 咬完忘了 <code>timer = 0</code></strong>：只咬一口，之后再也不咬；<br>
+<strong>⑤ <code>AnimalFollow</code> 没关</strong>：两套「追人」逻辑同时跑，谁后执行听谁的，行为完全不可预期。</div>
+<div class="card"><h3>进阶 · 跑远了它会忘掉你</h3>
+<p>上面这只动物有个毛病：<strong>发现你之后就死追到底</strong>，你跑再远它也不放弃。真实的猎物不这样——你逃出它的「耐心圈」，它就该<strong>忘了你、回去巡逻</strong>。做法：再加一个 <code>loseRange</code>，在「发现之后、追之前」插一步判断。</p>
+<p>先给成员补一行（和上面三个距离放一起）：</p>
+<div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c18_lose1',this)">复制</button></div><pre id="c18_lose1"><code class="language-csharp">public float loseRange = 8f;   // 跑出 8 米，它就忘了你（比视野 6 米大一点）</code></pre></div>
+<p>然后在 <code>Update</code> 里，把这段插在「④ 还没发现」和「⑤ 够近就咬」<strong>之间</strong>：</p>
+<div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c18_lose2',this)">复制</button></div><pre id="c18_lose2"><code class="language-csharp">    // 进阶：发现之后、追之前，先看有没有「跑远」
+    if (d &gt; loseRange)
+    {
+        alerted = false;          // 忘了你
+        roam.enabled = true;      // 重新挂上巡逻脚本
+        agent.isStopped = false;  // 先解冻，不然给新目的地也不走
+        roam.RestartRoam();       // 主动起步：重新定一个巡逻点
+        return;                   // 这一帧到此为止
+    }</code></pre></div>
+<p>两件事要记住：<br>① <strong>进、出别用同一个数</strong>——进 6 米发现、出 8 米才忘，中间留 2 米缓冲；否则它会卡在边界上来回「发现→忘掉→发现」抖个不停；<br>② <strong>不能只写 <code>roam.enabled = true</code></strong>——光把组件勾回来，它上一站的「巡逻目标」还停在老地方、离得很远，会<strong>愣在原地不动</strong>，必须再调 <code>roam.RestartRoam()</code> 逼它重新定一个巡逻点。</p></div>
+<div class="ok-box">💡 埋个伏笔：这里「咬」的结果只是<strong>播一段攻击动画</strong>——并不疼。等到讲敌人的时候，这套逻辑只差最后一步：把「播动画」换成「<strong>扣玩家的血</strong>」，一只会伤人的敌人就成了。</div>
+</div></div>
+<div class="slide" data-page="14"><div class="slide-inner end-page">
+
+<div class="end-thanks">
+    <div class="end-left">
+        <div class="end-icon">💪</div>
+        <div class="end-title">感谢各位同学的参与!</div>
+        <div class="end-sub">祝大家学习进步</div>
+    </div>
+    <div class="end-right">
+        <img src="images/tencent-docs-qrcode.png" alt="腾讯文档二维码" onerror="imgMissing(this)" onclick="zoomQR(this)" style="cursor:pointer">
+        <p>扫码查看作业完成情况</p>
+        <a href="https://docs.qq.com/sheet/DV2tKZ2pSTUNwUFpX?tab=bo2p4o" target="_blank" class="end-link">📊 查看作业完成情况文档</a>
+    </div>
+</div>
+<a href="课件19_视线检测与图层.html" class="end-next-link">📖 下一节：课件19 · 视线检测与图层 →</a>
+</div></div>
+
+</div>
+</div>
+</div>
+
+<div class="search-panel" id="searchPanel">
+    <div class="search-panel-header">
+        <span>🔍 全局搜索</span>
+        <button class="search-panel-close" onclick="closeSearch()">✕</button>
+    </div>
+    <input class="search-input" id="searchInput" placeholder="输入关键词搜索..." oninput="doSearch()" autocomplete="off">
+    <div class="search-results" id="searchResults"></div>
+</div>
+
+<div class="help-overlay" id="helpOverlay">
+    <div class="help-header"><span>📖 使用帮助</span><button class="help-close-btn" onclick="closeHelp()">✕</button></div>
+    <div class="help-body">
+            <h3>⌨️ 快捷键</h3>
+            <table><tr><td><code>Ctrl+K</code></td><td>打开搜索</td></tr><tr><td><code>← →</code></td><td>上一页 / 下一页</td></tr><tr><td><code>Esc</code></td><td>关闭弹窗</td></tr></table>
+            <h3>🎯 导航</h3>
+            <p>左侧边栏点击切换页面；底部圆点快速跳转；进度条显示学习完成度。</p>
+            <h3>💻 在线编辑器</h3>
+            <p>顶部「在线编辑器」下拉提供菜鸟教程、Tutorialspoint、DotNetFiddle 三个在线 C# 编译器。</p>
+            <h3>🌙 主题与字号</h3>
+            <p>深色/浅色切换；A- / A+ 调整字号；刷新后保留设置。</p>
+            <h3>🔍 搜索</h3>
+            <p>支持中英文关键词，匹配结果高亮显示，点击跳转到对应页面。</p>
+        </div>
+</div>
+
+<div class="catalog-panel" id="catalogPanel">
+    <div class="catalog-header">
+        <span>📚 课件目录</span>
+        <button class="catalog-close-btn" onclick="closeCatalog()">✕</button>
+    </div>
+    <div class="catalog-list" id="catalogList"></div>
+</div>
+
+<div class="qr-zoom-overlay" id="qrZoom" onclick="closeZoom()">
+    <img id="qrZoomImg" src="" alt="二维码放大">
+</div>
+
+<div class="nav-buttons">
+    <button class="nav-btn" id="prevBtn" onclick="goSlide(-1)">◀ 上一页</button>
+    <button class="nav-btn" id="nextBtn" onclick="goSlide(1)">下一页 ▶</button>
+</div>
+<div class="progress-dots" id="progressDots"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+window.__CATALOG__ = [{"file": "课件1_认识Unity与课程介绍.html", "label": "课件1 · 认识Unity与课程介绍"}, {"file": "课件2_注册与安装软件.html", "label": "课件2 · 注册与安装软件"}, {"file": "课件3_Unity引擎概览.html", "label": "课件3 · Unity引擎概览"}, {"file": "课件4_场景与物体.html", "label": "课件4 · 场景与物体"}, {"file": "课件5_移动视野与物体.html", "label": "课件5 · 移动视野与物体"}, {"file": "课件6_旋转缩放多选.html", "label": "课件6 · 旋转缩放多选"}, {"file": "课件7_网格与材质.html", "label": "课件7 · 网格与材质"}, {"file": "课件8_C#核心语法.html", "label": "课件8 · C#核心语法"}, {"file": "课件9_Fbx导入与脚本入门.html", "label": "课件9 · Fbx导入与脚本入门"}, {"file": "课件10_资源商店与模型资源.html", "label": "课件10 · 资源商店与模型资源"}, {"file": "课件11_键盘控制移动.html", "label": "课件11 · 键盘控制移动"}, {"file": "课件12_刚体与碰撞体.html", "label": "课件12 · 刚体与碰撞体"}, {"file": "课件13_角色移动与视角.html", "label": "课件13 · 角色移动与视角"}, {"file": "课件14_访问其他游戏对象.html", "label": "课件14 · 访问其他游戏对象"}, {"file": "课件15_游戏管理器与生成物体.html", "label": "课件15 · 游戏管理器与生成物体"}, {"file": "课件16_动物自由巡游与定点巡逻.html", "label": "课件16 · 动物自由巡游与定点巡逻"}, {"file": "课件17_走近动物跟着走.html", "label": "课件17 · 走近动物跟着走"}, {"file": "课件18_动物交互动画切换.html", "label": "课件18 · 动物交互动画切换"}, {"file": "课件19_视线检测与图层.html", "label": "课件19 · 视线检测与图层"}, {"file": "课件20_玩家血条与被接触攻击.html", "label": "课件20 · 玩家血条与被接触攻击"}, {"file": "课件21_死亡与游戏管理器.html", "label": "课件21 · 死亡与游戏管理器"}, {"file": "课件22_撤离点与粒子系统.html", "label": "课件22 · 撤离点与粒子系统"}, {"file": "课件23_启动页面.html", "label": "课件23 · 启动页面"}, {"file": "课件24_FPS场景玩家武器.html", "label": "课件24 · FPS场景玩家武器"}, {"file": "课件25_射击准心与鼠标锁定.html", "label": "课件25 · 射击准心与鼠标锁定"}, {"file": "课件26_消灭敌人与孵化器.html", "label": "课件26 · 消灭敌人与孵化器"}, {"file": "课件27_拾取物品.html", "label": "课件27 · 拾取物品"}, {"file": "课件28_更换枪械.html", "label": "课件28 · 更换枪械"}, {"file": "课件29_修改动画状态机.html", "label": "课件29 · 修改动画状态机"}, {"file": "课件30_NPC对话.html", "label": "课件30 · NPC对话"}, {"file": "课件31_NPC对话进阶.html", "label": "课件31 · NPC对话进阶"}, {"file": "课件32_任务队列.html", "label": "课件32 · 任务队列"}];
+let LESSON_LABEL='';(function(){
+  let cur=window.location.pathname.split('/').pop();
+  let items=window.__CATALOG__||[];
+  for(let i=0;i<items.length;i++){if(items[i].file===cur){LESSON_LABEL=items[i].label;break}}
+  if(!LESSON_LABEL)LESSON_LABEL=document.title.split(' — ')[0]||'';
+})();
+
+// ========== 移动端 "更多" 菜单 ==========
+function toggleMobileMore(){document.getElementById('mobileMoreMenu').classList.toggle('open')}
+function mobileAction(act){
+  document.getElementById('mobileMoreMenu').classList.remove('open');
+  if(act==='ide'){let m=document.getElementById('ideMenu');if(m)m.classList.add('show')}
+  else if(act==='fontDown')changeFont(-1);
+  else if(act==='fontUp')changeFont(1);
+  else if(act==='search')openSearch();
+  else if(act==='flat')toggleFlat();
+  else if(act==='imgbottom')toggleImgBottom();
+  else if(act==='help')toggleHelp();
+}
+document.addEventListener('click',function(e){
+  let mm=document.getElementById('mobileMoreMenu');
+  if(mm&&mm.classList.contains('open')&&!e.target.closest('.mobile-more'))mm.classList.remove('open');
+});
+// 点击移动端信息条跳转下一页
+function mobileInfoTap(){goSlide(1)}
+
+// ========== localStorage ==========
+const LS=(k,d)=>localStorage.getItem(k)||d;
+const LSset=(k,v)=>localStorage.setItem(k,v);
+
+// ========== 主题 ==========
+// ========== 在线编辑器下拉 ==========
+document.addEventListener('DOMContentLoaded',function(){
+    var ideBtn=document.getElementById('ideBtn');
+    if(ideBtn){
+        ideBtn.onclick=function(e){
+            e.stopPropagation();
+            document.getElementById('ideMenu').classList.toggle('show');
+        };
+    }
+    document.querySelectorAll('.dropdown-item').forEach(function(el){
+        el.onclick=function(e){
+            e.preventDefault();
+            window.open(this.dataset.url,'_blank');
+            document.getElementById('ideMenu').classList.remove('show');
+        };
+    });
+    document.addEventListener('click',function(){
+        document.getElementById('ideMenu').classList.remove('show');
+    });
+});
+
+// ========== 主题 ==========
+if(LS('theme','dark')==='light')document.body.classList.add('light');
+function toggleTheme(){
+    const il=document.body.classList.toggle('light');
+    LSset('theme',il?'light':'dark');
+    document.getElementById('themeBtn').textContent=il?'☀️浅色':'🌙深色';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('themeBtn').textContent=document.body.classList.contains('light')?'☀️浅色':'🌙深色';
+    let mi=document.getElementById('mobileInfo');
+    if(mi){
+        mi.querySelector('.mi-lesson').textContent=LESSON_LABEL;
+        mi.querySelector('.mi-page').textContent='第1页 / 共'+total+'页';
+    }
+});
+
+
+// ========== 平铺模式（连续显示全部页面，导出 PDF 用） ==========
+function toggleFlat(){
+    const on=document.body.classList.toggle('flat-mode');
+    document.documentElement.classList.toggle('flat-mode',on);
+    const btn=document.getElementById('flatBtn');
+    if(btn)btn.textContent=on?'🗂️ 分页':'📄 平铺';
+    LSset('flat',on?'1':'0');
+    if(!on)showSlide(curr);   // 切回分页时回到当前页
+}
+// ========== 图片显示模式（右侧小图 / 下方大图） ==========
+function toggleImgBottom(){
+    const on=document.body.classList.toggle('img-bottom');
+    document.documentElement.classList.toggle('img-bottom',on);
+    const btn=document.getElementById('imgBtn');
+    if(btn)btn.textContent=on?'🖼️ 侧图':'🖼️ 图下';
+    LSset('imgmode',on?'1':'0');
+}
+
+
+// ========== 字号 ==========
+const FONT_SIZES=['xs','sm','md','lg','xl'];
+let fontIdx=FONT_SIZES.indexOf(LS('font','md'));
+if(fontIdx<0)fontIdx=2;
+if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+function changeFont(d){
+    document.body.classList.remove('font-'+FONT_SIZES[fontIdx]);
+    fontIdx=Math.max(0,Math.min(FONT_SIZES.length-1,fontIdx+d));
+    if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+    LSset('font',FONT_SIZES[fontIdx]);
+}
+
+// ========== 幻灯片 ==========
+let slides=document.querySelectorAll('.slide,.cover'),
+    navLinks=document.querySelectorAll('.nav-link'),
+    curr=0,total=14,contentTotal=12;
+
+// 进度圆点
+// 侧边栏点击
+navLinks.forEach((l,i)=>l.addEventListener('click',e=>{e.preventDefault();showSlide(i);}));
+let dotsHtml='';
+for(let i=0;i<total;i++)dotsHtml+=`<span class="progress-dot" data-idx="${i}" onclick="showSlide(${i})"></span>`;
+document.getElementById('progressDots').innerHTML=dotsHtml;
+let dots=document.querySelectorAll('.progress-dot');
+
+function showSlide(idx){
+    if(idx<0||idx>=total)return;
+    slides.forEach((s,i)=>s.classList.toggle('active',i===idx));
+    navLinks.forEach((l,i)=>l.classList.toggle('active',i===idx));
+    dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
+    curr=idx;
+    let cp=Math.max(0,Math.min(idx,contentTotal));
+    document.getElementById('progressFill').style.width=(cp/contentTotal*100)+'%';
+    document.getElementById('progressText').textContent=cp+' / '+contentTotal;
+    let mi=document.getElementById('mobileInfo');
+    if(mi){
+        mi.querySelector('.mi-lesson').textContent=LESSON_LABEL;
+        mi.querySelector('.mi-page').textContent='第'+(idx+1)+'页 / 共'+total+'页';
+    }
+    document.getElementById('mainArea').scrollTop=0;
+    document.querySelectorAll('.nav-status')[idx]?.classList.add('seen');
+    updateNav();
+}
+function goSlide(d){ showSlide(curr+d); }
+function updateNav(){
+    document.getElementById('prevBtn').disabled=curr===0;
+    document.getElementById('nextBtn').disabled=curr===total-1;
+    LSset('page_'+window.location.pathname.split('/').pop(), curr);
+}
+
+// 键盘
+document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')goSlide(1);
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')goSlide(-1);
+    if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openSearch();}
+    if(e.key==='Escape'){closeSearch();closeHelp();closeZoom();closeCatalog();}
+});
+
+// ========== 搜索 ==========
+function openSearch(){document.getElementById('searchPanel').classList.add('open');document.getElementById('searchInput').focus();document.getElementById('searchInput').value='';document.getElementById('searchResults').innerHTML=''}
+function closeSearch(){document.getElementById('searchPanel').classList.remove('open')}
+function toggleHelp(){document.getElementById('helpOverlay').classList.toggle('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+// 课件目录
+function toggleCatalog(){
+    let p=document.getElementById('catalogPanel');
+    if(!p.classList.contains('open')){loadCatalog();p.classList.add('open')}else{p.classList.remove('open')}
+}
+function closeCatalog(){document.getElementById('catalogPanel').classList.remove('open')}
+function loadCatalog(){
+    let c=document.getElementById('catalogList');
+    if(c.children.length>0)return;
+    let current=decodeURIComponent(window.location.pathname.split('/').pop());
+    let items=window.__CATALOG__||[];
+    if(!items.length){c.innerHTML='<div class="catalog-item" style="color:var(--text-muted)">暂无课件</div>';return}
+    items.forEach(item=>{
+        let a=document.createElement('a');a.className='catalog-item';a.href=encodeURIComponent(item.file);
+        if(item.file===current)a.classList.add('current');
+        a.innerHTML=`<span class="catalog-num">${item.label.split(' · ')[0]}</span><span>${item.label.split(' · ').slice(1).join(' · ')||item.label}</span>`;
+        c.appendChild(a);
+    });
+}
+function zoomQR(img){document.getElementById('qrZoomImg').src=img.src;document.getElementById('qrZoom').classList.add('show')}
+function closeZoom(){document.getElementById('qrZoom').classList.remove('show')}
+function doSearch(){
+    let q=document.getElementById('searchInput').value,qLower=q.toLowerCase(),c=document.getElementById('searchResults');
+    c.innerHTML='';if(q.length<2)return;
+    let r=[];
+    slides.forEach((s,i)=>{
+        let raw=s.textContent,lower=raw.toLowerCase(),idx=lower.indexOf(qLower);
+        if(idx<0)return;
+        let start=Math.max(0,idx-15),end=Math.min(raw.length,idx+q.length+30);
+        let ex=raw.substring(start,end);
+        if(start>0)ex='...'+ex;
+        if(end<raw.length)ex=ex+'...';
+        // 高亮匹配词
+        let re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+        ex=ex.replace(re,'<mark>$1</mark>');
+        r.push({idx:i,excerpt:ex,slide:s});
+    });
+    r.slice(0,20).forEach(x=>{
+        let a=document.createElement('a');a.className='search-item';a.href='#';
+        let title=navLinks[x.idx]?.textContent.replace(/^\d+\.\s*/,'')||('页面'+(x.idx+1));
+        a.innerHTML=`<div class="sr-lesson">${x.idx+1}. ${title}</div><div class="sr-text">${x.excerpt}</div>`;
+        a.onclick=e=>{e.preventDefault();showSlide(x.idx);closeSearch();};
+        c.appendChild(a);
+    });
+}
+
+// ========== 复制 ==========
+function copyCode(cid,btn){
+    let code=document.getElementById(cid).textContent;
+    navigator.clipboard.writeText(code).then(()=>{
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    }).catch(()=>{
+        // fallback
+        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
+        document.execCommand('copy');document.body.removeChild(ta);
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    });
+}
+
+// ========== 初始化 ==========
+hljs.highlightAll();
+// 标了 ①②③④ 的新增行注释标绿：hljs 在 DOMContentLoaded 之后才重写代码块，只能等它跑完再标
+function markNewComments(){
+    document.querySelectorAll('pre code .hljs-comment').forEach(el=>{
+        if(/[①②③④⑤]\s*新增/.test(el.textContent)) el.classList.add('cmt-new');
+    });
+}
+window.addEventListener('DOMContentLoaded',markNewComments);
+window.addEventListener('load',markNewComments);
+// 折叠面板
+function toggleFold(btn){
+    btn.classList.toggle('open');
+    let content=btn.nextElementSibling;
+    if(!content||!content.classList.contains('fold-content')) content=content.nextElementSibling;
+    if(content&&content.classList.contains('fold-content')) content.classList.toggle('show');
+}
+let savedPage=parseInt(LS('page_'+window.location.pathname.split('/').pop(),'0'));
+if(savedPage>0&&savedPage<total)showSlide(savedPage);else showSlide(0);
+// 恢复上次的平铺/分页模式
+if(LS('flat','0')==='1')toggleFlat();
+if(LS('imgmode','0')==='1')toggleImgBottom();
+
+
+</script>
+</body>
+</html>

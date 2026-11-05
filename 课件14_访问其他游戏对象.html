@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>课件14_访问其他游戏对象 — C#先知课堂</title>
+<link rel="stylesheet" href="vendor/atom-one-dark.min.css">
+<script src="vendor/highlight.min.js"></script>
+<style>
+/* ===== 色彩变量 ===== */
+:root{
+--bg-primary:#0A0E27;--bg-secondary:#0D1430;--bg-card:rgba(17,24,39,0.95);
+--bg-input:#0B1020;--border:rgba(255,255,255,0.06);
+--text:#E8EAED;--text-muted:#9AA0A6;
+--accent:#00D4AA;--accent2:#4FC3F7;--accent-dim:rgba(0,212,170,0.08);
+--orange:#F59E0B;--blue:#818CF8;
+--green:#22C55E;--green-bg:rgba(34,197,94,0.08);--green-border:rgba(34,197,94,0.3);
+--red:#EF4444;--red-bg:rgba(239,68,68,0.08);--red-border:rgba(239,68,68,0.3);
+--yellow:#F59E0B;--purple:#C084FC;--teal:#86EFAC;--teal-border:rgba(34,197,94,0.3);
+--font-size:16px;
+}
+.light{
+--bg-primary:#ffffff;--bg-secondary:#f6f8fa;--bg-card:#f6f8fa;--bg-input:#ffffff;
+--border:#d0d7de;--text:#24292f;--text-muted:#656d76;
+--accent:#0969da;--accent2:#0550ae;--accent-dim:rgba(9,105,218,0.08);
+--orange:#cf222e;--blue:#0550ae;
+--green:#1a7f37;--green-bg:#eefdf2;--green-border:#86d9a0;
+--red:#cf222e;--red-bg:#ffebe9;--red-border:#fdaeb7;
+--yellow:#9a6700;--purple:#8250df;--teal:#0550ae;--teal-border:#4ac26b;
+}
+body.font-xs{--font-size:12px}body.font-sm{--font-size:14px}body.font-md{--font-size:16px}body.font-lg{--font-size:19px}body.font-xl{--font-size:22px}
+
+/* ===== 全局 ===== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microsoft YaHei',sans-serif;background:linear-gradient(180deg,var(--bg-primary),var(--bg-secondary));color:var(--text);line-height:1.6;font-size:var(--font-size)}
+.container{display:flex;height:100vh}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.02)}
+::-webkit-scrollbar-thumb{background:rgba(0,212,170,0.2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,212,170,0.4)}
+
+/* ===== 侧边栏 ===== */
+.sidebar{width:260px;min-width:260px;height:100vh;background:linear-gradient(180deg,rgba(10,14,39,0.98),rgba(13,20,48,0.95));border-right:1px solid var(--border);overflow-y:auto;padding:12px 0;flex-shrink:0;backdrop-filter:blur(10px);position:relative;z-index:10}
+.sidebar-title{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-size:16px;font-weight:700;padding:0 14px 10px;border-bottom:1px solid rgba(0,212,170,0.15);margin-bottom:6px}
+.nav-link{display:flex;align-items:center;color:var(--text-muted);text-decoration:none;padding:8px 14px;font-size:12px;border-left:3px solid transparent;transition:all .2s}
+.nav-link:hover{color:var(--accent);background:var(--accent-dim);border-left-color:rgba(0,212,170,0.4)}
+.nav-link.active{color:#fff!important;background:linear-gradient(90deg,rgba(0,212,170,0.18),transparent);border-left:3px solid var(--accent);font-weight:600}
+.nav-status{width:7px;height:7px;border-radius:50%;margin-right:7px;flex-shrink:0;background:rgba(255,255,255,0.1);transition:all .3s}
+.nav-status.seen{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,0.5)}
+
+/* ===== Header ===== */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header-bar{display:flex;align-items:center;gap:16px;padding:10px 24px;background:rgba(10,14,39,0.95);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;position:relative;z-index:5}
+.progress-wrap{flex:1;min-width:200px;display:flex;align-items:center;gap:12px}
+.progress-bar{flex:1;height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,0.3)}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .5s ease;width:0;box-shadow:0 0 8px rgba(0,212,170,0.4)}
+.progress-text{font-size:11px;color:var(--text-muted);white-space:nowrap}
+.header-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .25s;white-space:nowrap}
+.header-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 8px rgba(0,212,170,0.1);transform:translateY(-1px)}
+.header-dropdown{position:relative;display:inline-block}
+.dropdown-menu{display:none;position:absolute;top:100%;right:0;margin-top:6px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;min-width:180px;z-index:100;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.dropdown-menu.show{display:block}
+.dropdown-item{display:block;padding:10px 16px;color:var(--text);font-size:13px;text-decoration:none;transition:background .2s;cursor:pointer;white-space:nowrap}
+.dropdown-item:hover{background:var(--accent-dim);color:var(--accent)}
+.dropdown-item:not(:last-child){border-bottom:1px solid var(--border)}
+
+/* ===== 幻灯片 ===== */
+.slides-container{flex:1;position:relative !important;overflow:hidden}
+#mainArea .slides-container{position:relative !important;overflow:hidden !important;min-height:calc(100vh - 60px)}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transform:translateX(30px);transition:opacity .35s,transform .35s;pointer-events:none;overflow-y:auto}
+.slide::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:.6;z-index:10}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto;z-index:1}
+.slide-inner{max-width:920px;margin:0 auto;padding:56px 48px 80px}
+
+/* 标题 */
+.slide-inner h1{color:#fff;font-size:26px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid rgba(0,212,170,0.2);letter-spacing:-0.3px}
+.slide-inner h2{color:var(--accent2);font-size:20px;margin:28px 0 14px;font-weight:600}
+.slide-inner h3{color:var(--accent);font-size:calc(var(--font-size) * 1.06);margin:20px 0 10px;font-weight:600;padding-left:10px;border-left:3px solid var(--accent)}
+.slide-inner h3.h-example{color:var(--accent2);border-left-color:var(--accent2)}
+.slide-inner h3.h-practice{color:var(--orange);border-left-color:var(--orange)}
+.slide-inner p{color:var(--text);margin-bottom:10px;line-height:1.85}
+.slide-inner ul,.slide-inner ol{margin-left:22px;margin-bottom:14px}
+.slide-inner li{color:#CBD5E1;margin-bottom:6px;line-height:1.75}
+
+/* 内联代码 */
+.slide-inner strong{color:var(--accent2);font-weight:700}
+.slide-inner em{color:var(--orange);font-style:normal;font-weight:500}
+.slide-inner code{background:rgba(0,212,170,0.08);color:var(--accent);padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:90%;border:1px solid rgba(0,212,170,0.15);font-weight:600}
+
+/* 表格 */
+.slide-inner table{width:100%;border-collapse:collapse;font-size:calc(var(--font-size) * 0.94);margin:12px 0;border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.slide-inner table td,.slide-inner table th{padding:8px 14px;border:1px solid var(--border);text-align:left}
+.slide-inner table th{background:linear-gradient(135deg,rgba(17,24,39,0.9),rgba(15,23,41,0.9));color:var(--accent);font-weight:600;font-size:calc(var(--font-size) * 1.0);text-transform:uppercase;letter-spacing:.5px}
+.slide-inner table tr:nth-child(odd){background:rgba(255,255,255,0.015)}
+.slide-inner table tr:hover{background:var(--accent-dim)}
+
+/* 链接 */
+.slide-inner a{color:var(--accent2);text-decoration:underline;text-decoration-color:rgba(79,195,247,0.3);text-underline-offset:3px;transition:all .2s}
+.slide-inner a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+
+/* ===== 卡片 ===== */
+.card,.homework-card,.ok-box,.prompt-box{margin:10px 0;border-radius:12px;transition:all .3s}
+.card{background:linear-gradient(135deg,var(--bg-card),rgba(13,20,48,0.85));border:1px solid var(--border);padding:14px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.2);overflow:hidden}
+.card .card-img{float:right;max-width:200px;max-height:250px;margin:0 0 8px 16px;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 标题+图片+列表 类型的卡片：确定性两栏（左文右图），不依赖 float 环绕 */
+.card.side-card{display:flex;align-items:flex-start;gap:18px;overflow:hidden}
+.card.side-card .side-body{flex:1;min-width:0}
+.card.side-card .side-body h3{margin-top:0}
+.card.side-card .card-img{float:none;flex:0 0 auto;max-width:200px;max-height:250px;margin:0;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.card.side-card .side-body ul,.card.side-card .side-body ol{margin:8px 0 0;padding-left:22px}
+.card.side-card .side-body ul li,.card.side-card .side-body ol li{margin:4px 0}
+.card table .card-img{float:none;max-width:280px;max-height:none;margin:4px auto;display:block;border-radius:4px}
+.card table .card-img-sm{float:none;max-width:100px;max-height:none;margin:4px 0;display:inline-block;border-radius:4px}
+.card-img{display:block;max-width:100%;margin:16px auto;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 表格单元格内图片（发展四时代等）：小图居中，破图自动隐藏 */
+.slide-inner table td img.card-img,.slide-inner table th img.card-img{display:block;max-width:150px;max-height:105px;width:auto;height:auto;margin:6px auto;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+.slide-inner table td img.card-img-sm,.slide-inner table th img.card-img-sm{display:block;max-width:96px;max-height:66px;margin:4px auto;border-radius:4px}
+/* 竞赛照片三图并排 */
+.contest-row{display:flex;gap:12px;justify-content:center;margin:16px 0;flex-wrap:wrap}
+.contest-row img{flex:1;min-width:0;max-width:280px;max-height:200px;object-fit:cover;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer}
+.card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.12);transform:translateY(-1px)}
+.card h3{margin-top:0}
+
+/* 代码块 */
+.prompt-box{background:var(--bg-input);border:1px solid rgba(0,212,170,0.2);border-left:3px solid var(--accent);overflow:hidden;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03)}
+.code-toolbar{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.04)}
+.code-lang{font-size:10px;color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.copy-btn{background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2);color:var(--accent);padding:3px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-family:inherit;transition:all .2s}
+.copy-btn:hover{background:rgba(0,212,170,0.2);border-color:var(--accent)}
+.copy-btn.copied{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.prompt-box pre{background:transparent;padding:12px 16px;margin:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;overflow-x:auto}
+.prompt-box pre code{background:transparent;padding:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;font-family:'JetBrains Mono','Menlo','Monaco',monospace;color:#E2E8F0;border:none}
+
+/* ok-box / homework-card */
+.homework-card{background:linear-gradient(135deg,rgba(0,212,170,0.06),var(--bg-card));border:1px solid var(--teal-border);padding:14px 18px}
+.homework-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(0,212,170,0.08)}
+.homework-card h3{color:var(--teal)}
+.ok-box{background:linear-gradient(135deg,rgba(34,197,94,0.06),var(--bg-card));border:1px solid var(--green-border);padding:14px 18px}
+.ok-box:hover{border-color:var(--green);box-shadow:0 8px 24px rgba(34,197,94,0.08)}
+.ok-box ul,.ok-box ol{margin:6px 0;padding-left:1.5em}
+.ok-box li{margin:3px 0;line-height:1.7}
+
+/* 高亮标记 */
+.markable li,.markable p{cursor:pointer;transition:all .15s;border-radius:3px;padding:1px 3px}
+.markable li.marked,.markable p.marked{background:rgba(192,132,252,.12);border-left:3px solid var(--purple);padding-left:8px}
+
+/* ===== 折叠面板 ===== */
+.fold-toggle{display:inline-flex;align-items:center;gap:6px;background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:calc(var(--font-size) * 1.06);font-family:inherit;transition:all .2s;margin:8px 0;user-select:none}
+.fold-toggle:hover{background:rgba(0,212,170,0.15);box-shadow:0 2px 8px rgba(0,212,170,0.15)}
+.fold-toggle .arrow{display:inline-block;transition:transform .3s;font-size:10px}
+.fold-toggle.open .arrow{transform:rotate(90deg)}
+.fold-content{max-height:0;overflow:hidden;transition:max-height .4s ease;opacity:0}
+.fold-content.show{max-height:3000px;opacity:1}
+/* 提示折叠 绿色 */
+.fold-toggle.hint{color:var(--green);border-color:var(--green-border);background:var(--green-bg)}
+.fold-toggle.hint:hover{background:rgba(34,197,94,0.12)}
+/* 答案折叠 紫色 */
+.fold-toggle.solution{color:var(--purple);border-color:rgba(192,132,252,0.4);background:rgba(192,132,252,0.08)}
+.fold-toggle.solution:hover{background:rgba(192,132,252,0.15)}
+/* 问答折叠 橙色 */
+.fold-toggle.qa{color:var(--orange);border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.08)}
+.fold-toggle.qa:hover{background:rgba(245,158,11,0.15)}
+/* 填空代码 */
+.code-blank{color:var(--orange);background:rgba(245,158,11,0.1);padding:2px 6px;border-radius:4px;font-weight:600}
+
+/* ===== 导航按钮 ===== */
+.nav-buttons{position:fixed;bottom:24px;right:32px;display:flex;gap:8px;z-index:100}
+.nav-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:10px 22px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:500;transition:all .25s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 4px 16px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
+.progress-dots{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:100}
+.progress-dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:all .3s;cursor:pointer}
+.progress-dot:hover{background:var(--accent2)}
+.progress-dot.active{background:var(--accent);transform:scale(1.4);box-shadow:0 0 8px rgba(0,212,170,0.5)}
+
+/* ===== 搜索 ===== */
+.search-panel{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:300;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.search-panel.open{right:0}
+.search-panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.search-panel-header span{font-size:15px;font-weight:600;color:var(--text)}
+.search-panel-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.search-panel-close:hover{color:var(--text);background:var(--accent-dim)}
+
+/* ===== 课件目录 ===== */
+.catalog-panel{position:fixed;top:0;right:-320px;width:320px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:298;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.catalog-panel.open{right:0}
+.catalog-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.catalog-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.catalog-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.catalog-list{flex:1;overflow-y:auto;padding:8px 0}
+.catalog-item{display:flex;align-items:center;gap:10px;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.catalog-item:hover{background:var(--accent-dim);border-left-color:var(--accent)}
+.catalog-item.current{color:var(--accent)!important;background:var(--accent-dim);border-left-color:var(--accent);font-weight:600}
+.catalog-num{color:var(--accent);font-size:11px;font-weight:700;min-width:40px;white-space:nowrap}
+.search-input{width:100%;padding:14px 18px;background:var(--bg-input);border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:15px;outline:none;flex-shrink:0}
+.search-input::placeholder{color:var(--text-muted)}
+.search-results{flex:1;overflow-y:auto;padding:8px 0}
+.search-item{display:block;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.search-item:hover,.search-item.focus{background:var(--accent-dim);border-left-color:var(--accent)}
+.help-overlay{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:299;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.help-overlay.open{right:0}
+.help-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.help-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.help-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.help-body{flex:1;overflow-y:auto;padding:16px 22px 24px}
+.help-body h3{color:var(--accent);font-size:14px;margin:16px 0 8px;padding-left:0;border-left:none}
+.help-body p{font-size:13px;color:var(--text-muted);margin-bottom:8px}
+.help-body table{font-size:13px}
+.help-body table td{padding:4px 12px 4px 0}
+.help-body table td:first-child{white-space:nowrap;padding-right:16px}
+.search-item mark{background:rgba(0,212,170,0.2);color:var(--accent);border-radius:2px;padding:0 3px}
+
+/* ===== Toast ===== */
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:400;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);padding:16px 28px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.toast.show{opacity:1}
+
+/* ===== 浅色覆盖 ===== */
+.light body,.light html{background:var(--bg-primary)!important}
+.light .sidebar{background:var(--bg-secondary)!important;border-right-color:var(--border)!important}
+.light .sidebar-title{-webkit-text-fill-color:var(--text);font-weight:600}
+.light .goal-card,.light .card{background:var(--bg-card)!important;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.light .homework-card{background:var(--accent-dim)!important}
+.light .ok-box{background:var(--green-bg)!important;border-color:var(--green-border)!important;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.light .header-bar{background:var(--bg-secondary)!important;backdrop-filter:none!important}
+.light .slide-inner table th{background:var(--bg-input)!important;color:var(--text)!important}
+.light .slide-inner h1{color:var(--text)!important}
+.light .slide-inner h2{color:var(--accent)!important}
+.light .slide-inner h3{color:var(--accent2)!important}
+.light .slide-inner li,.light .slide-inner p{color:var(--text)!important}
+.light .nav-link.active{color:var(--accent)!important;background:var(--accent-dim)!important}
+.light .progress-fill{box-shadow:none!important}
+.light .cover{background:radial-gradient(ellipse at 30% 20%,rgba(9,105,218,0.08),transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(5,80,174,0.06),transparent 55%),var(--bg-primary)!important}
+.light .cover-tag{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-label{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-text{color:var(--text)!important}
+.light .cover-sub{color:var(--text-muted)!important}
+.light .end-thanks{background:var(--bg-card);border-color:rgba(9,105,218,0.15)}
+.light .end-title{color:var(--accent)!important}
+.light .prompt-box pre code{color:var(--text)!important}
+.light .code-toolbar{background:rgba(0,0,0,0.05)}
+/* 深色主题下注释颜色调亮（原atom-one-dark太暗） */
+.hljs-comment,.hljs-meta{color:#8b949e!important}
+
+/* ===== 封面 ===== */
+.cover{display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;height:100vh;box-sizing:border-box;background:radial-gradient(ellipse at 30% 20%,rgba(0,212,170,0.18) 0%,transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(79,195,247,0.12) 0%,transparent 55%),linear-gradient(180deg,#0A0E27 0%,#0D1430 100%);position:relative;overflow:hidden}
+.cover.active{display:flex!important}
+.cover::after{content:'';position:absolute;top:-120px;right:-120px;width:400px;height:400px;background:radial-gradient(circle,rgba(0,212,170,0.08),transparent 70%);border-radius:50%;pointer-events:none}
+.cover-tag{display:inline-block;font-size:14px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);border-radius:20px;padding:8px 22px;margin-bottom:24px;letter-spacing:2px}
+.cover h1{font-size:52px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;letter-spacing:-1px;border:none;line-height:1.2;max-width:800px}
+.cover-sub{font-size:16px;color:var(--text-muted);margin-bottom:40px;max-width:650px;line-height:1.8}
+.cover-meta{font-size:14px;color:#6B7280;line-height:2.2;display:flex;flex-direction:column;gap:8px;align-items:center}
+.cover-meta-row{display:flex;align-items:center;gap:8px}
+.cover-meta-label{font-size:13px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.3);border-radius:6px;padding:3px 12px}
+.cover-meta-text{font-size:16px;color:#CBD5E1}
+
+/* ===== 结束页 ===== */
+.end-page{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:100%;box-sizing:border-box;max-width:920px;margin:0 auto;padding:36px 48px}
+.end-page h2{text-align:center;border-bottom:none;margin-bottom:32px}
+.end-thanks{display:flex;align-items:center;justify-content:center;gap:60px;flex-wrap:wrap;padding:60px 56px;border:2px solid rgba(0,212,170,0.3);border-radius:16px;background:linear-gradient(135deg,rgba(0,212,170,0.06),rgba(17,24,39,0.95))}
+.end-left{flex:1;min-width:200px;text-align:center}
+.end-right{flex:0 0 auto;text-align:center;padding-left:24px;border-left:1px solid rgba(0,212,170,0.2)}
+.end-icon{font-size:48px;margin-bottom:16px}
+.end-title{font-size:24px;color:var(--accent);font-weight:700;margin-bottom:20px}
+.end-sub{font-size:18px;color:var(--text-muted)}
+.end-contact{margin-top:16px;font-size:13px;color:var(--text-muted);line-height:1.7}
+.end-right img{width:120px;height:120px;border-radius:10px;margin-bottom:10px;border:2px solid var(--border);transition:transform .2s}
+.end-right img:hover{transform:scale(1.05)}
+.end-right p{font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5}
+.end-link{display:inline-block;color:var(--accent);text-decoration:none;font-size:13px;border:1px solid rgba(0,212,170,0.3);padding:8px 16px;border-radius:8px;transition:all .25s;white-space:nowrap}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+.end-next-link{display:inline-block;margin-top:20px;color:var(--accent2);text-decoration:none;font-size:15px;font-weight:600;padding:10px 24px;border:2px solid var(--accent2);border-radius:10px;transition:all .25s}
+.end-next-link:hover{background:rgba(79,195,247,0.1);box-shadow:0 4px 20px rgba(79,195,247,0.2);transform:translateY(-2px)}
+/* 二维码放大 */
+.qr-zoom-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;cursor:pointer}
+.qr-zoom-overlay.show{display:flex}
+.qr-zoom-overlay img{max-width:80vw;max-height:80vh;border-radius:12px;box-shadow:0 8px 32px rgba(0,212,170,0.2)}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+
+/* ===== 学习目标 ===== */
+.goal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:8px}
+.goal-card{background:linear-gradient(135deg,var(--bg-card),var(--bg-secondary));border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:14px;transition:all .3s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.goal-card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.goal-icon{font-size:28px;flex-shrink:0;transition:transform .3s}
+.goal-card:hover .goal-icon{transform:scale(1.15)}
+.goal-text{font-size:calc(var(--font-size) * 1.05);color:var(--text);line-height:1.6}
+
+/* 侧边栏 - 特殊链接（无序号） */
+.nav-special{font-style:italic;color:var(--accent2)!important}
+/* 导航标签 */
+.nav-badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:6px;font-weight:600;vertical-align:1px}
+.nav-badge.practice{color:var(--accent2);background:rgba(79,195,247,0.12);border:1px solid rgba(79,195,247,0.25)}
+.nav-badge.comprehensive{color:var(--purple);background:rgba(192,132,252,0.12);border:1px solid rgba(192,132,252,0.25)}
+.nav-badge.homework{color:var(--orange);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25)}
+
+/* ===== 响应式 ===== */
+/* ===== 移动端 header 精简按钮 ===== */
+.mobile-info{display:none;font-size:13px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.mobile-info .mi-lesson{color:var(--accent);font-weight:600}
+.mobile-info .mi-sep{margin:0 4px;color:var(--text-muted);opacity:0.5}
+.mobile-info .mi-page{color:var(--text)}
+.mobile-more{display:none;position:relative}
+.mobile-more-menu{display:none;position:absolute;top:100%;right:0;margin-top:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:4px 0;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:50;min-width:160px}
+.mobile-more-menu.open{display:block}
+.mobile-more-menu .mm-item{display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--text);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.mobile-more-menu .mm-item:hover{background:var(--accent-dim);color:var(--accent)}
+@media(max-width:768px){.sidebar{display:none}.slide-inner{padding:18px 18px 80px}.cover{padding-left:40px;padding-right:40px}.cover h1{font-size:32px}.nav-buttons{right:12px;bottom:12px}.header-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap}.header-btn[onclick="toggleTheme()"]{padding:6px 6px}.progress-wrap{display:none}.header-dropdown{display:none}.header-btn[onclick^="changeFont"]{display:none}.header-btn[onclick="openSearch()"]{display:none}.header-btn[onclick="toggleHelp()"]{display:none}.mobile-info{display:flex;align-items:center;gap:2px}.mi-page{display:none}.mobile-more{display:inline-block}.slides-container{min-height:calc(100vh - 54px)}}
+/* ===== 平铺模式（连续显示全部页面，用于导出 PDF） ===== */
+html.flat-mode,body.flat-mode{height:auto;overflow:visible}
+.flat-mode .container{height:auto;overflow:visible}
+.flat-mode .main-area{overflow:visible}
+.flat-mode .sidebar{display:none}
+.flat-mode .slides-container{overflow:visible;height:auto;min-height:0!important}
+.flat-mode .slide{position:static;opacity:1!important;transform:none!important;pointer-events:auto;height:auto;overflow:visible;margin:0 0 28px}
+.flat-mode .slide::before{display:none}
+.flat-mode .slide,.flat-mode .cover{transition:none!important}
+.flat-mode .slide-inner{padding:36px 48px 32px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,0.02)}
+.flat-mode .cover{position:static;opacity:1!important;transform:none!important;pointer-events:auto;height:auto;overflow:visible;margin:0 0 28px;border:1px solid var(--border);border-radius:14px}
+.flat-mode .nav-buttons{display:none}
+.flat-mode .progress-dots{display:none}
+.flat-mode .header-bar{position:sticky;top:0}
+/* ===== 图片显示模式（右侧小图 / 下方大图） ===== */
+.img-bottom .card .card-img{float:none;display:block;width:100%;max-width:100%;max-height:none;margin:16px auto 4px}
+.img-bottom .card table .card-img{width:auto;max-width:100%;margin:4px auto}
+.img-bottom .card .card-img-sm{width:auto;max-width:120px;max-height:none}
+.img-bottom .side-card{flex-direction:column;align-items:stretch}
+
+
+/* 平铺/PDF导出：并排多图改为单独一行放大显示（保持可点击放大） */
+.flat-mode .contest-row{display:block}
+.flat-mode .contest-row img{display:block;width:100%;max-width:100%;max-height:none;object-fit:contain;margin:16px auto 4px}
+
+/* ===== 缺图占位：老师还没放图时显示，文件名可一键复制 ===== */
+.img-missing{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;box-sizing:border-box;
+  width:100%;max-width:540px;margin:10px auto;padding:14px 16px;border:1.5px dashed var(--border);border-radius:10px;
+  background:var(--bg-input);color:var(--text-muted);font-size:13px;line-height:1.5;text-align:center}
+.img-missing .im-name{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--accent);
+  background:var(--bg-secondary);padding:3px 8px;border-radius:6px;border:1px solid var(--border);word-break:break-all}
+.img-missing button{cursor:pointer;font:inherit;font-size:12px;padding:4px 10px;border-radius:6px;
+  border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
+.img-missing button:hover{border-color:var(--accent);color:var(--accent)}
+.img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+</style>
+</head>
+<body>
+<script>
+// ========== 缺图占位：显示文件名 + 一键复制 ==========
+function imgMissing(img){
+    const src=img.getAttribute('src')||'';
+    const name=src.split('/').pop();
+    const dir=src.slice(0,src.lastIndexOf('/'));
+    const d=document.createElement('div');
+    d.className='img-missing';
+    d.innerHTML='<span>🖼️ 缺图</span>'
+        +'<code class="im-name">'+name+'</code>'
+        +'<button type="button" onclick="copyImgName(this)">复制文件名</button>'
+        +'<div class="im-dir">放到 '+dir+' 目录下，刷新页面即显示</div>';
+    if(img.parentNode) img.parentNode.replaceChild(d,img);
+}
+function copyImgName(btn){
+    const name=btn.parentNode.querySelector('.im-name').textContent;
+    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
+        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
+        try{document.execCommand('copy');}catch(e){}
+        document.body.removeChild(ta);done();};
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(name).then(done).catch(fb);
+    }else{fb();}
+}
+</script>
+
+<div class="container">
+<nav class="sidebar">
+    <div class="sidebar-title">📘 课件14_访问其他游戏对象</div>
+<a href="#" class="nav-link nav-special" data-page="1"><span class="nav-status"></span>封面</a>
+<a href="#" class="nav-link" data-page="2"><span class="nav-status"></span>1. 本节学习目标 </a>
+<a href="#" class="nav-link" data-page="3"><span class="nav-status"></span>2. 访问其他对象 </a>
+<a href="#" class="nav-link" data-page="4"><span class="nav-status"></span>3. 公共变量拖引用 </a>
+<a href="#" class="nav-link" data-page="5"><span class="nav-status"></span>4. 名字 / 标签查找 </a>
+<a href="#" class="nav-link" data-page="6"><span class="nav-status"></span>5. 标签（Tag） </a>
+<a href="#" class="nav-link" data-page="7"><span class="nav-status"></span>6. 层级关系查找 </a>
+<a href="#" class="nav-link" data-page="8"><span class="nav-status"></span>7. 按组件类型查找 </a>
+<a href="#" class="nav-link" data-page="9"><span class="nav-status"></span>8. 作业 · 靠近就转的猫 <span class="nav-badge homework">作业</span></a>
+<a href="#" class="nav-link nav-special" data-page="10"><span class="nav-status"></span>结束页</a>
+</nav><div class="main-area" id="mainArea">
+    <div class="header-bar">
+        <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <span class="progress-text" id="progressText">0 / 8</span>
+        </div>
+        <div class="mobile-info" id="mobileInfo" onclick="mobileInfoTap()" style="cursor:pointer"><span class="mi-lesson"></span><span class="mi-sep">·</span><span class="mi-page"></span></div>
+                <button class="header-btn" id="flatBtn" onclick="toggleFlat()" title="切换分页 / 平铺（平铺便于打印导出 PDF）">📄 平铺</button>
+        <button class="header-btn" id="imgBtn" onclick="toggleImgBottom()" title="切换图片显示位置（右侧小图 / 下方大图）">🖼️ 图下</button>
+
+        <button class="header-btn" id="themeBtn" onclick="toggleTheme()">🌙 深色</button>
+        <div class="header-dropdown">
+          <button class="header-btn" id="ideBtn">💻 在线编辑器 ▾</button>
+          <div class="dropdown-menu" id="ideMenu">
+            <a href="#" class="dropdown-item" data-url="https://www.runoob.com/try/runcode.php?filename=helloworld&type=csharp">菜鸟教程</a>
+            <a href="#" class="dropdown-item" data-url="https://www.tutorialspoint.com/compilers/online-csharp-compiler.htm">Tutorialspoint（支持输入）</a>
+            <a href="#" class="dropdown-item" data-url="https://dotnetfiddle.net/">DotNetFiddle</a>
+          </div>
+        </div>
+        <button class="header-btn" onclick="changeFont(-1)">A-</button>
+        <button class="header-btn" onclick="changeFont(1)">A+</button>
+        <button class="header-btn" onclick="openSearch()">🔍</button>
+        <button class="header-btn" onclick="toggleHelp()" title="使用帮助">❓</button>
+        <button class="header-btn" onclick="toggleCatalog()" title="课件目录">📚</button>
+        <div class="mobile-more">
+          <button class="header-btn" onclick="toggleMobileMore()" title="更多">☰</button>
+          <div class="mobile-more-menu" id="mobileMoreMenu">
+            <div class="mm-item" onclick="mobileAction('ide')">💻 在线编辑器</div>
+            <div class="mm-item" onclick="mobileAction('fontDown')">🔤 A- 缩小字号</div>
+            <div class="mm-item" onclick="mobileAction('fontUp')">🔤 A+ 放大字号</div>
+            <div class="mm-item" onclick="mobileAction('search')">🔍 搜索</div>
+                        <div class="mm-item" onclick="mobileAction('flat')">📄 平铺/分页</div>
+            <div class="mm-item" onclick="mobileAction('imgbottom')">🖼️ 图下/侧图</div>
+
+            <div class="mm-item" onclick="mobileAction('help')">❓ 使用帮助</div>
+          </div>
+        </div>
+    </div>
+    <div class="slides-container">
+<div class="cover" data-page="1">
+    <div class="cover-tag">数字产品设计</div>
+    <h1>访问其他游戏对象</h1>
+    <div class="cover-sub">用公共变量、名字/标签、层级关系在代码里拿到其他对象，按组件类型批量访问对象</div>
+    <div class="cover-meta">
+        <div class="cover-meta-row"><span class="cover-meta-label">授课教师</span><span class="cover-meta-text">彭堉斌</span></div>
+        <div class="cover-meta-row"><span class="cover-meta-label">学校</span><span class="cover-meta-text">汕头职业技术学院</span></div>
+    </div>
+</div>
+<div class="slide" data-page="2"><div class="slide-inner">
+<h1>本节学习目标</h1>
+<div class="goal-grid"><div class="goal-card"><span class="goal-icon">🎯</span><span class="goal-text">理解“访问其他对象”：代码默认只认自己，要操作别的对象，先拿到它的引用</span></div><div class="goal-card"><span class="goal-icon">🔗</span><span class="goal-text">用公共变量拖引用、Find / FindWithTag、transform.Find 三种方式找到别的对象</span></div><div class="goal-card"><span class="goal-icon">🏷️</span><span class="goal-text">认识标签（Tag）：内置标签与自定义标签，按标签查找对象</span></div><div class="goal-card"><span class="goal-icon">🧩</span><span class="goal-text">用 FindObjectOfType / FindObjectsOfType 按组件类型批量访问对象</span></div></div>
+
+</div></div>
+<div class="slide" data-page="3"><div class="slide-inner markable">
+<h1>访问其他对象</h1>
+<div class="card"><p>前面取组件，取的都是<strong>自己</strong>身上的（<code>GetComponent</code>）或<strong>子物体</strong>身上的（<code>GetComponentInChildren</code>）。场景里还有"别的"对象——代码里要怎么把它们找出来？先看这个场景，一共三样东西：</p><ul><li><code>Player</code>：主角，也就是<strong>前面挂摄像机和移动脚本的那个游戏对象</strong>，能走能跳</li><li><code>Main Camera</code>：挂在 <strong>Player 下面</strong>（子对象，跟着人一起走）</li><li><code>Cat</code>：站在旁边的一只猫，和 Player <strong>没有任何层级关系</strong></li></ul><img src="images/课件14/角色与猫.png" alt="场景里的角色（Player）和站在它旁边的猫（Cat）" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:100%; max-height:none; float:none; display:block; margin:14px auto 4px" onerror="imgMissing(this)"><p>接下来要让这只猫有反应：<strong>按 E 让猫转一圈、走近它猫会看向你、按 C 蹲下来看它</strong>。三件事看着不相干，其实都卡在同一个前提上。</p></div>
+<div class="card"><h3>共同要点：三个反应都先要"拿到对方"</h3><p>先别急着写代码。把三个反应摆在一起看，会发现它们差的其实是<strong>同一步</strong>——代码里要操作的东西，没有一个是脚本自己：</p><ul><li>让猫转一圈 → 得先拿到 <strong>Cat</strong></li><li>让猫看向你 → 猫身上的脚本得先拿到 <strong>Player</strong></li><li>蹲下来看猫 → 得先拿到 <strong>Main Camera</strong></li></ul><p>麻烦在于：代码<strong>默认只认自己</strong>——<code>GetComponent</code> 只能拿自己（或子物体）身上的组件，<strong>拿不到场景里别的对象</strong>。所以这三个反应都卡在同一个前提上：<strong>先在代码里拿到对方的引用（reference）</strong>。</p><p>而"拿到对方"的路不止一条，也<strong>没有哪一种能通吃</strong>——两个对象之间的关系不一样，能用的办法就不一样。下面三种写法，就分别对应三种不同的关系。</p></div>
+</div></div>
+<div class="slide" data-page="4"><div class="slide-inner markable">
+<h1>① 公共变量拖引用 · 让猫转一圈</h1>
+<div class="card"><img src="images/课件14/让猫转一圈.gif" alt="效果：按 E 键，猫原地转一圈" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:100%; max-height:none; float:none; display:block; margin:14px auto 4px" onerror="imgMissing(this)"><p>最直接的一种：声明一个 <code>public</code> 变量，把 <strong>Cat</strong> 从层级（Hierarchy）拖到脚本的槽位上，之后随手就能用。Player 和猫本来是两不相干的，这一拖就把它们"连"上了。</p><p>要注意一点：拖进去的是<strong>同一只 Cat</strong>，脚本收到的值却<strong>由槽位的类型决定</strong>：</p><ul><li>槽位写成 <code>Transform</code>，拿到的是 Cat 身上的 <strong>Transform 组件</strong>（管位置、旋转、缩放）</li><li>槽位写成 <code>GameObject</code>，拿到的是 <strong>Cat 这个对象本身</strong></li></ul><img src="images/课件14/公共变量拖引用.png" alt="在检查器里把场景中的 Cat 拖到脚本的 cat 槽位上" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:100%; max-height:none; float:none; display:block; margin:14px auto 4px" onerror="imgMissing(this)"></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_find_var',this)">复制</button></div>
+<pre id="c_find_var"><code class="language-csharp">using UnityEngine;
+
+public class PetCat : MonoBehaviour {
+    public Transform cat;             // ① 在检查器里把 Cat 拖进来
+    private float spinTime;           // 猫还要转多久
+
+    void Update() {
+        if (Input.GetKeyDown(KeyCode.E)) spinTime = 1f;      // 按 E 摸一下
+        if (spinTime > 0f) {
+            cat.Rotate(0f, 360f * Time.deltaTime, 0f);       // 猫开心地转一圈
+            spinTime -= Time.deltaTime;
+        }
+    }
+}</code></pre>
+</div>
+<div class="card"><h3>代码讲解</h3><ol><li><strong>挂载与拖引用</strong>：脚本挂在 <strong>Player</strong> 上（按 E 撸猫的人）。写上 <code>public Transform cat</code>，脚本在检查器（Inspector）里就会多出一个 <strong>Cat 槽位</strong>，把场景里的 Cat 拖进去——这一步就是把两个本来不相干的对象"连"起来。<strong>槽位类型决定脚本拿到什么</strong>：这里声明的是 <code>Transform</code>，拖进去拿到的就是 Cat 的 <strong>Transform 组件</strong>，所以后面能直接写 <code>cat.Rotate(...)</code>；若改成 <code>public GameObject cat</code>，拿到的就是 <strong>Cat 这个对象本身</strong>，旋转得写成 <code>cat.transform.Rotate(...)</code>，用它的 Transform 去找组件也一样要先 <code>GetComponent</code>。</li><li><strong>为什么用 public</strong>：<code>cat</code> 设成 <code>public</code>，图的就是<strong>在检查器（Inspector）里露出来、能被拖</strong>；<code>spinTime</code> 设成 <code>private</code>，因为它是脚本内部临时用的计时器，不需要在面板上看见。</li><li><strong>按键触发</strong>：<code>Input.GetKeyDown(KeyCode.E)</code> 只在<strong>按下 E 的那一帧</strong>为 true，所以按一次就等于"启动一次旋转"。</li><li><strong>为什么要计时</strong>：猫要转一整圈（360°），用 <code>spinTime</code> 记 1 秒、转完自动停；如果直接写 <code>cat.Rotate(...)</code>，就变成<strong>每一帧都在转</strong>，猫会一直转个不停。</li><li><strong>每帧转多少</strong>：<code>360f * Time.deltaTime</code> 就是"1 秒转一整圈"的速度——<code>Time.deltaTime</code> 是上一帧花掉的时间，乘上去让旋转<strong>与帧率无关</strong>，机器快慢都是 1 秒一圈。</li><li><strong>Rotate 的三个参数</strong>：分别对应绕 <strong>X / Y / Z</strong> 轴的旋转角；这里只在中间那个位置填了数（绕 Y 轴），所以猫是<strong>原地左右转</strong>，不会翻跟头。</li></ol></div>
+</div></div>
+<div class="slide" data-page="5"><div class="slide-inner markable">
+<h1>② 按名字 / 标签查找对象 · 猫看向你</h1>
+<div class="card"><p>猫想知道"玩家在哪"，可它看不到检查器（Inspector）。好在玩家的<strong>名字</strong>和<strong>标签</strong>是确定的，让猫自己去场景里找：</p><ul><li><code>GameObject.Find(&quot;Player&quot;)</code>：按<strong>对象名</strong>找，名字要完全一致</li><li><code>GameObject.FindWithTag(&quot;Player&quot;)</code>：按<strong>标签</strong>找，<code>Player</code> 是 Unity 内置标签，直接选就行</li></ul></div>
+<img src="images/课件14/猫看向你.gif" alt="效果：角色走近猫，猫转身看向角色" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_find_tag',this)">复制</button></div>
+<pre id="c_find_tag"><code class="language-csharp">using UnityEngine;
+
+public class CatBrain : MonoBehaviour {
+    private Transform player;         // ② 按名字 / 标签找玩家，不用手动拖
+
+    void Start() {
+        player = GameObject.FindWithTag(&quot;Player&quot;).transform;  // 按标签：带 Player 标签的那个
+        // player = GameObject.Find(&quot;Player&quot;).transform;      // 按名字：叫 Player 的那个
+    }
+
+    void Update() {
+        if (Vector3.Distance(transform.position, player.position) < 3f) {   // 你走近 3 米以内
+            transform.LookAt(player);                                       // 转身看向你
+            // 只保留水平角：X、Z 清零，猫才不会前扑后仰
+            transform.eulerAngles = new Vector3(0f, transform.eulerAngles.y, 0f);
+        }
+    }
+}</code></pre>
+</div>
+<div class="card"><h3>代码讲解</h3><ol><li><strong>挂载</strong>：这次脚本挂在 <strong>Cat</strong> 身上——是猫自己在找玩家，"猫有脑子"。</li><li><strong>不用拖、代码自己找</strong>：<code>player</code> 设成 <code>private</code>，<strong>不在检查器（Inspector）里露脸</strong>，而是在 <code>Start</code> 里用 <code>GameObject.FindWithTag("Player")</code> 自己去场景里搜。</li><li><strong>为什么按标签而不是按名字</strong>：<code>Find("Player")</code> 按<strong>对象名</strong>找，名字一改就失效；<code>FindWithTag("Player")</code> 按<strong>标签</strong>找，改名不受影响，也不在乎它在场景哪个角落。（<code>Find("Player")</code> 那行留成注释，认识一下就行。）</li><li><strong>Start 与 Update 的分工</strong>：找玩家只需一次 → 放 <code>Start</code>；判断距离每帧都要做 → 放 <code>Update</code>。<strong>千万别把 Find 写进 Update</strong>，那等于每帧把场景搜一遍，白白费性能。</li><li><strong>判断"走近"</strong>：<code>Vector3.Distance(a, b)</code> 算两点之间的直线距离；<code>transform.position</code> 是猫自己的位置，<code>player.position</code> 是玩家的位置，两者<strong>小于 3 米</strong>就算走近了。</li><li><strong>转身看向你</strong>：<code>transform.LookAt(player)</code> 让猫的<strong>正前方</strong>对准玩家——一句话搞定朝向，很常用。</li><li><strong>为什么还要把 X、Z 清零</strong>：<code>LookAt</code> 是让猫"盯住"目标，玩家比猫高或低时猫会<strong>前扑后仰</strong>；最后一行把欧拉角里的 <strong>X、Z 归零、只留水平的 Y</strong>，猫就永远直着站。<strong>顺序不能反</strong>——必须<strong>先 LookAt、再取 <code>eulerAngles</code></strong> 重新赋值。</li></ol></div>
+<img src="images/课件14/Cat的检查器.png" alt="Cat 的检查器：CatBrain 脚本就挂在这只猫身上" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:50%" onerror="imgMissing(this)">
+<div class="ok-box">⚠️ <strong>注意：猫身上一挂上 <code>CatBrain</code>，① 的 E 键转圈就不灵了。</strong>两个脚本都在改<strong>同一只猫的旋转</strong>：只要你在 <strong>3 米内</strong>，<code>CatBrain</code> 就<strong>每帧</strong>把猫转向你，<code>PetCat</code> 让它转的那点角度每帧都被<strong>覆盖</strong>掉——猫只会盯着你看，不再转圈；走远到 3 米以外，<code>CatBrain</code> 不再插手，转圈又恢复。<strong>多个脚本同时改同一个对象的同一个属性，就会这样互相打架</strong>：写代码前先想想"这块是不是已经有别人在管"。</div>
+</div></div>
+<div class="slide" data-page="6"><div class="slide-inner markable">
+<h1>标签（Tag）</h1>
+<div class="card"><p>标签就是贴在对象身上的<strong>"分类牌"</strong>。名字是<strong>唯一</strong>的——一个场景里不会有两个都叫 <code>Player</code> 的对象；标签却能让<strong>很多对象共用</strong>，比如一堆敌人都贴上 <code>Enemy</code>。所以按标签找，就是把<strong>"这一类"对象叫出来</strong>。另外注意：一个对象<strong>只能有一个标签</strong>。</p><p>Unity <strong>默认自带 7 个内置标签</strong>，新建项目就能直接用（它们不在 Tag Manager 里，是引擎自带的）：</p><table>
+<tr><th>内置标签</th><th>留给谁</th></tr>
+<tr><td><code>Untagged</code></td><td>没分类的对象——新建出来的对象默认就是它</td></tr>
+<tr><td><code>Respawn</code></td><td>复活点</td></tr>
+<tr><td><code>Finish</code></td><td>终点</td></tr>
+<tr><td><code>EditorOnly</code></td><td>只在编辑器里用的对象，打包时连着它的子对象一起被删掉</td></tr>
+<tr><td><code>MainCamera</code></td><td>主摄像机——代码里的 <code>Camera.main</code> 认的就是它</td></tr>
+<tr><td><code>Player</code></td><td>玩家角色 ← <strong>这一节用的就是它</strong></td></tr>
+<tr><td><code>GameController</code></td><td>游戏管理器</td></tr>
+</table><p>这 7 个里，<strong>只有 <code>MainCamera</code> 和 <code>EditorOnly</code> 有引擎自己的行为</strong>（就是上表里那两条）；其余几个——包括本节用的 <code>Player</code>——<strong>都只是提前占好的名字</strong>，引擎不会因此做任何事，认不认它，全看你自己的代码。</p><p>标签还有个规矩：<strong>一旦命名就不能改名</strong>，起名时要想清楚；不够用时可以自己新建，见下一张卡。</p></div>
+<img src="images/课件14/标签设置Player.png" alt="在检查器顶部标签下拉里给角色选上内置的 Player 标签" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:50%" onerror="imgMissing(this)">
+<div class="card"><h3>自定义标签 · 添加标签…（Add Tag…）</h3><p>内置的 7 个标签不够用？标签<strong>可以自己新建</strong>——比如给猫贴一个 <code>Cat</code>、给敌人贴 <code>Enemy</code>。三步就能加好：</p><ol><li>选中对象，点检查器（Inspector）顶部的 <strong>标签（Tag）</strong>下拉，选最底下的 <strong>添加标签…（Add Tag…）</strong></li><li>在打开的 <strong>标签和层（Tags &amp; Layers）</strong>面板里展开 <strong>标签列表（Tags）</strong>，点右下角的 <strong>加号（+）</strong>，在 <strong>新标签名称（New Tag Name）</strong>框里填名字（如 <code>Cat</code>）——填完不用保存，切回场景即可</li><li>回到对象的 <strong>标签（Tag）</strong>下拉，就能看到并选上刚建好的标签（位置和刚才给角色选 <code>Player</code> 一样）</li></ol><p>新建的标签和内置标签<strong>用法完全一样</strong>：一样出现在下拉里、一样能用 <code>GameObject.FindWithTag("Cat")</code> 去找。</p></div>
+<img src="images/课件14/添加标签1_打开AddTag.png" alt="检查器顶部标签下拉的最底下是添加标签…，点它新建标签" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:50%" onerror="imgMissing(this)">
+<img src="images/课件14/添加标签2_新建标签名.png" alt="标签和层面板：展开标签列表、点加号，在新标签名称里填入 Cat" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+</div></div>
+<div class="slide" data-page="7"><div class="slide-inner markable">
+<h1>③ 按层级关系查找 · 蹲下来看它</h1>
+<div class="card"><p>摄像机本来就挂在 Player 下面，从<strong>自己身上一层层往下找</strong>就行，不用满场景搜索。猫太矮，站着看不见它——蹲下来（把镜头往下挪）就看清了：</p><ul><li><code>transform.Find(&quot;Main Camera&quot;)</code>：找<strong>子对象</strong></li><li><code>transform.parent</code>：拿<strong>父对象</strong></li></ul></div>
+<img src="images/课件14/蹲下来看它.gif" alt="效果：按 C 键蹲下，镜头降低，看清脚边矮矮的猫" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_find_hier',this)">复制</button></div>
+<pre id="c_find_hier"><code class="language-csharp">using UnityEngine;
+
+public class SquatLook : MonoBehaviour {
+    private Transform cam;            // ③ 按层级关系找自己的子对象
+
+    void Start() {
+        cam = transform.Find(&quot;Main Camera&quot;);       // Player 下面那台摄像机
+        // transform.parent                            // 父对象：脚本所在对象的上一级
+    }
+
+    void Update() {
+        // 猫太矮，按住 C 蹲下来才看得清
+        if (Input.GetKey(KeyCode.C)) {
+            cam.localPosition = new Vector3(0f, 0.8f, 0f);   // 蹲下：镜头降到 0.8 米
+        } else {
+            cam.localPosition = new Vector3(0f, 1.6f, 0f);   // 站起：回到眼睛高度
+        }
+    }
+}</code></pre>
+</div>
+<div class="card"><h3>代码讲解</h3><ol><li><strong>挂载</strong>：脚本挂在 <strong>Player</strong> 上，要找的 Main Camera 就是它<strong>自己下面的子对象</strong>。</li><li><strong>只在自己下面找</strong>：<code>transform.Find("Main Camera")</code> 从脚本所在对象出发，<strong>在子物体里逐层往下搜</strong>，取回名字叫 Main Camera 的那个 Transform；它<strong>不会满场景找</strong>——这正是它和刚才 <code>GameObject.Find</code> 的区别（后者是全场景搜）。</li><li><strong>名字必须完全一致</strong>：<code>Find</code> 按名字匹配，大小写、空格都要<strong>一模一样</strong>；相机子对象一旦改名，这里就会返回 <code>null</code>。</li><li><strong>localPosition 与 position</strong>：<code>localPosition</code> 是<strong>相对父对象</strong>的位置（摄像机相对玩家），<code>position</code> 是世界坐标。要让镜头在<strong>玩家身上</strong>上下挪，就该用 <code>localPosition</code>——0.8 / 1.6 说的是"离玩家多高"。</li><li><strong>按住，不是按一下</strong>：这里用 <code>Input.GetKey</code>（<strong>按住 C 一直蹲</strong>），和 ① 的 <code>GetKeyDown</code>（按一下触发一次）不一样——蹲下是一个"按住才保持"的状态。</li><li><strong>if / else 是两档高度</strong>：按住就降到 <strong>0.8</strong>，松开就回 <strong>1.6</strong>；因为每帧都重写一次 <code>localPosition</code>，所以手一松镜头自然弹回眼睛高度。</li><li><strong>补一句 <code>transform.parent</code></strong>：注释里那行是<strong>反方向</strong>的用法——<code>transform.Find</code> 往下找子对象，<code>transform.parent</code> 往上找父对象。本节用不到父对象，留个印象即可。</li></ol></div>
+<div class="ok-box">💡 <strong>重点：和上一个课件（课件13）里学的 <code>GetComponentInChildren&lt;Camera&gt;()</code> 比一比。</strong>两者拿到的是<strong>同一台摄像机</strong>，区别在<strong>怎么找</strong>：<code>GetComponent</code> 系列按<strong>组件类型</strong>找（谁身上挂着 Camera 组件就是谁）；<code>transform.Find</code> 按<strong>层级位置</strong>找（在 Player 下面、名字叫 Main Camera 的那个）。要找"自己身上的东西"用 <code>GetComponent</code>；要找"层级里的某个对象"，<code>transform.Find</code> 更直接。</div>
+<div class="card"><h3>三种方式怎么选</h3><table>
+<tr><th>方式</th><th>什么时候用</th><th>要注意</th></tr>
+<tr><td><strong>① 公共变量拖引用</strong></td><td>两个对象是<strong>固定搭配</strong>时，比如脚本 ↔ 那只猫</td><td>最稳的一个：在检查器（Inspector）里指定好，对象改名也不怕</td></tr>
+<tr><td><strong>② 按名字 / 标签查找</strong><br><code>GameObject.Find</code> / <code>FindWithTag</code></td><td>名字确定的<strong>单个</strong>对象偶尔用一下（<code>Find</code>）；<strong>认类不认名</strong>、同类有好几个时（<code>FindWithTag</code>）</td><td>名字 / 标签要完全一致；<strong>比较慢</strong>，别每帧都调；自定义标签要先 <strong>添加标签（Add Tag）</strong>；找不到会返回 <code>null</code></td></tr>
+<tr><td><strong>③ 按层级关系查找</strong><br><code>transform.Find</code> / <code>transform.parent</code></td><td>对象之间有明显的<strong>父子关系</strong>时（摄像机挂在 Player 下）</td><td>只在自己的子物体里找；没有父对象时 <code>parent</code> 是 <code>null</code></td></tr>
+</table></div>
+<div class="ok-box">⚠️ 三种方式拿到对象后，想用它的组件，还是接着 <code>GetComponent&lt;T&gt;()</code> 取；<code>Find</code> 系列比较慢，尽量在 <code>Start</code> 里找一次、用变量存起来，别每帧都找。</div>
+</div></div>
+<div class="slide" data-page="8"><div class="slide-inner markable">
+<h1>按组件类型查找 · 让所有猫一起转圈</h1>
+<div class="card"><p>前面三种找法，看的都是<strong>对象的名字或关系</strong>。还有一路完全不同——<strong>不看名字、也不看层级，只看身上挂了什么组件</strong>。</p><p>场景里现在有<strong>三只猫</strong>，每只身上都挂着同一个 <code>CatBrain</code> 脚本。① 里我们已经会让<strong>一只猫转圈</strong>了——靠的是把那只猫<strong>拖进引用</strong>；现在猫变成了<strong>三只</strong>，总不能拖三个引用、再写三遍名字，这时就该按组件类型找：</p><ul><li><code>FindObjectOfType&lt;T&gt;()</code>：<strong>第一个</strong>挂着 T 组件的对象</li><li><code>FindObjectsOfType&lt;T&gt;()</code>：<strong>所有</strong>挂着 T 组件的对象（返回一个数组）</li></ul></div>
+<img src="images/课件14/猫群一起转圈.gif" alt="效果：按 E，三只猫一起原地转一圈（演示时站在 3 米外）" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>先换脚本：PetCat → PetAllCats</h3><p>① 里招呼猫的脚本 <code>PetCat</code> 只面向<strong>一只猫</strong>——槽位里拖的就是那一只；它还和 <code>CatBrain</code> 抢同一只猫的旋转（见 ② 页的 ⚠️），本来也用不上了。这一页要一次招呼<strong>一群</strong>猫，所以在 <strong>Player</strong> 的检查器（Inspector）里先<strong>移除</strong>旧的 <code>PetCat</code>，再<strong>挂上</strong>新的 <code>PetAllCats</code>：它不用再拖猫的引用，改成按组件类型一次把场景里的猫全找出来（<strong>玩家不用找</strong>——脚本就挂在 Player 上）。</p><ol><li><strong>移除旧的</strong>：选中 Player，在检查器里找到 <code>PetCat</code> 组件，点它右上角的<strong>三个点（⋮）→ 移除组件（Remove Component）</strong></li><li><strong>挂上新的</strong>：把 <code>PetAllCats</code> 脚本从项目（Project）窗口拖到 <strong>Player</strong> 上，检查器里就会多出这个新组件</li></ol></div>
+<img src="images/课件14/换脚本PetAllCats.png" alt="Player 的检查器：移除旧的 PetCat 组件、挂上新的 PetAllCats 组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_find_type',this)">复制</button></div>
+<pre id="c_find_type"><code class="language-csharp">using UnityEngine;
+
+public class PetAllCats : MonoBehaviour {
+    private CatBrain[] cats;                 // 场景里所有的猫，都挂着 CatBrain
+    private float spinTime;                  // 还要转多久（① 里也用过）
+
+    void Start() {
+        cats = FindObjectsOfType&lt;CatBrain&gt;();   // 一次把所有的猫全拿到
+    }
+
+    void Update() {
+        if (Input.GetKeyDown(KeyCode.E)) spinTime = 1f;      // 按 E 招呼一声
+        if (spinTime > 0f) {
+            for (int i = 0; i &lt; cats.Length; i++) {
+                Transform cat = cats[i].transform;  // 拿到的是组件
+                cat.Rotate(0f, 360f * Time.deltaTime, 0f);  // 每只猫都转一圈
+            }
+            spinTime -= Time.deltaTime;
+        }
+    }
+}</code></pre>
+</div>
+<div class="card"><h3>代码讲解</h3><ol><li><strong>挂载</strong>：脚本挂在 <strong>Player</strong> 上——是"招呼猫的人"在喊，不是猫自己。</li><li><strong>从一只到一群</strong>：循环里那句 <code>cat.Rotate(0f, 360f * Time.deltaTime, 0f)</code> 就是 <strong>① 里的原话</strong>——① 用<strong>拖进来的一个引用</strong>转一只猫，这里用<strong>数组</strong>把同一件事对每一只猫做一遍。要干的活一个字没变，变的是"一次招呼几只"。</li><li><strong>按组件类型找同类</strong>：<code>FindObjectsOfType&lt;CatBrain&gt;()</code> 不看名字、不看层级，只找<strong>身上挂着 <code>CatBrain</code> 组件的对象</strong>，一次返回一个<strong>数组</strong>——场景里有几只猫，数组就有几个元素。这就是"批量"：不用拖三个引用，也不用写三遍 <code>Find</code>。</li><li><strong>为什么声明成 <code>CatBrain[]</code></strong>：它返回的是<strong>组件</strong>的数组，不是对象的数组，所以 <code>cats[i]</code> 是 <code>CatBrain</code> 组件，要取位置 / 旋转得写 <code>cats[i].transform</code>。</li><li><strong>为什么放在 Start</strong>：查找是"找一次就够"的事，放 <code>Start</code> 只跑一遍。<strong>千万别写进 <code>Update</code></strong>——那等于每帧把整个场景扫一遍，白白费性能。</li><li><strong>只想要"一个"就用 <code>FindObjectOfType&lt;T&gt;()</code></strong>：它返回<strong>第一个</strong>挂着 T 组件的对象，不是数组。<strong>后面的作业里，球找玩家用的就是它</strong>——球不知道玩家叫什么名字，但知道玩家身上挂着 <code>PlayerMove</code>。</li><li><strong>按键触发</strong>：<code>Input.GetKeyDown(KeyCode.E)</code> 只在按下 E 的<strong>那一帧</strong>为真，所以按一次触发一次；<code>spinTime</code> 那套是 <strong>① 学过的</strong>——按 E 记 1 秒，转满 1 秒就自动停，猫不会转个没完。</li><li><strong>循环做同一件事</strong>：<code>for</code> 按 <code>i &lt; cats.Length</code> 把数组走一遍，对<strong>每一只猫</strong>都做一次——场景里有几只猫就转几只，<strong>多一只少一只都不用改代码</strong>，这就是"批量"。</li><li><strong>下标从 0 开始</strong>：<code>cats[0]</code> 是第一只猫，所以循环条件写 <code>i &lt; cats.Length</code> 而不是 <code>&lt;=</code>，否则会越界报错。</li></ol></div>
+<div class="ok-box">⚠️ <strong>演示时站到 3 米外</strong>：三只猫身上都有 <code>CatBrain</code>，只要你在 3 米内，它每帧都会把猫转向你，转圈会被它盖掉——就是 ② 页那条 ⚠️ 说的情况。</div>
+<div class="ok-box">⚠️ <code>FindObjectsOfType</code> 要遍历整个场景，<strong>比较慢</strong>：只在 <code>Start</code> 里找一次、把结果存进变量；确实只要"一个"时，就用更轻的 <code>FindObjectOfType</code>。</div>
+</div></div>
+<div class="slide" data-page="9"><div class="slide-inner markable">
+<h1>作业 · 靠近就转的猫群</h1>
+<div class="card"><h3>基本要求</h3><ul>
+<li><strong>沿用场景</strong>：还是那个能走、能跳、能用鼠标转视角的 Player（<code>Character Controller</code> + <code>PlayerMove</code> + <code>PlayerRotate</code>）</li>
+<li><strong>做几只「会转圈的猫」</strong>：在层级（Hierarchy）里选中课件里那只猫，按 <code>Ctrl+D</code> 复制出 <strong>2~3 只</strong>，改名成 <code>Cat2</code>、<code>Cat3</code></li>
+<li><strong>把它们的 <code>CatBrain</code> 移除</strong>：选中复制出来的猫，在检查器（Inspector）里点 <code>CatBrain</code> 组件右上角的<strong>三个点（⋮）→ 移除组件（Remove Component）</strong></li>
+<li><strong>贴上自定义标签</strong>：给复制出来的猫都贴上自定义标签 <code>Cat</code>（检查器顶部 <strong>标签（Tag）→ 添加标签（Add Tag）</strong> 里新建，再回来选上）。<strong>原来那只猫不要贴</strong>——它身上有 <code>CatBrain</code></li>
+<li><strong>脚本挂在哪</strong>：新建一个脚本挂在 <strong>Player</strong> 上（也可以把这段并进原来的 <code>PlayerMove</code>）</li>
+</ul></div>
+<div class="card"><h3>核心要求</h3><ul>
+<li><strong>按标签一次找全</strong>：用 <code>GameObject.FindGameObjectsWithTag("Cat")</code> 把贴着 <code>Cat</code> 的猫<strong>一次全拿到</strong>（返回一个数组），并且<strong>在 <code>Start</code> 里找一次</strong>存进变量，不要每帧都找</li>
+<li><strong>每只各自判断</strong>：用 <code>for</code> 遍历数组，对<strong>每一只</strong>猫分别用 <code>Vector3.Distance</code> 算它到 Player 的距离</li>
+<li><strong>谁近谁转</strong>：只有距离<strong>小于 4 米</strong>的那只转，其余的不动——别写成"只要有一只近，就全都转"</li>
+<li><strong>转速稳定</strong>：旋转用 <code>transform.Rotate</code>，记得乘 <code>Time.deltaTime</code>，换台电脑也转得一样快</li>
+</ul></div>
+<div class="card"><h3>本次作业（必做）：靠近就转的猫群</h3>
+<p>新建一个脚本、类名写 <code>CatTurn</code>，挂在 <strong>Player</strong> 上——<code>using</code>、<code>class</code>、<code>Start</code> / <code>Update</code> 的外壳照前面学过的写，下面三段填到对应位置：</p>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_hw_cat',this)">复制</button></div>
+<pre id="c_hw_cat"><code class="language-csharp">// ① 字段区：存下所有贴着 Cat 标签的猫（有好几只，所以用数组）
+private GameObject[] cats;
+
+// ② 在 Start 里：把这一类的对象一次全拿到（只找一次，别每帧都找）
+cats = GameObject.FindGameObjectsWithTag("Cat");
+
+// ③ 在 Update 里：每只各自算距离——谁到你 4 米内，谁才转
+for (int i = 0; i &lt; cats.Length; i++) {
+    Transform cat = cats[i].transform;
+    if (Vector3.Distance(transform.position, cat.position) &lt; 4f) {
+        cat.Rotate(0f, 600f * Time.deltaTime, 0f);   // 靠近才转，走远就停
+    }
+}</code></pre>
+</div>
+<p>这三段里只有两个新东西：<strong><code>FindGameObjectsWithTag("Cat")</code></strong> 是 <code>FindWithTag</code> 的<strong>复数版</strong>——贴着 <code>Cat</code> 的猫一次全拿到，几只猫数组里就几个元素；<strong>循环里每只猫各自算距离</strong>，所以只有靠近的那一只动，其余的不受牵连。</p>
+<p>要看到的效果：<strong>走近哪只猫，哪只猫就原地转圈；走开它就停，另外几只不动</strong>。把 4 改成 1，更容易看出"只有靠近才动"。</p><img src="images/课件14/作业_靠近就转的猫.gif" alt="效果：走近哪只猫，哪只猫就原地转圈，走开就停" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="card"><h3>挑战（选做）</h3><ul>
+<li><strong>① 变颜色</strong>：靠近的那只猫顺便变色：<code>cat.GetComponent&lt;Renderer&gt;().material.color = Color.green</code></li>
+<li><strong>② 转速可调</strong>：把转速提成 <code>public float turnSpeed = 600f;</code>，在检查器（Inspector）里现场调快调慢</li>
+<li><strong>③ 换成按 E 触发</strong>：把"靠距离自动转"改成"按 E 才转"（页8 用过的那招），比一比两种触发方式的差别</li>
+</ul></div>
+<div class="ok-box">⚠️ <strong>复制出来的猫一定要移除 <code>CatBrain</code></strong>：它每帧都在写猫的旋转（就是 ② 页那条 ⚠️ 说的情况），留着它，转圈会被它盖掉，你会以为是自己代码写错了。另外标签名<strong>大小写敏感</strong>，要和你新建的 <code>Cat</code> 完全一致——贴错了标签，别的对象也会跟着转。</div>
+</div></div>
+<div class="slide" data-page="10"><div class="slide-inner end-page">
+
+<div class="end-thanks">
+    <div class="end-left">
+        <div class="end-icon">💪</div>
+        <div class="end-title">感谢各位同学的参与!</div>
+        <div class="end-sub">祝大家学习进步</div>
+    </div>
+    <div class="end-right">
+        <img src="images/tencent-docs-qrcode.png" alt="腾讯文档二维码" onerror="imgMissing(this)" onclick="zoomQR(this)" style="cursor:pointer">
+        <p>扫码查看作业完成情况</p>
+        <a href="https://docs.qq.com/sheet/DV2tKZ2pSTUNwUFpX?tab=bo2p4o" target="_blank" class="end-link">📊 查看作业完成情况文档</a>
+    </div>
+</div>
+<a href="课件15_游戏管理器与生成物体.html" class="end-next-link">📖 下一节：课件15 · 游戏管理器与生成物体 →</a>
+</div></div>
+</div>
+</div>
+</div>
+
+<div class="search-panel" id="searchPanel">
+    <div class="search-panel-header">
+        <span>🔍 全局搜索</span>
+        <button class="search-panel-close" onclick="closeSearch()">✕</button>
+    </div>
+    <input class="search-input" id="searchInput" placeholder="输入关键词搜索..." oninput="doSearch()" autocomplete="off">
+    <div class="search-results" id="searchResults"></div>
+</div>
+
+<div class="help-overlay" id="helpOverlay">
+    <div class="help-header"><span>📖 使用帮助</span><button class="help-close-btn" onclick="closeHelp()">✕</button></div>
+    <div class="help-body">
+            <h3>⌨️ 快捷键</h3>
+            <table><tr><td><code>Ctrl+K</code></td><td>打开搜索</td></tr><tr><td><code>← →</code></td><td>上一页 / 下一页</td></tr><tr><td><code>Esc</code></td><td>关闭弹窗</td></tr></table>
+            <h3>🎯 导航</h3>
+            <p>左侧边栏点击切换页面；底部圆点快速跳转；进度条显示学习完成度。</p>
+            <h3>💻 在线编辑器</h3>
+            <p>顶部「在线编辑器」下拉提供菜鸟教程、Tutorialspoint、DotNetFiddle 三个在线 C# 编译器。</p>
+            <h3>🌙 主题与字号</h3>
+            <p>深色/浅色切换；A- / A+ 调整字号；刷新后保留设置。</p>
+            <h3>🔍 搜索</h3>
+            <p>支持中英文关键词，匹配结果高亮显示，点击跳转到对应页面。</p>
+        </div>
+</div>
+
+<div class="catalog-panel" id="catalogPanel">
+    <div class="catalog-header">
+        <span>📚 课件目录</span>
+        <button class="catalog-close-btn" onclick="closeCatalog()">✕</button>
+    </div>
+    <div class="catalog-list" id="catalogList"></div>
+</div>
+
+<div class="qr-zoom-overlay" id="qrZoom" onclick="closeZoom()">
+    <img id="qrZoomImg" src="" alt="二维码放大">
+</div>
+
+<div class="nav-buttons">
+    <button class="nav-btn" id="prevBtn" onclick="goSlide(-1)">◀ 上一页</button>
+    <button class="nav-btn" id="nextBtn" onclick="goSlide(1)">下一页 ▶</button>
+</div>
+<div class="progress-dots" id="progressDots"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+window.__CATALOG__ = [{"file": "课件1_认识Unity与课程介绍.html", "label": "课件1 · 认识Unity与课程介绍"}, {"file": "课件2_注册与安装软件.html", "label": "课件2 · 注册与安装软件"}, {"file": "课件3_Unity引擎概览.html", "label": "课件3 · Unity引擎概览"}, {"file": "课件4_场景与物体.html", "label": "课件4 · 场景与物体"}, {"file": "课件5_移动视野与物体.html", "label": "课件5 · 移动视野与物体"}, {"file": "课件6_旋转缩放多选.html", "label": "课件6 · 旋转缩放多选"}, {"file": "课件7_网格与材质.html", "label": "课件7 · 网格与材质"}, {"file": "课件8_C#核心语法.html", "label": "课件8 · C#核心语法"}, {"file": "课件9_Fbx导入与脚本入门.html", "label": "课件9 · Fbx导入与脚本入门"}, {"file": "课件10_资源商店与模型资源.html", "label": "课件10 · 资源商店与模型资源"}, {"file": "课件11_键盘控制移动.html", "label": "课件11 · 键盘控制移动"}, {"file": "课件12_刚体与碰撞体.html", "label": "课件12 · 刚体与碰撞体"}, {"file": "课件13_角色移动与视角.html", "label": "课件13 · 角色移动与视角"}, {"file": "课件14_访问其他游戏对象.html", "label": "课件14 · 访问其他游戏对象"}, {"file": "课件15_游戏管理器与生成物体.html", "label": "课件15 · 游戏管理器与生成物体"}, {"file": "课件16_动物自由巡游与定点巡逻.html", "label": "课件16 · 动物自由巡游与定点巡逻"}, {"file": "课件17_走近动物跟着走.html", "label": "课件17 · 走近动物跟着走"}, {"file": "课件18_动物交互动画切换.html", "label": "课件18 · 动物交互动画切换"}, {"file": "课件19_视线检测与图层.html", "label": "课件19 · 视线检测与图层"}, {"file": "课件20_玩家血条与被接触攻击.html", "label": "课件20 · 玩家血条与被接触攻击"}, {"file": "课件21_死亡与游戏管理器.html", "label": "课件21 · 死亡与游戏管理器"}, {"file": "课件22_撤离点与粒子系统.html", "label": "课件22 · 撤离点与粒子系统"}, {"file": "课件23_启动页面.html", "label": "课件23 · 启动页面"}, {"file": "课件24_FPS场景玩家武器.html", "label": "课件24 · FPS场景玩家武器"}, {"file": "课件25_射击准心与鼠标锁定.html", "label": "课件25 · 射击准心与鼠标锁定"}, {"file": "课件26_消灭敌人与孵化器.html", "label": "课件26 · 消灭敌人与孵化器"}, {"file": "课件27_拾取物品.html", "label": "课件27 · 拾取物品"}, {"file": "课件28_更换枪械.html", "label": "课件28 · 更换枪械"}, {"file": "课件29_修改动画状态机.html", "label": "课件29 · 修改动画状态机"}, {"file": "课件30_NPC对话.html", "label": "课件30 · NPC对话"}, {"file": "课件31_NPC对话进阶.html", "label": "课件31 · NPC对话进阶"}, {"file": "课件32_任务队列.html", "label": "课件32 · 任务队列"}];
+let LESSON_LABEL='';(function(){
+  let cur=window.location.pathname.split('/').pop();
+  let items=window.__CATALOG__||[];
+  for(let i=0;i<items.length;i++){if(items[i].file===cur){LESSON_LABEL=items[i].label;break}}
+  if(!LESSON_LABEL)LESSON_LABEL=document.title.split(' — ')[0]||'';
+})();
+
+// ========== 移动端 "更多" 菜单 ==========
+function toggleMobileMore(){document.getElementById('mobileMoreMenu').classList.toggle('open')}
+function mobileAction(act){
+  document.getElementById('mobileMoreMenu').classList.remove('open');
+  if(act==='ide'){let m=document.getElementById('ideMenu');if(m)m.classList.add('show')}
+  else if(act==='fontDown')changeFont(-1);
+  else if(act==='fontUp')changeFont(1);
+  else if(act==='search')openSearch();
+  else if(act==='flat')toggleFlat();
+  else if(act==='imgbottom')toggleImgBottom();
+  else if(act==='help')toggleHelp();
+}
+document.addEventListener('click',function(e){
+  let mm=document.getElementById('mobileMoreMenu');
+  if(mm&&mm.classList.contains('open')&&!e.target.closest('.mobile-more'))mm.classList.remove('open');
+});
+// 点击移动端信息条跳转下一页
+function mobileInfoTap(){goSlide(1)}
+
+// ========== localStorage ==========
+const LS=(k,d)=>localStorage.getItem(k)||d;
+const LSset=(k,v)=>localStorage.setItem(k,v);
+
+// ========== 主题 ==========
+// ========== 在线编辑器下拉 ==========
+document.addEventListener('DOMContentLoaded',function(){
+    var ideBtn=document.getElementById('ideBtn');
+    if(ideBtn){
+        ideBtn.onclick=function(e){
+            e.stopPropagation();
+            document.getElementById('ideMenu').classList.toggle('show');
+        };
+    }
+    document.querySelectorAll('.dropdown-item').forEach(function(el){
+        el.onclick=function(e){
+            e.preventDefault();
+            window.open(this.dataset.url,'_blank');
+            document.getElementById('ideMenu').classList.remove('show');
+        };
+    });
+    document.addEventListener('click',function(){
+        document.getElementById('ideMenu').classList.remove('show');
+    });
+});
+
+// ========== 主题 ==========
+if(LS('theme','dark')==='light')document.body.classList.add('light');
+function toggleTheme(){
+    const il=document.body.classList.toggle('light');
+    LSset('theme',il?'light':'dark');
+    document.getElementById('themeBtn').textContent=il?'☀️浅色':'🌙深色';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('themeBtn').textContent=document.body.classList.contains('light')?'☀️浅色':'🌙深色';
+    let mi=document.getElementById('mobileInfo');
+    if(mi){
+        mi.querySelector('.mi-lesson').textContent=LESSON_LABEL;
+        mi.querySelector('.mi-page').textContent='第1页 / 共'+total+'页';
+    }
+});
+
+
+// ========== 平铺模式（连续显示全部页面，导出 PDF 用） ==========
+function toggleFlat(){
+    const on=document.body.classList.toggle('flat-mode');
+    document.documentElement.classList.toggle('flat-mode',on);
+    const btn=document.getElementById('flatBtn');
+    if(btn)btn.textContent=on?'🗂️ 分页':'📄 平铺';
+    LSset('flat',on?'1':'0');
+    if(!on)showSlide(curr);   // 切回分页时回到当前页
+}
+// ========== 图片显示模式（右侧小图 / 下方大图） ==========
+function toggleImgBottom(){
+    const on=document.body.classList.toggle('img-bottom');
+    document.documentElement.classList.toggle('img-bottom',on);
+    const btn=document.getElementById('imgBtn');
+    if(btn)btn.textContent=on?'🖼️ 侧图':'🖼️ 图下';
+    LSset('imgmode',on?'1':'0');
+}
+
+
+// ========== 字号 ==========
+const FONT_SIZES=['xs','sm','md','lg','xl'];
+let fontIdx=FONT_SIZES.indexOf(LS('font','md'));
+if(fontIdx<0)fontIdx=2;
+if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+function changeFont(d){
+    document.body.classList.remove('font-'+FONT_SIZES[fontIdx]);
+    fontIdx=Math.max(0,Math.min(FONT_SIZES.length-1,fontIdx+d));
+    if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+    LSset('font',FONT_SIZES[fontIdx]);
+}
+
+// ========== 幻灯片 ==========
+let slides=document.querySelectorAll('.slide,.cover'),
+    navLinks=document.querySelectorAll('.nav-link'),
+    curr=0,total=10,contentTotal=8;
+
+// 进度圆点
+// 侧边栏点击
+navLinks.forEach((l,i)=>l.addEventListener('click',e=>{e.preventDefault();showSlide(i);}));
+let dotsHtml='';
+for(let i=0;i<total;i++)dotsHtml+=`<span class="progress-dot" data-idx="${i}" onclick="showSlide(${i})"></span>`;
+document.getElementById('progressDots').innerHTML=dotsHtml;
+let dots=document.querySelectorAll('.progress-dot');
+
+function showSlide(idx){
+    if(idx<0||idx>=total)return;
+    slides.forEach((s,i)=>s.classList.toggle('active',i===idx));
+    navLinks.forEach((l,i)=>l.classList.toggle('active',i===idx));
+    dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
+    curr=idx;
+    let cp=Math.max(0,Math.min(idx,contentTotal));
+    document.getElementById('progressFill').style.width=(cp/contentTotal*100)+'%';
+    document.getElementById('progressText').textContent=cp+' / '+contentTotal;
+    let mi=document.getElementById('mobileInfo');
+    if(mi){
+        mi.querySelector('.mi-lesson').textContent=LESSON_LABEL;
+        mi.querySelector('.mi-page').textContent='第'+(idx+1)+'页 / 共'+total+'页';
+    }
+    document.getElementById('mainArea').scrollTop=0;
+    document.querySelectorAll('.nav-status')[idx]?.classList.add('seen');
+    updateNav();
+}
+function goSlide(d){ showSlide(curr+d); }
+function updateNav(){
+    document.getElementById('prevBtn').disabled=curr===0;
+    document.getElementById('nextBtn').disabled=curr===total-1;
+    LSset('page_'+window.location.pathname.split('/').pop(), curr);
+}
+
+// 键盘
+document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')goSlide(1);
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')goSlide(-1);
+    if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openSearch();}
+    if(e.key==='Escape'){closeSearch();closeHelp();closeZoom();closeCatalog();}
+});
+
+// ========== 搜索 ==========
+function openSearch(){document.getElementById('searchPanel').classList.add('open');document.getElementById('searchInput').focus();document.getElementById('searchInput').value='';document.getElementById('searchResults').innerHTML=''}
+function closeSearch(){document.getElementById('searchPanel').classList.remove('open')}
+function toggleHelp(){document.getElementById('helpOverlay').classList.toggle('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+// 课件目录
+function toggleCatalog(){
+    let p=document.getElementById('catalogPanel');
+    if(!p.classList.contains('open')){loadCatalog();p.classList.add('open')}else{p.classList.remove('open')}
+}
+function closeCatalog(){document.getElementById('catalogPanel').classList.remove('open')}
+function loadCatalog(){
+    let c=document.getElementById('catalogList');
+    if(c.children.length>0)return;
+    let current=decodeURIComponent(window.location.pathname.split('/').pop());
+    let items=window.__CATALOG__||[];
+    if(!items.length){c.innerHTML='<div class="catalog-item" style="color:var(--text-muted)">暂无课件</div>';return}
+    items.forEach(item=>{
+        let a=document.createElement('a');a.className='catalog-item';a.href=encodeURIComponent(item.file);
+        if(item.file===current)a.classList.add('current');
+        a.innerHTML=`<span class="catalog-num">${item.label.split(' · ')[0]}</span><span>${item.label.split(' · ').slice(1).join(' · ')||item.label}</span>`;
+        c.appendChild(a);
+    });
+}
+function zoomQR(img){document.getElementById('qrZoomImg').src=img.src;document.getElementById('qrZoom').classList.add('show')}
+function closeZoom(){document.getElementById('qrZoom').classList.remove('show')}
+function doSearch(){
+    let q=document.getElementById('searchInput').value,qLower=q.toLowerCase(),c=document.getElementById('searchResults');
+    c.innerHTML='';if(q.length<2)return;
+    let r=[];
+    slides.forEach((s,i)=>{
+        let raw=s.textContent,lower=raw.toLowerCase(),idx=lower.indexOf(qLower);
+        if(idx<0)return;
+        let start=Math.max(0,idx-15),end=Math.min(raw.length,idx+q.length+30);
+        let ex=raw.substring(start,end);
+        if(start>0)ex='...'+ex;
+        if(end<raw.length)ex=ex+'...';
+        // 高亮匹配词
+        let re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+        ex=ex.replace(re,'<mark>$1</mark>');
+        r.push({idx:i,excerpt:ex,slide:s});
+    });
+    r.slice(0,20).forEach(x=>{
+        let a=document.createElement('a');a.className='search-item';a.href='#';
+        let title=navLinks[x.idx]?.textContent.replace(/^\d+\.\s*/,'')||('页面'+(x.idx+1));
+        a.innerHTML=`<div class="sr-lesson">${x.idx+1}. ${title}</div><div class="sr-text">${x.excerpt}</div>`;
+        a.onclick=e=>{e.preventDefault();showSlide(x.idx);closeSearch();};
+        c.appendChild(a);
+    });
+}
+
+// ========== 复制 ==========
+function copyCode(cid,btn){
+    let code=document.getElementById(cid).textContent;
+    navigator.clipboard.writeText(code).then(()=>{
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    }).catch(()=>{
+        // fallback
+        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
+        document.execCommand('copy');document.body.removeChild(ta);
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    });
+}
+
+// ========== 初始化 ==========
+hljs.highlightAll();
+// 折叠面板
+function toggleFold(btn){
+    btn.classList.toggle('open');
+    let content=btn.nextElementSibling;
+    if(!content||!content.classList.contains('fold-content')) content=content.nextElementSibling;
+    if(content&&content.classList.contains('fold-content')) content.classList.toggle('show');
+}
+let savedPage=parseInt(LS('page_'+window.location.pathname.split('/').pop(),'0'));
+if(savedPage>0&&savedPage<total)showSlide(savedPage);else showSlide(0);
+// 恢复上次的平铺/分页模式
+if(LS('flat','0')==='1')toggleFlat();
+if(LS('imgmode','0')==='1')toggleImgBottom();
+
+
+</script>
+</body>
+</html>

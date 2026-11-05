@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>课件12_刚体与碰撞体 — C#先知课堂</title>
+<link rel="stylesheet" href="vendor/atom-one-dark.min.css">
+<script src="vendor/highlight.min.js"></script>
+<style>
+/* ===== 色彩变量 ===== */
+:root{
+--bg-primary:#0A0E27;--bg-secondary:#0D1430;--bg-card:rgba(17,24,39,0.95);
+--bg-input:#0B1020;--border:rgba(255,255,255,0.06);
+--text:#E8EAED;--text-muted:#9AA0A6;
+--accent:#00D4AA;--accent2:#4FC3F7;--accent-dim:rgba(0,212,170,0.08);
+--orange:#F59E0B;--blue:#818CF8;
+--green:#22C55E;--green-bg:rgba(34,197,94,0.08);--green-border:rgba(34,197,94,0.3);
+--red:#EF4444;--red-bg:rgba(239,68,68,0.08);--red-border:rgba(239,68,68,0.3);
+--yellow:#F59E0B;--purple:#C084FC;--teal:#86EFAC;--teal-border:rgba(34,197,94,0.3);
+--font-size:16px;
+}
+.light{
+--bg-primary:#ffffff;--bg-secondary:#f6f8fa;--bg-card:#f6f8fa;--bg-input:#ffffff;
+--border:#d0d7de;--text:#24292f;--text-muted:#656d76;
+--accent:#0969da;--accent2:#0550ae;--accent-dim:rgba(9,105,218,0.08);
+--orange:#cf222e;--blue:#0550ae;
+--green:#1a7f37;--green-bg:#eefdf2;--green-border:#86d9a0;
+--red:#cf222e;--red-bg:#ffebe9;--red-border:#fdaeb7;
+--yellow:#9a6700;--purple:#8250df;--teal:#0550ae;--teal-border:#4ac26b;
+}
+body.font-xs{--font-size:12px}body.font-sm{--font-size:14px}body.font-md{--font-size:16px}body.font-lg{--font-size:19px}body.font-xl{--font-size:22px}
+
+/* ===== 全局 ===== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microsoft YaHei',sans-serif;background:linear-gradient(180deg,var(--bg-primary),var(--bg-secondary));color:var(--text);line-height:1.6;font-size:var(--font-size)}
+.container{display:flex;height:100vh}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.02)}
+::-webkit-scrollbar-thumb{background:rgba(0,212,170,0.2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,212,170,0.4)}
+
+/* ===== 侧边栏 ===== */
+.sidebar{width:260px;min-width:260px;height:100vh;background:linear-gradient(180deg,rgba(10,14,39,0.98),rgba(13,20,48,0.95));border-right:1px solid var(--border);overflow-y:auto;padding:12px 0;flex-shrink:0;backdrop-filter:blur(10px);position:relative;z-index:10}
+.sidebar-title{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-size:16px;font-weight:700;padding:0 14px 10px;border-bottom:1px solid rgba(0,212,170,0.15);margin-bottom:6px}
+.nav-link{display:flex;align-items:center;color:var(--text-muted);text-decoration:none;padding:8px 14px;font-size:12px;border-left:3px solid transparent;transition:all .2s}
+.nav-link:hover{color:var(--accent);background:var(--accent-dim);border-left-color:rgba(0,212,170,0.4)}
+.nav-link.active{color:#fff!important;background:linear-gradient(90deg,rgba(0,212,170,0.18),transparent);border-left:3px solid var(--accent);font-weight:600}
+.nav-status{width:7px;height:7px;border-radius:50%;margin-right:7px;flex-shrink:0;background:rgba(255,255,255,0.1);transition:all .3s}
+.nav-status.seen{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,0.5)}
+
+/* ===== Header ===== */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header-bar{display:flex;align-items:center;gap:16px;padding:10px 24px;background:rgba(10,14,39,0.95);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;position:relative;z-index:5}
+.progress-wrap{flex:1;min-width:200px;display:flex;align-items:center;gap:12px}
+.progress-bar{flex:1;height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,0.3)}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .5s ease;width:0;box-shadow:0 0 8px rgba(0,212,170,0.4)}
+.progress-text{font-size:11px;color:var(--text-muted);white-space:nowrap}
+.header-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .25s;white-space:nowrap}
+.header-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 8px rgba(0,212,170,0.1);transform:translateY(-1px)}
+.header-dropdown{position:relative;display:inline-block}
+.dropdown-menu{display:none;position:absolute;top:100%;right:0;margin-top:6px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;min-width:180px;z-index:100;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.dropdown-menu.show{display:block}
+.dropdown-item{display:block;padding:10px 16px;color:var(--text);font-size:13px;text-decoration:none;transition:background .2s;cursor:pointer;white-space:nowrap}
+.dropdown-item:hover{background:var(--accent-dim);color:var(--accent)}
+.dropdown-item:not(:last-child){border-bottom:1px solid var(--border)}
+
+/* ===== 幻灯片 ===== */
+.slides-container{flex:1;position:relative !important;overflow:hidden}
+#mainArea .slides-container{position:relative !important;overflow:hidden !important;min-height:calc(100vh - 60px)}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transform:translateX(30px);transition:opacity .35s,transform .35s;pointer-events:none;overflow-y:auto}
+.slide::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:.6;z-index:10}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto;z-index:1}
+.slide-inner{max-width:920px;margin:0 auto;padding:56px 48px 80px}
+
+/* 标题 */
+.slide-inner h1{color:#fff;font-size:26px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid rgba(0,212,170,0.2);letter-spacing:-0.3px}
+.slide-inner h2{color:var(--accent2);font-size:20px;margin:28px 0 14px;font-weight:600}
+.slide-inner h3{color:var(--accent);font-size:calc(var(--font-size) * 1.06);margin:20px 0 10px;font-weight:600;padding-left:10px;border-left:3px solid var(--accent)}
+.slide-inner h3.h-example{color:var(--accent2);border-left-color:var(--accent2)}
+.slide-inner h3.h-practice{color:var(--orange);border-left-color:var(--orange)}
+.slide-inner p{color:var(--text);margin-bottom:10px;line-height:1.85}
+.slide-inner ul,.slide-inner ol{margin-left:22px;margin-bottom:14px}
+.slide-inner li{color:#CBD5E1;margin-bottom:6px;line-height:1.75}
+
+/* 内联代码 */
+.slide-inner strong{color:var(--accent2);font-weight:700}
+.slide-inner em{color:var(--orange);font-style:normal;font-weight:500}
+.slide-inner code{background:rgba(0,212,170,0.08);color:var(--accent);padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:90%;border:1px solid rgba(0,212,170,0.15);font-weight:600}
+
+/* 表格 */
+.slide-inner table{width:100%;border-collapse:collapse;font-size:calc(var(--font-size) * 0.94);margin:12px 0;border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.slide-inner table td,.slide-inner table th{padding:8px 14px;border:1px solid var(--border);text-align:left}
+.slide-inner table th{background:linear-gradient(135deg,rgba(17,24,39,0.9),rgba(15,23,41,0.9));color:var(--accent);font-weight:600;font-size:calc(var(--font-size) * 1.0);text-transform:uppercase;letter-spacing:.5px}
+.slide-inner table tr:nth-child(odd){background:rgba(255,255,255,0.015)}
+.slide-inner table tr:hover{background:var(--accent-dim)}
+
+/* 链接 */
+.slide-inner a{color:var(--accent2);text-decoration:underline;text-decoration-color:rgba(79,195,247,0.3);text-underline-offset:3px;transition:all .2s}
+.slide-inner a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+
+/* ===== 卡片 ===== */
+.card,.homework-card,.ok-box,.prompt-box{margin:10px 0;border-radius:12px;transition:all .3s}
+.card{background:linear-gradient(135deg,var(--bg-card),rgba(13,20,48,0.85));border:1px solid var(--border);padding:14px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.2);overflow:hidden}
+.card .card-img{float:right;max-width:200px;max-height:250px;margin:0 0 8px 16px;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 标题+图片+列表 类型的卡片：确定性两栏（左文右图），不依赖 float 环绕 */
+.card.side-card{display:flex;align-items:flex-start;gap:18px;overflow:hidden}
+.card.side-card .side-body{flex:1;min-width:0}
+.card.side-card .side-body h3{margin-top:0}
+.card.side-card .card-img{float:none;flex:0 0 auto;max-width:200px;max-height:250px;margin:0;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.card.side-card .side-body ul,.card.side-card .side-body ol{margin:8px 0 0;padding-left:22px}
+.card.side-card .side-body ul li,.card.side-card .side-body ol li{margin:4px 0}
+.card table .card-img{float:none;max-width:280px;max-height:none;margin:4px auto;display:block;border-radius:4px}
+.card table .card-img-sm{float:none;max-width:100px;max-height:none;margin:4px 0;display:inline-block;border-radius:4px}
+.card-img{display:block;max-width:100%;margin:16px auto;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 小图（报错截图等）控制在 1/3 宽度 */
+.card-img.small{max-width:33%!important}
+/* 表格单元格内图片（发展四时代等）：小图居中，破图自动隐藏 */
+.slide-inner table td img.card-img,.slide-inner table th img.card-img{display:block;max-width:150px;max-height:105px;width:auto;height:auto;margin:6px auto;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+.slide-inner table td img.card-img-sm,.slide-inner table th img.card-img-sm{display:block;max-width:96px;max-height:66px;margin:4px auto;border-radius:4px}
+/* 竞赛照片三图并排 */
+.contest-row{display:flex;gap:12px;justify-content:center;margin:16px 0;flex-wrap:wrap}
+.contest-row img{flex:1;min-width:0;max-width:280px;max-height:200px;object-fit:cover;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer}
+.card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.12);transform:translateY(-1px)}
+.card h3{margin-top:0}
+
+/* 代码块 */
+.prompt-box{background:var(--bg-input);border:1px solid rgba(0,212,170,0.2);border-left:3px solid var(--accent);overflow:hidden;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03)}
+.code-toolbar{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.04)}
+.code-lang{font-size:10px;color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.copy-btn{background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2);color:var(--accent);padding:3px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-family:inherit;transition:all .2s}
+.copy-btn:hover{background:rgba(0,212,170,0.2);border-color:var(--accent)}
+.copy-btn.copied{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.prompt-box pre{background:transparent;padding:12px 16px;margin:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;overflow-x:auto}
+.prompt-box pre code{background:transparent;padding:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;font-family:'JetBrains Mono','Menlo','Monaco',monospace;color:#E2E8F0;border:none}
+
+/* ok-box / homework-card */
+.homework-card{background:linear-gradient(135deg,rgba(0,212,170,0.06),var(--bg-card));border:1px solid var(--teal-border);padding:14px 18px}
+.homework-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(0,212,170,0.08)}
+.homework-card h3{color:var(--teal)}
+.ok-box{background:linear-gradient(135deg,rgba(34,197,94,0.06),var(--bg-card));border:1px solid var(--green-border);padding:14px 18px}
+.ok-box:hover{border-color:var(--green);box-shadow:0 8px 24px rgba(34,197,94,0.08)}
+.ok-box ul,.ok-box ol{margin:6px 0;padding-left:1.5em}
+.ok-box li{margin:3px 0;line-height:1.7}
+
+/* 高亮标记 */
+.markable li,.markable p{cursor:pointer;transition:all .15s;border-radius:3px;padding:1px 3px}
+.markable li.marked,.markable p.marked{background:rgba(192,132,252,.12);border-left:3px solid var(--purple);padding-left:8px}
+
+/* ===== 折叠面板 ===== */
+.fold-toggle{display:inline-flex;align-items:center;gap:6px;background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:calc(var(--font-size) * 1.06);font-family:inherit;transition:all .2s;margin:8px 0;user-select:none}
+.fold-toggle:hover{background:rgba(0,212,170,0.15);box-shadow:0 2px 8px rgba(0,212,170,0.15)}
+.fold-toggle .arrow{display:inline-block;transition:transform .3s;font-size:10px}
+.fold-toggle.open .arrow{transform:rotate(90deg)}
+.fold-content{max-height:0;overflow:hidden;transition:max-height .4s ease;opacity:0}
+.fold-content.show{max-height:3000px;opacity:1}
+/* 提示折叠 绿色 */
+.fold-toggle.hint{color:var(--green);border-color:var(--green-border);background:var(--green-bg)}
+.fold-toggle.hint:hover{background:rgba(34,197,94,0.12)}
+/* 答案折叠 紫色 */
+.fold-toggle.solution{color:var(--purple);border-color:rgba(192,132,252,0.4);background:rgba(192,132,252,0.08)}
+.fold-toggle.solution:hover{background:rgba(192,132,252,0.15)}
+/* 问答折叠 橙色 */
+.fold-toggle.qa{color:var(--orange);border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.08)}
+.fold-toggle.qa:hover{background:rgba(245,158,11,0.15)}
+/* 填空代码 */
+.code-blank{color:var(--orange);background:rgba(245,158,11,0.1);padding:2px 6px;border-radius:4px;font-weight:600}
+
+/* ===== 导航按钮 ===== */
+.nav-buttons{position:fixed;bottom:24px;right:32px;display:flex;gap:8px;z-index:100}
+.nav-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:10px 22px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:500;transition:all .25s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 4px 16px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
+.progress-dots{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:100}
+.progress-dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:all .3s;cursor:pointer}
+.progress-dot:hover{background:var(--accent2)}
+.progress-dot.active{background:var(--accent);transform:scale(1.4);box-shadow:0 0 8px rgba(0,212,170,0.5)}
+
+/* ===== 搜索 ===== */
+.search-panel{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:300;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.search-panel.open{right:0}
+.search-panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.search-panel-header span{font-size:15px;font-weight:600;color:var(--text)}
+.search-panel-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.search-panel-close:hover{color:var(--text);background:var(--accent-dim)}
+
+/* ===== 课件目录 ===== */
+.catalog-panel{position:fixed;top:0;right:-320px;width:320px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:298;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.catalog-panel.open{right:0}
+.catalog-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.catalog-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.catalog-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.catalog-list{flex:1;overflow-y:auto;padding:8px 0}
+.catalog-item{display:flex;align-items:center;gap:10px;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.catalog-item:hover{background:var(--accent-dim);border-left-color:var(--accent)}
+.catalog-item.current{color:var(--accent)!important;background:var(--accent-dim);border-left-color:var(--accent);font-weight:600}
+.catalog-num{color:var(--accent);font-size:11px;font-weight:700;min-width:40px;white-space:nowrap}
+.search-input{width:100%;padding:14px 18px;background:var(--bg-input);border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:15px;outline:none;flex-shrink:0}
+.search-input::placeholder{color:var(--text-muted)}
+.search-results{flex:1;overflow-y:auto;padding:8px 0}
+.search-item{display:block;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.search-item:hover,.search-item.focus{background:var(--accent-dim);border-left-color:var(--accent)}
+.help-overlay{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:299;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.help-overlay.open{right:0}
+.help-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.help-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.help-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.help-body{flex:1;overflow-y:auto;padding:16px 22px 24px}
+.help-body h3{color:var(--accent);font-size:14px;margin:16px 0 8px;padding-left:0;border-left:none}
+.help-body p{font-size:13px;color:var(--text-muted);margin-bottom:8px}
+.help-body table{font-size:13px}
+.help-body table td{padding:4px 12px 4px 0}
+.help-body table td:first-child{white-space:nowrap;padding-right:16px}
+.search-item mark{background:rgba(0,212,170,0.2);color:var(--accent);border-radius:2px;padding:0 3px}
+
+/* ===== Toast ===== */
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:400;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);padding:16px 28px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.toast.show{opacity:1}
+
+/* ===== 浅色覆盖 ===== */
+.light body,.light html{background:var(--bg-primary)!important}
+.light .sidebar{background:var(--bg-secondary)!important;border-right-color:var(--border)!important}
+.light .sidebar-title{-webkit-text-fill-color:var(--text);font-weight:600}
+.light .goal-card,.light .card{background:var(--bg-card)!important;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.light .homework-card{background:var(--accent-dim)!important}
+.light .ok-box{background:var(--green-bg)!important;border-color:var(--green-border)!important;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.light .header-bar{background:var(--bg-secondary)!important;backdrop-filter:none!important}
+.light .slide-inner table th{background:var(--bg-input)!important;color:var(--text)!important}
+.light .slide-inner h1{color:var(--text)!important}
+.light .slide-inner h2{color:var(--accent)!important}
+.light .slide-inner h3{color:var(--accent2)!important}
+.light .slide-inner li,.light .slide-inner p{color:var(--text)!important}
+.light .nav-link.active{color:var(--accent)!important;background:var(--accent-dim)!important}
+.light .progress-fill{box-shadow:none!important}
+.light .cover{background:radial-gradient(ellipse at 30% 20%,rgba(9,105,218,0.08),transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(5,80,174,0.06),transparent 55%),var(--bg-primary)!important}
+.light .cover-tag{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-label{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-text{color:var(--text)!important}
+.light .cover-sub{color:var(--text-muted)!important}
+.light .end-thanks{background:var(--bg-card);border-color:rgba(9,105,218,0.15)}
+.light .end-title{color:var(--accent)!important}
+.light .prompt-box pre code{color:var(--text)!important}
+.light .code-toolbar{background:rgba(0,0,0,0.05)}
+/* 深色主题下注释颜色调亮（原atom-one-dark太暗） */
+.hljs-comment,.hljs-meta{color:#8b949e!important}
+
+/* ===== 封面 ===== */
+.cover{display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;height:100vh;box-sizing:border-box;background:radial-gradient(ellipse at 30% 20%,rgba(0,212,170,0.18) 0%,transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(79,195,247,0.12) 0%,transparent 55%),linear-gradient(180deg,#0A0E27 0%,#0D1430 100%);position:relative;overflow:hidden}
+.cover.active{display:flex!important}
+.cover::after{content:'';position:absolute;top:-120px;right:-120px;width:400px;height:400px;background:radial-gradient(circle,rgba(0,212,170,0.08),transparent 70%);border-radius:50%;pointer-events:none}
+.cover-tag{display:inline-block;font-size:14px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);border-radius:20px;padding:8px 22px;margin-bottom:24px;letter-spacing:2px}
+.cover h1{font-size:52px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;letter-spacing:-1px;border:none;line-height:1.2;max-width:800px}
+.cover-sub{font-size:16px;color:var(--text-muted);margin-bottom:40px;max-width:650px;line-height:1.8}
+.cover-meta{font-size:14px;color:#6B7280;line-height:2.2;display:flex;flex-direction:column;gap:8px;align-items:center}
+.cover-meta-row{display:flex;align-items:center;gap:8px}
+.cover-meta-label{font-size:13px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.3);border-radius:6px;padding:3px 12px}
+.cover-meta-text{font-size:16px;color:#CBD5E1}
+
+/* ===== 结束页 ===== */
+.end-page{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:100%;box-sizing:border-box;max-width:920px;margin:0 auto;padding:36px 48px}
+.end-page h2{text-align:center;border-bottom:none;margin-bottom:32px}
+.end-thanks{display:flex;align-items:center;justify-content:center;gap:60px;flex-wrap:wrap;padding:60px 56px;border:2px solid rgba(0,212,170,0.3);border-radius:16px;background:linear-gradient(135deg,rgba(0,212,170,0.06),rgba(17,24,39,0.95))}
+.end-left{flex:1;min-width:200px;text-align:center}
+.end-right{flex:0 0 auto;text-align:center;padding-left:24px;border-left:1px solid rgba(0,212,170,0.2)}
+.end-icon{font-size:48px;margin-bottom:16px}
+.end-title{font-size:24px;color:var(--accent);font-weight:700;margin-bottom:20px}
+.end-sub{font-size:18px;color:var(--text-muted)}
+.end-contact{margin-top:16px;font-size:13px;color:var(--text-muted);line-height:1.7}
+.end-right img{width:120px;height:120px;border-radius:10px;margin-bottom:10px;border:2px solid var(--border);transition:transform .2s}
+.end-right img:hover{transform:scale(1.05)}
+.end-right p{font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5}
+.end-link{display:inline-block;color:var(--accent);text-decoration:none;font-size:13px;border:1px solid rgba(0,212,170,0.3);padding:8px 16px;border-radius:8px;transition:all .25s;white-space:nowrap}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+.end-next-link{display:inline-block;margin-top:20px;color:var(--accent2);text-decoration:none;font-size:15px;font-weight:600;padding:10px 24px;border:2px solid var(--accent2);border-radius:10px;transition:all .25s}
+.end-next-link:hover{background:rgba(79,195,247,0.1);box-shadow:0 4px 20px rgba(79,195,247,0.2);transform:translateY(-2px)}
+/* 二维码放大 */
+.qr-zoom-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;cursor:pointer}
+.qr-zoom-overlay.show{display:flex}
+.qr-zoom-overlay img{max-width:80vw;max-height:80vh;border-radius:12px;box-shadow:0 8px 32px rgba(0,212,170,0.2)}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+
+/* ===== 学习目标 ===== */
+.goal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:8px}
+.goal-card{background:linear-gradient(135deg,var(--bg-card),var(--bg-secondary));border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:14px;transition:all .3s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.goal-card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.goal-icon{font-size:28px;flex-shrink:0;transition:transform .3s}
+.goal-card:hover .goal-icon{transform:scale(1.15)}
+.goal-text{font-size:calc(var(--font-size) * 1.05);color:var(--text);line-height:1.6}
+
+/* 侧边栏 - 特殊链接（无序号） */
+.nav-special{font-style:italic;color:var(--accent2)!important}
+/* 导航标签 */
+.nav-badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:6px;font-weight:600;vertical-align:1px}
+.nav-badge.practice{color:var(--accent2);background:rgba(79,195,247,0.12);border:1px solid rgba(79,195,247,0.25)}
+.nav-badge.comprehensive{color:var(--purple);background:rgba(192,132,252,0.12);border:1px solid rgba(192,132,252,0.25)}
+.nav-badge.homework{color:var(--orange);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25)}
+
+/* ===== 响应式 ===== */
+/* ===== 移动端 header 精简按钮 ===== */
+.mobile-info{display:none;font-size:13px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.mobile-info .mi-lesson{color:var(--accent);font-weight:600}
+.mobile-info .mi-sep{margin:0 4px;color:var(--text-muted);opacity:0.5}
+.mobile-info .mi-page{color:var(--text)}
+.mobile-more{display:none;position:relative}
+.mobile-more-menu{display:none;position:absolute;top:100%;right:0;margin-top:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:4px 0;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:50;min-width:160px}
+.mobile-more-menu.open{display:block}
+.mobile-more-menu .mm-item{display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--text);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.mobile-more-menu .mm-item:hover{background:var(--accent-dim);color:var(--accent)}
+@media(max-width:768px){.sidebar{display:none}.slide-inner{padding:18px 18px 80px}.cover{padding-left:40px;padding-right:40px}.cover h1{font-size:32px}.nav-buttons{right:12px;bottom:12px}.header-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap}.header-btn[onclick="toggleTheme()"]{padding:6px 6px}.progress-wrap{display:none}.header-dropdown{display:none}.header-btn[onclick^="changeFont"]{display:none}.header-btn[onclick="openSearch()"]{display:none}.header-btn[onclick="toggleHelp()"]{display:none}.mobile-info{display:flex;align-items:center;gap:2px}.mi-page{display:none}.mobile-more{display:inline-block}.slides-container{min-height:calc(100vh - 54px)}}
+/* ===== 平铺模式（连续显示全部页面，用于导出 PDF） ===== */
+html.flat-mode,body.flat-mode{height:auto;overflow:visible}
+.flat-mode .container{height:auto;overflow:visible}
+.flat-mode .main-area{overflow:visible}
+.flat-mode .sidebar{display:none}
+.flat-mode .slides-container{overflow:visible;height:auto;min-height:0!important}
+.flat-mode .slide{position:static;opacity:1!important;transform:none!important;pointer-events:auto;height:auto;overflow:visible;margin:0 0 28px}
+.flat-mode .slide::before{display:none}
+.flat-mode .slide,.flat-mode .cover{transition:none!important}
+.flat-mode .slide-inner{padding:36px 48px 32px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,0.02)}
+.flat-mode .cover{position:static;opacity:1!important;transform:none!important;pointer-events:auto;height:auto;overflow:visible;margin:0 0 28px;border:1px solid var(--border);border-radius:14px}
+.flat-mode .nav-buttons{display:none}
+.flat-mode .progress-dots{display:none}
+.flat-mode .header-bar{position:sticky;top:0}
+/* ===== 图片显示模式（右侧小图 / 下方大图） ===== */
+.img-bottom .card .card-img{float:none;display:block;width:100%;max-width:100%;max-height:none;margin:16px auto 4px}
+.img-bottom .card table .card-img{width:auto;max-width:100%;margin:4px auto}
+.img-bottom .card .card-img-sm{width:auto;max-width:120px;max-height:none}
+.img-bottom .side-card{flex-direction:column;align-items:stretch}
+
+
+/* 平铺/PDF导出：并排多图改为单独一行放大显示（保持可点击放大） */
+.flat-mode .contest-row{display:block}
+.flat-mode .contest-row img{display:block;width:100%;max-width:100%;max-height:none;object-fit:contain;margin:16px auto 4px}
+
+/* ===== 缺图占位：老师还没放图时显示，文件名可一键复制 ===== */
+.img-missing{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;box-sizing:border-box;
+  width:100%;max-width:540px;margin:10px auto;padding:14px 16px;border:1.5px dashed var(--border);border-radius:10px;
+  background:var(--bg-input);color:var(--text-muted);font-size:13px;line-height:1.5;text-align:center}
+.img-missing .im-name{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--accent);
+  background:var(--bg-secondary);padding:3px 8px;border-radius:6px;border:1px solid var(--border);word-break:break-all}
+.img-missing button{cursor:pointer;font:inherit;font-size:12px;padding:4px 10px;border-radius:6px;
+  border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
+.img-missing button:hover{border-color:var(--accent);color:var(--accent)}
+.img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+</style>
+</head>
+<body>
+<script>
+// ========== 缺图占位：显示文件名 + 一键复制 ==========
+function imgMissing(img){
+    const src=img.getAttribute('src')||'';
+    const name=src.split('/').pop();
+    const dir=src.slice(0,src.lastIndexOf('/'));
+    const d=document.createElement('div');
+    d.className='img-missing';
+    d.innerHTML='<span>🖼️ 缺图</span>'
+        +'<code class="im-name">'+name+'</code>'
+        +'<button type="button" onclick="copyImgName(this)">复制文件名</button>'
+        +'<div class="im-dir">放到 '+dir+' 目录下，刷新页面即显示</div>';
+    if(img.parentNode) img.parentNode.replaceChild(d,img);
+}
+function copyImgName(btn){
+    const name=btn.parentNode.querySelector('.im-name').textContent;
+    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
+        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
+        try{document.execCommand('copy');}catch(e){}
+        document.body.removeChild(ta);done();};
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(name).then(done).catch(fb);
+    }else{fb();}
+}
+</script>
+
+<div class="container">
+<nav class="sidebar">
+    <div class="sidebar-title">📘 课件12_刚体与碰撞体</div>
+    <a href="#" class="nav-link nav-special" data-page="1"><span class="nav-status"></span>封面</a>
+<a href="#" class="nav-link" data-page="2"><span class="nav-status"></span>1. 本节学习目标 </a>
+<a href="#" class="nav-link" data-page="3"><span class="nav-status"></span>2. Rigidbody 刚体 </a>
+<a href="#" class="nav-link" data-page="4"><span class="nav-status"></span>3. Collider 碰撞体 </a>
+<a href="#" class="nav-link" data-page="5"><span class="nav-status"></span>4. 刚体 + 碰撞体 · 物体碰撞与落地 </a>
+<a href="#" class="nav-link" data-page="6"><span class="nav-status"></span>5. 刚体 + 碰撞体 · 实现跳跃 </a>
+<a href="#" class="nav-link" data-page="7"><span class="nav-status"></span>6. 刚体 + 碰撞体 · 撞到东西会倒 </a>
+<a href="#" class="nav-link" data-page="8"><span class="nav-status"></span>7. 作业 · 落地与跳跃 <span class="nav-badge homework">作业</span></a>
+<a href="#" class="nav-link nav-special" data-page="9"><span class="nav-status"></span>结束页</a>
+
+</nav>
+<div class="main-area" id="mainArea">
+    <div class="header-bar">
+        <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <span class="progress-text" id="progressText">0 / 7</span>
+        </div>
+        <div class="mobile-info" id="mobileInfo" onclick="mobileInfoTap()" style="cursor:pointer"><span class="mi-lesson"></span><span class="mi-sep">·</span><span class="mi-page"></span></div>
+                <button class="header-btn" id="flatBtn" onclick="toggleFlat()" title="切换分页 / 平铺（平铺便于打印导出 PDF）">📄 平铺</button>
+        <button class="header-btn" id="imgBtn" onclick="toggleImgBottom()" title="切换图片显示位置（右侧小图 / 下方大图）">🖼️ 图下</button>
+
+        <button class="header-btn" id="themeBtn" onclick="toggleTheme()">🌙 深色</button>
+        <div class="header-dropdown">
+          <button class="header-btn" id="ideBtn">💻 在线编辑器 ▾</button>
+          <div class="dropdown-menu" id="ideMenu">
+            <a href="#" class="dropdown-item" data-url="https://www.runoob.com/try/runcode.php?filename=helloworld&type=csharp">菜鸟教程</a>
+            <a href="#" class="dropdown-item" data-url="https://www.tutorialspoint.com/compilers/online-csharp-compiler.htm">Tutorialspoint（支持输入）</a>
+            <a href="#" class="dropdown-item" data-url="https://dotnetfiddle.net/">DotNetFiddle</a>
+          </div>
+        </div>
+        <button class="header-btn" onclick="changeFont(-1)">A-</button>
+        <button class="header-btn" onclick="changeFont(1)">A+</button>
+        <button class="header-btn" onclick="openSearch()">🔍</button>
+        <button class="header-btn" onclick="toggleHelp()" title="使用帮助">❓</button>
+        <button class="header-btn" onclick="toggleCatalog()" title="课件目录">📚</button>
+        <div class="mobile-more">
+          <button class="header-btn" onclick="toggleMobileMore()" title="更多">☰</button>
+          <div class="mobile-more-menu" id="mobileMoreMenu">
+            <div class="mm-item" onclick="mobileAction('ide')">💻 在线编辑器</div>
+            <div class="mm-item" onclick="mobileAction('fontDown')">🔤 A- 缩小字号</div>
+            <div class="mm-item" onclick="mobileAction('fontUp')">🔤 A+ 放大字号</div>
+            <div class="mm-item" onclick="mobileAction('search')">🔍 搜索</div>
+                        <div class="mm-item" onclick="mobileAction('flat')">📄 平铺/分页</div>
+            <div class="mm-item" onclick="mobileAction('imgbottom')">🖼️ 图下/侧图</div>
+
+            <div class="mm-item" onclick="mobileAction('help')">❓ 使用帮助</div>
+          </div>
+        </div>
+    </div>
+    <div class="slides-container"><div class="cover" data-page="1">
+    <div class="cover-tag">数字产品设计</div>
+    <h1>刚体与碰撞体</h1>
+    <div class="cover-sub">给游戏对象加上刚体与碰撞体，让它拥有真实的物理表现——会下落、会被挡住、落地站得稳，并在此基础上实现跳跃</div>
+    <div class="cover-meta">
+        <div class="cover-meta-row"><span class="cover-meta-label">授课教师</span><span class="cover-meta-text">彭堉斌</span></div>
+        <div class="cover-meta-row"><span class="cover-meta-label">学校</span><span class="cover-meta-text">汕头职业技术学院</span></div>
+    </div>
+</div>
+<div class="slide" data-page="2"><div class="slide-inner">
+<h1>本节学习目标</h1>
+<div class="goal-grid"><div class="goal-card"><span class="goal-icon">🎯</span><span class="goal-text">理解 Rigidbody 刚体：让对象进入物理模拟（重力、受力）</span></div><div class="goal-card"><span class="goal-icon">📝</span><span class="goal-text">理解 Collider 碰撞体：检测碰撞、避免穿模</span></div><div class="goal-card"><span class="goal-icon">✅</span><span class="goal-text">把刚体 + 碰撞体结合，实现对象落地站稳</span></div><div class="goal-card"><span class="goal-icon">🚀</span><span class="goal-text">综合应用：用刚体实现跳跃</span></div></div>
+
+</div></div>
+<div class="slide" data-page="3"><div class="slide-inner markable">
+<h1>Rigidbody 刚体</h1>
+<img src="images/课件12/物体碰撞 --- 掉落.gif" alt="效果：几只小动物加上刚体后，从空中受重力掉落到地形上" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>先看效果：小动物为什么会自己掉下来？</h3>
+<p>看上面的动图：几只小动物从<strong>空中掉下来</strong>、稳稳落在地形上——我们并没有写"往下掉"的代码，它们却像现实里一样被<strong>重力</strong>拉了下去，落到地面还有碰撞效果，不会穿过去。</p>
+<p>这种<strong>会下落、被地面挡住、站得稳</strong>的真实感，靠的是 Unity 的<strong>两个物理组件</strong>配合：<strong>Rigidbody（刚体）</strong>负责让对象受力与运动，<strong>Collider（碰撞体）</strong>负责检测碰撞、避免穿模。接下来两节，我们先讲<strong>刚体</strong>，再讲<strong>碰撞体</strong>——这一节先认识刚体。</p></div>
+<div class="card"><h3>添加方式</h3>
+<p>选中对象 → <code>Add Component（添加组件）</code> → <code>Rigidbody（刚体）</code>。</p>
+<p>简单说，<strong>添加刚体组件，就是给游戏对象赋予"物理属性"</strong>：一旦挂上它，这个对象就进入了 Unity 的<strong>物理模拟</strong>——会受重力、能被撞飞、能受力运动。下面这张属性面板里的每一项（质量、阻力、是否受重力……），就是它的"物理参数"。</p></div>
+<img src="images/课件12/添加刚体.gif" alt="添加刚体组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>刚体的物理属性</h3>
+<table>
+<tr><th>属性</th><th>作用</th></tr>
+<tr><td><strong>Mass 质量</strong></td><td>受力时的加速度大小——越重越"沉"</td></tr>
+<tr><td><strong>Drag 阻力</strong></td><td>运动时速度衰减（空气阻力）</td></tr>
+<tr><td><strong>Angular Drag 角阻力</strong></td><td>旋转时角速度衰减</td></tr>
+<tr><td><strong>Use Gravity 重力</strong></td><td>是否受重力影响（默认勾选，所以会下落）</td></tr>
+<tr><td><strong>Is Kinematic 运动学</strong></td><td>不受力 / 扭矩影响，但可用脚本直接控制位置旋转</td></tr>
+</table></div>
+<img src="images/课件12/刚体属性.png" alt="Inspector 中 Rigidbody 刚体的物理属性面板" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="ok-box">给对象加了 Rigidbody，它就"活"了——会下落、会被推。</div>
+<div class="card"><h3>但有个问题：对象只有刚体、没有碰撞体，会"穿模"</h3>
+<p>刚体让对象<strong>受重力下坠</strong>，可如果对象<strong>只有刚体、没有碰撞体</strong>，就会<strong>直接穿过地面</strong>一直往下掉——物理引擎根本不知道"地面在哪、该在哪被挡住"。这种现象叫<strong>穿模</strong>。</p>
+<img src="images/课件12/刚体穿模.gif" alt="效果：只有刚体没有碰撞体，小动物直接穿过地面往下掉（穿模）" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<p>要解决"穿过去"的问题，还需要一个组件——<strong>Collider（碰撞体）</strong>：它负责<strong>检测碰撞、把物体挡在地上</strong>。下一节我们就讲碰撞体。</p></div>
+</div></div>
+<div class="slide" data-page="4"><div class="slide-inner markable">
+<h1>Collider 碰撞体</h1>
+<img src="images/课件12/物体碰撞 --- 掉落.gif" alt="效果：加上碰撞体后，小动物稳稳落在地形上（不穿模）" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>为什么要加碰撞体：让对象"撞得到、挡得住"</h3>
+<p>上一节我们看到：对象<strong>只有刚体、没有碰撞体</strong>时，会<strong>直接穿过地面</strong>（穿模）。<strong>Collider（碰撞体）</strong>就是来解决这个问题的——它负责<strong>检测物体之间的接触或碰撞</strong>：有了它，地面才能"挡住"下落的对象，物体之间也能互相<strong>撞到</strong>而不是穿过彼此。</p></div>
+<div class="card"><h3>添加方式</h3>
+<p>选中对象 → <code>Add Component（添加组件）</code> → <code>Box Collider（盒型碰撞体）</code>。</p></div>
+<img src="images/课件12/添加碰撞体组件.gif" alt="添加碰撞体组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>常见碰撞体类型</h3>
+<ul><li><strong>Box Collider（盒型碰撞体）</strong>：立方体，适合墙、门、箱子</li><li><strong>Sphere Collider（球形碰撞体）</strong>：球形，适合球类、星球</li><li><strong>Capsule Collider（胶囊形碰撞体）</strong>：胶囊形，适合角色身体（贴合人体，移动自然）</li></ul>
+<div style="display:flex; gap:12px; flex-wrap:wrap;"><img src="images/课件12/Box碰撞体.png" alt="Box Collider 盒型碰撞体效果：包裹立方体、墙、门、箱子" class="card-img" style="flex:1 1 0; min-width:160px; max-width:none; margin:0;" onclick="zoomQR(this)" onerror="imgMissing(this)"><img src="images/课件12/Sphere碰撞体.png" alt="Sphere Collider 球形碰撞体效果：包裹球类、星球" class="card-img" style="flex:1 1 0; min-width:160px; max-width:none; margin:0;" onclick="zoomQR(this)" onerror="imgMissing(this)"><img src="images/课件12/Capsule碰撞体.png" alt="Capsule Collider 胶囊形碰撞体效果：贴合角色身体" class="card-img" style="flex:1 1 0; min-width:160px; max-width:none; margin:0;" onclick="zoomQR(this)" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>碰撞体是什么：一层看不见的边框</h3>
+<p>换个好懂的说法：碰撞体就是给对象套上一层<strong>看不见的边框（碰撞范围）</strong>。上面这些形状（盒子 / 球 / 胶囊），就是不同对象用的边框。物理引擎其实<strong>不看模型的精细外形</strong>，只判断这些边框有没有碰到一起——边框挨上了，就算"撞到"；没挨上，就当没接触。所以碰撞准不准，全看这层边框<strong>包得合不合理</strong>。</p></div>
+<div class="card"><h3>常见属性</h3>
+<p>以盒型碰撞体（Box Collider）为例，属性面板共有 6 项：</p>
+<ul><li><strong>编辑碰撞器（Edit Collider）</strong>：按钮，点击后进入边框编辑模式，可手动拖动调整边框（下面"调整碰撞体边框"会用到）</li><li><strong>是触发器（Is Trigger）</strong>：勾选后碰撞体变成"触发器"——只检测进入 / 停留 / 离开，不产生物理反应（不挡住、不碰撞）</li><li><strong>提供接触（Provide Contacts）</strong>：勾选后，触发器在检测进入 / 离开时也会生成接触点，可获取更详细的接触信息</li><li><strong>材质（Material）</strong>：物理材质，决定摩擦（动摩擦、静摩擦）和弹性</li><li><strong>中心（Center）</strong>：边框中心相对对象的位置（X / Y / Z）</li><li><strong>大小（Size）</strong>：边框在 X / Y / Z 三个方向上的尺寸</li></ul></div>
+<img src="images/课件12/碰撞体属性.png" alt="示例：盒型碰撞体（Box Collider）的属性面板（共 6 项属性）" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>调整碰撞体边框</h3>
+<p>添加 Collider 后，点击"编辑碰撞器"按钮手动调整边框，让它正好包裹模型：</p>
+<ol><li>点击"编辑碰撞器"按钮进入编辑</li><li>鼠标按住盒子<strong>某个面的中心点</strong>（方块手柄）拖动，可调整该方向的大小；按住边框整体拖动，可调整位置</li><li>再次点击按钮退出编辑</li></ol></div>
+<img src="images/课件12/碰撞体 - 调整边框.gif" alt="调整碰撞体边框" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="ok-box">理想状态：碰撞体正好包裹住整个模型——太大容易"隔空碰撞"，太小又会穿模。</div>
+<div class="card"><h3>动手：给人物加碰撞体并调整边框</h3>
+<p>给<strong>人物模型</strong>也加上碰撞体后，常常发现<strong>边框没有很好地包裹住人物</strong>——比如四肢露在外面、或整体偏大偏小。</p>
+<img src="images/课件12/人物碰撞体调整.png" alt="调整前后对比：左为边框没包好人物，右为调整后正好贴住" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<p>这时就用到上面说的"<strong>编辑碰撞器</strong>"：点按钮进入编辑，按住每个面的中心点拖动，把边框调到正好贴住人物。</p>
+<p>小技巧：把视图切到<strong>正交（iso）视角</strong>，再配合右上角的 <strong>Gizmo 导航器</strong> 转动观察角度，从各个方向确认边框是否贴住人物，调整起来会非常方便。</p>
+<img src="images/课件12/人物碰撞体调整.gif" alt="调整碰撞体边框的动图演示：点编辑碰撞器，按住面中心点拖动调整" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="card"><h3>试试看：人物去撞动物，却"穿模"了</h3>
+<p>给人物加上碰撞体和 <code>Move3D</code> 脚本组件后，操纵它<strong>移动去撞动物模型</strong>，却发现人物<strong>直接穿了过去</strong>——明明都有碰撞体，为什么还会穿模？</p>
+<img src="images/课件12/人物穿模.gif" alt="效果：人物操纵移动去撞动物，却直接穿了过去（穿模）" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<p>原因是：这时人物身上只有<strong>碰撞体</strong>、还没有<strong>刚体</strong>。物理引擎要"挡住"一个能动的物体，得由<strong>刚体</strong>托管它；只挂碰撞体、又用代码直接挪坐标，是不会被挡住的。下一页我们就把<strong>刚体 + 碰撞体</strong>合起来——先讲物体之间怎么碰撞，再讲落地和跳跃。</p></div>
+</div></div>
+<div class="slide" data-page="5"><div class="slide-inner markable">
+<h1>刚体 + 碰撞体 · 物体碰撞与落地</h1>
+
+<div class="card"><h3>物体之间的碰撞</h3>
+<p>给人物和动物都加上<strong>刚体 + 碰撞体</strong>，再用代码移动人物去撞动物——这次人物<strong>不会穿过去了</strong>：两个碰撞体碰到一起，物理引擎就把它们<strong>挡住</strong>（或互相反弹、推动）。这正是"两个都有碰撞体的物体之间的交互"。</p>
+<img src="images/课件12/两者都加刚体碰撞体.png" alt="截图：人物和动物都同时拥有刚体（Rigidbody）与碰撞体（Collider）组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:50%" onerror="imgMissing(this)">
+<p>碰撞要能发生，需要两个条件：</p>
+<ul><li>两个对象<strong>都有 Collider</strong>；</li><li>至少<strong>一个</strong>有 Rigidbody（由它驱动运动）。</li></ul></div>
+<div class="card"><h3>两者合起来：先"落地"</h3>
+<p>刚体让对象<strong>受重力下坠</strong>，碰撞体让对象<strong>不穿模</strong>——把两者合起来，对象就会<strong>落到地面并稳稳站住</strong>：重力一直往下拉，地面的碰撞体把它挡住，于是停在接触面上。</p>
+<img src="images/课件12/落地.gif" alt="效果：人物/动物受重力落到地面、被碰撞体挡住并稳稳站住（不穿模）" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<p>注意组件的搭配：<strong>人物和动物</strong>都要加 <strong>刚体 + 碰撞体</strong>——既能受力下落、又能被地面挡住；而<strong>地面只要碰撞体</strong>就够了，它本来就不用动，只负责"挡住"掉下来的对象。</p>
+<img src="images/课件12/三者检视器截图.png" alt="截图（合并一张）：人物、动物、地面的检视器——人物与动物都有刚体+碰撞体，地面只有碰撞体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="card"><h3>碰撞发生的那一刻，Unity 会自动"喊"你一声</h3>
+<p>角色落到地面上、或者撞到别的物体——这个"碰上了"的瞬间，Unity 会<strong>自动调用</strong>一个固定名字的函数，叫 <code>OnCollisionEnter</code>：</p>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_12_oncollision',this)">复制</button></div>
+<pre id="c_12_oncollision"><code class="language-csharp">using UnityEngine;
+
+public class CollisionLogger : MonoBehaviour
+{
+    // 碰撞发生的瞬间，Unity 会自动调用这个函数
+    void OnCollisionEnter(Collision other)
+    {
+        // 打印出被撞到的那个物体的名字
+        Debug.Log("撞到了：" + other.gameObject.name);
+    }
+}</code></pre>
+</div>
+<p>把这段脚本挂到角色上再运行：角色一碰到东西，Console（控制台）窗口就会打印出对方的名字。</p>
+<ul>
+<li><strong>不用我们去调用</strong>——只要把名字写成 <code>OnCollisionEnter</code>，Unity 自己会在碰撞发生的那一刻调用它（这类"到点自动执行"的函数叫<strong>回调</strong>）。</li>
+<li><strong>触发条件就是上一张卡的两个条件</strong>：两个对象都有碰撞体，且至少一方有刚体；否则碰不上，也就不会调用。</li>
+<li>括号里的 <code>other</code> 是<strong>被撞到的那个对象</strong>的信息，通过 <code>other.gameObject.name</code> 就能拿到它的名字（标签、位置等信息也都能取）。</li>
+</ul>
+<p>它能干什么？最直接的用法就是<strong>判断"我是不是碰到地面了"</strong>——下一页做跳跃时，我们就靠它记住角色有没有站在地面上，避免在半空连跳。</p></div></div>
+</div><div class="slide" data-page="6"><div class="slide-inner markable">
+<h1>刚体 + 碰撞体 · 实现跳跃</h1>
+<div class="card"><h3>回顾课件11：键盘控制移动</h3>
+<p>在<strong>课件11</strong> 里，我们用 <code>Move3D</code> 脚本，靠 <code>Input.GetAxis</code> 读取键盘的 <strong>前后左右</strong> 输入，再用 <code>transform.Translate</code> 让角色移动。那时角色<strong>还没有刚体和碰撞体</strong>，"移动"只是单纯改坐标——<strong>没有重力、不会下落、也不会被挡住</strong>。</p>
+<img src="images/课件11/脚本 --- 运行 --- 升降控制.gif" alt="回顾课件11：用键盘控制角色前后左右移动、上下升降——当时还没有刚体和碰撞体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<p>到了<strong>本课件</strong>，我们给角色加上 <strong>刚体（受重力）+ 碰撞体（被挡住）</strong>，"移动"就和物理绑在了一起：角色既能按键盘走，又会<strong>受重力下落、被地面和别的物体挡住</strong>。换句话说，<strong>课件11 教会我们"怎么接收键盘来移动"，本课件在这个基础上，让移动有了"物理真实感"</strong>。</p>
+
+<p>下面先梳理一下：游戏里角色常见的移动方式都有哪些。</p></div>
+<div class="card"><h3>游戏人物常见的移动方式</h3>
+<p>几乎所有游戏角色都离不开下面几种移动，区别主要在"怎么动、受不受物理影响"：</p>
+<ul>
+<li><strong>匀速行走</strong>：以固定速度前后左右走（课件11 的 GetAxis 写法就能实现）</li>
+<li><strong>加速跑</strong>：按住 Shift 等键提速（在行走速度基础上乘一个系数）</li>
+<li><strong>重力下落</strong>：不主动控制时，被重力拉着往下掉，落到地面才停</li>
+<li><strong>跳跃</strong>：给一个向上的力弹起，冲量用完再被重力拉回——<strong>本课件接下来专门讲</strong></li>
+<li><strong>平滑移动 / 缓动</strong>：起步慢慢加速、停下慢慢减速，比"瞬间达到全速"更自然（通常用阻尼或插值实现）</li>
+</ul>
+<p>其中<strong>行走、跑</strong>我们已经会了；<strong>重力下落</strong>靠刚体自动完成；剩下<strong>跳跃</strong>，只要再解决"怎么判断站在地面、别在半空连跳"，就能做出来——本页接下来就来实现它。</p></div>
+<div class="card"><h3>怎么实现跳跃</h3>
+<p>落地站稳之后，就能做游戏里最常见的动作——<strong>跳跃</strong>：</p>
+
+<svg viewBox="0 0 700 400" style="width:100%;height:auto;display:block;font-family:inherit" role="img" aria-label="跳跃过程示意图：起跳时给刚体一个向上的冲量，上升到最高点后冲量用完、重力把角色拉回，落到地面由碰撞体挡住并站稳">
+<defs>
+<marker id="k12JumpUp" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#34D399"/></marker>
+<marker id="k12JumpDown" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#F5A623"/></marker>
+</defs>
+<rect x="0" y="0" width="700" height="400" rx="12" fill="#0D1430"/>
+<rect x="40" y="330" width="620" height="16" rx="3" fill="#16324A" stroke="#00D4AA" stroke-width="1.2"/>
+<text x="52" y="342" font-size="11" fill="#86EFAC">地面（Collider：负责挡住落下来的角色）</text>
+<path d="M110,330 Q350,70 590,330" fill="none" stroke="#34D399" stroke-width="2.6" stroke-dasharray="7 6" opacity="0.85"/>
+<rect x="97" y="290" width="26" height="40" rx="13" fill="#4FC3F7"/>
+<rect x="337" y="160" width="26" height="40" rx="13" fill="#4FC3F7"/>
+<rect x="577" y="290" width="26" height="40" rx="13" fill="#4FC3F7"/>
+<line x1="110" y1="284" x2="110" y2="238" stroke="#34D399" stroke-width="3" marker-end="url(#k12JumpUp)"/>
+<line x1="440" y1="240" x2="440" y2="276" stroke="#F5A623" stroke-width="3" marker-end="url(#k12JumpDown)"/>
+<line x1="500" y1="276" x2="500" y2="312" stroke="#F5A623" stroke-width="3" marker-end="url(#k12JumpDown)"/>
+<text x="428" y="262" font-size="13" fill="#F5A623" text-anchor="end">重力</text>
+<text x="110" y="372" font-size="14" font-weight="600" fill="#34D399" text-anchor="middle">① 起跳</text>
+<text x="110" y="391" font-size="12" fill="#9AA0A6" text-anchor="middle">AddForce 向上冲量</text>
+<text x="350" y="372" font-size="14" font-weight="600" fill="#F5A623" text-anchor="middle">② 最高点</text>
+<text x="350" y="391" font-size="12" fill="#9AA0A6" text-anchor="middle">冲量用完，重力接管</text>
+<text x="590" y="372" font-size="14" font-weight="600" fill="#86EFAC" text-anchor="middle">③ 落地</text>
+<text x="590" y="391" font-size="12" fill="#9AA0A6" text-anchor="middle">碰撞体挡住 → 站稳</text>
+</svg>
+<ul>
+<li><strong>跳起来</strong>：按空格时，给刚体一个<strong>向上的冲量</strong>，人就被"弹"上去；</li>
+<li><strong>落下来</strong>：冲量用完，<strong>重力</strong>立刻接管，把人往下拉——下落不用我们写一行代码；</li>
+<li><strong>站得住</strong>：地面有<strong>碰撞体</strong>，落下来会被挡住，人就稳稳站在地面上。</li>
+</ul>
+<p>跳跃的"上"和"下"<strong>全是物理引擎在算</strong>，我们只负责在<strong>按空格那一瞬间给一个力</strong>。</p>
+<img src="images/课件12/脚本 --- 运行 --- 跳跃.gif" alt="效果：本课件中角色用键盘正常移动，并能按空格跳起、受重力落回" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="card"><h3>先看个问题：站在半空中也能一直跳</h3>
+<p>按空格把角色弹起来，人还在<strong>半空</strong>没落下来时再按一次空格——它<strong>又往上弹了一次</strong>；一直按，就一直往上弹，角色能<strong>凭空飞上天</strong>。</p>
+<p>所以跳跃<strong>必须</strong>加一句判断：<strong>只有"站在地面"时，才允许起跳</strong>。那接下来的问题就是——我们要怎么知道"自己有没有站在地面"？</p></div>
+<div class="card"><h3>怎么判断"站在地面"</h3>
+<p>用一个变量<strong>记住"现在是不是站在地面上"</strong>：一起跳，就记成<strong>已离地</strong>；一碰到地面，再记成<strong>站住了</strong>。按空格时先看一眼它——如果还是"已离地"，角色就不会有反应。</p>
+<p>那怎么知道"碰到了地面"？用的正是<strong>前面刚学的碰撞体</strong>：碰撞回调 <code>OnCollisionEnter</code> 会在角色碰到东西的那一刻<strong>自动执行</strong>，我们就在里面把变量记成"站住了"。</p></div>
+<div class="card"><h3>完整代码：Move2D_Jump</h3>
+<p>在<strong>课件11</strong> 的移动脚本基础上<strong>加一步</strong>——<strong>加上跳跃</strong>（水平移动沿用课件11 的 <code>transform.Translate</code>，不改）。角色要有 <strong>Rigidbody + Collider</strong>、地面要有 <strong>Collider</strong>；<strong>刚体不用手动拖</strong>，脚本会在 <code>Start()</code> 里<strong>自己获取</strong>：</p></div>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4347561906',this)">复制</button></div>
+<pre id="c_4347561906"><code class="language-csharp">using UnityEngine;
+
+public class Move2D_Jump : MonoBehaviour
+{
+    private Rigidbody rb;         // 角色的刚体，Start 里自动获取
+    public float disPreSec = 6f;  // 水平移动速度（单位/秒）
+    public float jumpForce = 5f;  // 跳跃冲量：越大跳得越高
+
+    private bool isGrounded = true; // 是否站在地面上
+
+    void Start()
+    {
+        rb = GetComponent&lt;Rigidbody&gt;();   // 从"自己身上"取出刚体组件
+    }
+
+    void Update()
+    {
+        // ① 水平移动：前后左右走（沿用课件11 的 Translate 写法）
+        float horizontal = Input.GetAxis("Horizontal"); // A/D 或 ←/→
+        float vertical   = Input.GetAxis("Vertical");   // W/S 或 ↑/↓
+        Vector3 move = new Vector3(horizontal, 0, vertical);
+        transform.Translate(move * disPreSec * Time.deltaTime);
+
+        // ② 跳跃：站在地面时按空格，给刚体一个向上的冲量
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        {
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            isGrounded = false;   // 已离地，空中不能再跳
+        }
+    }
+
+    // ③ 落地判定：碰到地面（碰撞体）就重新允许起跳
+    void OnCollisionEnter(Collision other)
+    {
+        isGrounded = true;
+    }
+}</code></pre>
+</div>
+<div class="card"><h3>代码逐行解释</h3>
+<ul>
+<li><code>private Rigidbody rb;</code> —— 存放角色的<strong>刚体</strong>组件；这里不用 <code>public</code>，因为值由脚本自己取，不需要在 Inspector 里暴露。</li>
+<li><code>void Start() { rb = GetComponent&lt;Rigidbody&gt;(); }</code> —— 游戏<strong>开始时</strong>，在<strong>脚本所在的这个游戏对象</strong>身上查找 <strong>Rigidbody</strong> 并交给 <code>rb</code>；尖括号里写要找的组件类型。只取一次，之后 Update 里直接用。⚠️ 前提是角色身上<strong>确实挂着 Rigidbody</strong>，否则取到的是空值。</li>
+
+<li><code>transform.Translate(move * disPreSec * Time.deltaTime)</code> —— 按<strong>每秒 disPreSec 个单位</strong>移动：乘 <code>Time.deltaTime</code> 把"每秒"换算成"这一帧该走多少"，这样不同帧率下速度才一致。（垂直方向不用我们管——下落交给重力、起跳交给冲量。）</li>
+<li><code>Input.GetKeyDown(KeyCode.Space)</code> —— 只在<strong>按下空格的那一帧</strong>返回 true（按住不会连发）；配合 <code>isGrounded</code>，只有<strong>站在地面</strong>时才能起跳。</li>
+<li><code>rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse)</code> —— 给刚体施加一个<strong>向上的冲量</strong>：<code>Vector3.up</code> 是正上方，<code>jumpForce</code> 决定跳多高，<code>ForceMode.Impulse</code> 表示"瞬间一次性"加力，而不是持续地推。</li>
+<li><code>isGrounded = false;</code> —— 起跳后立刻标记"已离地"，这样在空中再按空格也不会重复加力。</li>
+<li><code>void OnCollisionEnter(Collision other)</code> —— <strong>碰撞回调</strong>：脚本所在对象<strong>刚碰到</strong>别的碰撞体时自动调用。角色落回地面时触发，把 <code>isGrounded</code> 设回 <code>true</code>，就又能起跳了。</li>
+</ul></div>
+<div class="card"><h3>补充：刚体也可以手动拖拽赋值</h3>
+<p>除了让脚本自己获取，还有另一种更直白的写法：把 <code>rb</code> 声明成 <code>public Rigidbody rb;</code>，再在 Inspector 里把角色身上的 Rigidbody <strong>拖</strong>到这个格子上。</p>
+<ul>
+<li>两种写法<strong>效果完全一样</strong>——都是让 <code>rb</code> 指向角色自己的刚体组件。</li>
+<li>区别只在<strong>谁来赋值</strong>：拖拽是在 Inspector 里<strong>手动</strong>做；<code>GetComponent</code> 是脚本在 <code>Start()</code> 里<strong>自己</strong>做。</li>
+<li>用代码获取更省心：脚本挂上去就能跑，<strong>不怕漏拖</strong>——一旦忘拖，<code>rb</code> 就是空的，用到它就会报<strong>空引用</strong>错误。</li>
+</ul></div>
+<div class="ok-box">💡 跳跃的"上"和"下"都交给物理引擎——我们只在按空格那一瞬间给一个<strong>向上的冲量</strong>，其余由<strong>重力</strong>和<strong>地面的碰撞体</strong>完成。动手前记得：① 角色要有 <strong>Rigidbody + Collider</strong>、地面要有 <strong>Collider</strong>；② 把课件11 挂在角色上的旧移动脚本<strong>移除或取消勾选</strong>，免得两个脚本同时控制角色。</div>
+</div></div>
+<div class="slide" data-page="7"><div class="slide-inner markable">
+<h1>刚体 + 碰撞体 · 撞到东西会倒怎么办</h1>
+<div class="card"><h3>问题：撞到东西，人物会倒</h3>
+<p>用键盘操纵角色去撞动物、或者撞到别的物体——会发现角色<strong>被撞得东倒西歪</strong>，甚至直接"啪"地<strong>倒在地上</strong>，再也站不起来。</p>
+<img src="images/课件12/人物撞倒.gif" alt="问题：人物撞到别的物体后被撞倒、躺在地上" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+</div>
+<div class="card"><h3>原因：刚体不只管位置，还管旋转</h3>
+<p>刚体负责的是角色整个<strong>"物理身体"</strong>——不只是<strong>位置</strong>和<strong>速度</strong>，还有<strong>旋转</strong>。碰撞的那一刻会<strong>产生力</strong>，这个力不只把人<strong>弹开</strong>，也会让身体<strong>绕轴转起来</strong>；而角色模型是"站着"的，一转头脚就翻过去，看起来就是<strong>倒下</strong>。</p>
+<p>我们要的效果是：角色<strong>只平移、不翻滚</strong>。</p></div>
+<div class="card"><h3>解决：用约束（Constraints）冻结旋转</h3>
+<p>选中角色，在 <strong>Rigidbody</strong> 组件里找到 <strong>Constraints（约束）</strong>，展开后有两组：<strong>冻结位置（Freeze Position）</strong>、<strong>冻结旋转（Freeze Rotation）</strong>。</p>
+<p>勾选<strong>冻结旋转的 X 和 Z</strong>——角色就不会再前后、左右翻倒，只剩下平移。</p>
+<p><strong>Y 轴先留着</strong>：以后要让角色转身、朝向移动方向时，就靠它。</p>
+<img src="images/课件12/刚体Constraints.png" alt="Rigidbody 组件里的 Constraints（约束）面板：冻结位置 / 冻结旋转各三项" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:50%" onerror="imgMissing(this)">
+<img src="images/课件12/冻结旋转.gif" alt="效果：勾选冻结旋转 X / Z 之后，角色撞到物体不再翻倒" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="ok-box">⚠️ 别去勾"冻结位置（Freeze Position）"——那是把角色的<strong>移动</strong>锁死，勾上之后连走都走不了。</div>
+</div>
+</div>
+<div class="slide" data-page="8"><div class="slide-inner markable">
+<h1>作业 · 给角色加上物理真实感（落地 + 跳跃）</h1>
+<div class="card"><h3>基本要求</h3><ul>
+<li><strong>搭场景</strong>：一个地面（Plane，自带 Mesh Collider）+ 一个角色（Cube / Capsule），角色<strong>悬空</strong>摆放（离地一段距离）</li>
+<li><strong>加刚体</strong>：给角色加 <code>Rigidbody</code>，运行后角色受重力<strong>下落</strong>，并<strong>稳稳落在地面上</strong>（不穿模、不掉下去）</li>
+<li><strong>加碰撞体</strong>：给角色加合适的 <code>Collider</code>（记得点"编辑碰撞器"<strong>调整边框</strong>包裹模型）；地面本身就是碰撞体</li>
+<li><strong>参数可调</strong>：把跳跃冲量 <code>jumpForce</code> 用 <code>public</code> 暴露到 Inspector，能现场调跳多高</li>
+</ul></div>
+<img src="images/课件12/脚本 --- 运行 --- 跳跃.gif" alt="基础效果：角色能用键盘移动，按空格跳起、受重力稳稳落回地面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>核心要求</h3><ul>
+<li><strong>跳跃用刚体冲量</strong>：按空格时用 <code>rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse)</code>，<strong>不是</strong>直接改 <code>transform.position</code></li>
+<li><strong>落地判定</strong>：用 <code>OnCollisionEnter</code> 记住"是否站在地面"，只有站地面时才能起跳——<strong>空中不能连跳</strong></li>
+<li><strong>撞不翻</strong>：给角色的刚体加上 <strong>Constraints → 冻结旋转的 X 和 Z</strong>，撞到物体或平台侧面时角色不会翻倒</li>
+</ul></div>
+<div class="card"><h3>本次作业（必做）：蓄力跳</h3>
+<p>把"按一下跳固定高度"改成<strong>按住空格蓄力、松开才起跳</strong>——按得越久跳得越高。长按最多蓄满 <strong>1.5 秒</strong>，蓄满时跳跃冲量约为原来的 <strong>2 倍</strong>。</p>
+<p>先加两个变量：<code>public float maxCharge = 1.5f;</code>（蓄满要多久）、<code>private float chargeTime = 0f;</code>（现在蓄了多久），再把原来"按空格就跳"的那段换成下面这段：</p>
+<div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_hw_charge',this)">复制</button></div>
+<pre id="c_hw_charge"><code class="language-csharp">// ① 蓄力：站在地面上按住空格，时间一帧一帧攒起来（攒到 maxCharge 就不再涨）
+if (Input.GetKey(KeyCode.Space) && isGrounded)
+{
+    chargeTime += Time.deltaTime;
+    chargeTime = Mathf.Min(chargeTime, maxCharge);
+}
+
+// ② 起跳：松开空格的那一刻才起跳，蓄得越久冲量越大
+if (Input.GetKeyUp(KeyCode.Space))
+{
+    if (isGrounded)
+    {
+        float force = jumpForce * (1f + chargeTime / maxCharge);
+        rb.AddForce(Vector3.up * force, ForceMode.Impulse);
+        isGrounded = false;   // 已离地，空中不能再跳
+    }
+    chargeTime = 0f;          // 不管跳没跳成，蓄力都清零
+}</code></pre>
+</div>
+<p>要看到的效果：<strong>轻点空格是小跳，按住不放再松开是大跳</strong>；在半空中按下空格不生效（还是跳不起来）。</p><img src="images/课件12/作业_落地.gif" alt="蓄力跳效果：轻点空格是小跳，按住蓄力后松开跳得更高" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="card"><h3>挑战（选做）</h3><ul>
+<li><strong>① 跳远</strong>：起跳时同时给角色一个<strong>水平方向</strong>的冲量，让它边跳边往前（提示：把 <code>Vector3.up</code> 换成 <code>Vector3.up + 水平方向</code> 再 <code>AddForce</code>）。</li>
+<li><strong>② 弹性地面</strong>：给地面换一个<strong>高弹性</strong>的物理材质（Material），角色落地会被弹起来。</li>
+<li><strong>③ 二段跳</strong>：让角色在<strong>半空中</strong>还能再跳一次（提示：用一个变量记住"还剩几次"，起跳就减 1、落地时补满，判断条件从"是否站在地面"换成"是否还有次数"）。</li>
+
+</ul></div>
+<div class="ok-box">⚠️ 改了脚本里 <code>public</code> 变量的默认值，场景里已挂的组件<strong>不会</strong>跟着变（Inspector 里还是旧值）。把该脚本组件移除后<strong>重新添加</strong>，或点组件右上角 <strong>⋮ → Reset</strong>，新值才会生效。</div>
+</div></div>
+<div class="slide" data-page="9"><div class="slide-inner end-page">
+
+<div class="end-thanks">
+    <div class="end-left">
+        <div class="end-icon">💪</div>
+        <div class="end-title">感谢各位同学的参与!</div>
+        <div class="end-sub">祝大家学习进步</div>
+    </div>
+    <div class="end-right">
+        <img src="images/tencent-docs-qrcode.png" alt="腾讯文档二维码" onerror="imgMissing(this)" onclick="zoomQR(this)" style="cursor:pointer">
+        <p>扫码查看作业完成情况</p>
+        <a href="https://docs.qq.com/sheet/DV2tKZ2pSTUNwUFpX?tab=bo2p4o" target="_blank" class="end-link">📊 查看作业完成情况文档</a>
+    </div>
+</div>
+<a href="课件13_角色移动与视角.html" class="end-next-link">📖 下一节：课件13 · 角色移动与视角 →</a>
+</div></div>
+</div>
+</div>
+</div>
+<div class="search-panel" id="searchPanel">
+    <div class="search-panel-header">
+        <span>🔍 全局搜索</span>
+        <button class="search-panel-close" onclick="closeSearch()">✕</button>
+    </div>
+    <input class="search-input" id="searchInput" placeholder="输入关键词搜索..." oninput="doSearch()" autocomplete="off">
+    <div class="search-results" id="searchResults"></div>
+</div>
+
+<div class="help-overlay" id="helpOverlay">
+    <div class="help-header"><span>📖 使用帮助</span><button class="help-close-btn" onclick="closeHelp()">✕</button></div>
+    <div class="help-body">
+            <h3>⌨️ 快捷键</h3>
+            <table><tr><td><code>Ctrl+K</code></td><td>打开搜索</td></tr><tr><td><code>← →</code></td><td>上一页 / 下一页</td></tr><tr><td><code>Esc</code></td><td>关闭弹窗</td></tr></table>
+            <h3>🎯 导航</h3>
+            <p>左侧边栏点击切换页面；底部圆点快速跳转；进度条显示学习完成度。</p>
+            <h3>💻 在线编辑器</h3>
+            <p>顶部「在线编辑器」下拉提供菜鸟教程、Tutorialspoint、DotNetFiddle 三个在线 C# 编译器。</p>
+            <h3>🌙 主题与字号</h3>
+            <p>深色/浅色切换；A- / A+ 调整字号；刷新后保留设置。</p>
+            <h3>🔍 搜索</h3>
+            <p>支持中英文关键词，匹配结果高亮显示，点击跳转到对应页面。</p>
+        </div>
+</div>
+
+<div class="catalog-panel" id="catalogPanel">
+    <div class="catalog-header">
+        <span>📚 课件目录</span>
+        <button class="catalog-close-btn" onclick="closeCatalog()">✕</button>
+    </div>
+    <div class="catalog-list" id="catalogList"></div>
+</div>
+
+<div class="qr-zoom-overlay" id="qrZoom" onclick="closeZoom()">
+    <img id="qrZoomImg" src="" alt="二维码放大">
+</div>
+
+<div class="nav-buttons">
+    <button class="nav-btn" id="prevBtn" onclick="goSlide(-1)">◀ 上一页</button>
+    <button class="nav-btn" id="nextBtn" onclick="goSlide(1)">下一页 ▶</button>
+</div>
+<div class="progress-dots" id="progressDots"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+window.__CATALOG__ = [{"file": "课件1_认识Unity与课程介绍.html", "label": "课件1 · 认识Unity与课程介绍"}, {"file": "课件2_注册与安装软件.html", "label": "课件2 · 注册与安装软件"}, {"file": "课件3_Unity引擎概览.html", "label": "课件3 · Unity引擎概览"}, {"file": "课件4_场景与物体.html", "label": "课件4 · 场景与物体"}, {"file": "课件5_移动视野与物体.html", "label": "课件5 · 移动视野与物体"}, {"file": "课件6_旋转缩放多选.html", "label": "课件6 · 旋转缩放多选"}, {"file": "课件7_网格与材质.html", "label": "课件7 · 网格与材质"}, {"file": "课件8_C#核心语法.html", "label": "课件8 · C#核心语法"}, {"file": "课件9_Fbx导入与脚本入门.html", "label": "课件9 · Fbx导入与脚本入门"}, {"file": "课件10_资源商店与模型资源.html", "label": "课件10 · 资源商店与模型资源"}, {"file": "课件11_键盘控制移动.html", "label": "课件11 · 键盘控制移动"}, {"file": "课件12_刚体与碰撞体.html", "label": "课件12 · 刚体与碰撞体"}, {"file": "课件13_角色移动与视角.html", "label": "课件13 · 角色移动与视角"}, {"file": "课件14_访问其他游戏对象.html", "label": "课件14 · 访问其他游戏对象"}, {"file": "课件15_游戏管理器与生成物体.html", "label": "课件15 · 游戏管理器与生成物体"}, {"file": "课件16_动物自由巡游与定点巡逻.html", "label": "课件16 · 动物自由巡游与定点巡逻"}, {"file": "课件17_走近动物跟着走.html", "label": "课件17 · 走近动物跟着走"}, {"file": "课件18_动物交互动画切换.html", "label": "课件18 · 动物交互动画切换"}, {"file": "课件19_视线检测与图层.html", "label": "课件19 · 视线检测与图层"}, {"file": "课件20_玩家血条与被接触攻击.html", "label": "课件20 · 玩家血条与被接触攻击"}, {"file": "课件21_死亡与游戏管理器.html", "label": "课件21 · 死亡与游戏管理器"}, {"file": "课件22_撤离点与粒子系统.html", "label": "课件22 · 撤离点与粒子系统"}, {"file": "课件23_启动页面.html", "label": "课件23 · 启动页面"}, {"file": "课件24_FPS场景玩家武器.html", "label": "课件24 · FPS场景玩家武器"}, {"file": "课件25_射击准心与鼠标锁定.html", "label": "课件25 · 射击准心与鼠标锁定"}, {"file": "课件26_消灭敌人与孵化器.html", "label": "课件26 · 消灭敌人与孵化器"}, {"file": "课件27_拾取物品.html", "label": "课件27 · 拾取物品"}, {"file": "课件28_更换枪械.html", "label": "课件28 · 更换枪械"}, {"file": "课件29_修改动画状态机.html", "label": "课件29 · 修改动画状态机"}, {"file": "课件30_NPC对话.html", "label": "课件30 · NPC对话"}, {"file": "课件31_NPC对话进阶.html", "label": "课件31 · NPC对话进阶"}, {"file": "课件32_任务队列.html", "label": "课件32 · 任务队列"}];
+let LESSON_LABEL='';(function(){
+  let cur=window.location.pathname.split('/').pop();
+  let items=window.__CATALOG__||[];
+  for(let i=0;i<items.length;i++){if(items[i].file===cur){LESSON_LABEL=items[i].label;break}}
+  if(!LESSON_LABEL)LESSON_LABEL=document.title.split(' — ')[0]||'';
+})();
+
+// ========== 移动端 "更多" 菜单 ==========
+function toggleMobileMore(){document.getElementById('mobileMoreMenu').classList.toggle('open')}
+function mobileAction(act){
+  document.getElementById('mobileMoreMenu').classList.remove('open');
+  if(act==='ide'){let m=document.getElementById('ideMenu');if(m)m.classList.add('show')}
+  else if(act==='fontDown')changeFont(-1);
+  else if(act==='fontUp')changeFont(1);
+  else if(act==='search')openSearch();
+  else if(act==='flat')toggleFlat();
+  else if(act==='imgbottom')toggleImgBottom();
+  else if(act==='help')toggleHelp();
+}
+document.addEventListener('click',function(e){
+  let mm=document.getElementById('mobileMoreMenu');
+  if(mm&&mm.classList.contains('open')&&!e.target.closest('.mobile-more'))mm.classList.remove('open');
+});
+// 点击移动端信息条跳转下一页
+function mobileInfoTap(){goSlide(1)}
+
+// ========== localStorage ==========
+const LS=(k,d)=>localStorage.getItem(k)||d;
+const LSset=(k,v)=>localStorage.setItem(k,v);
+
+// ========== 主题 ==========
+// ========== 在线编辑器下拉 ==========
+document.addEventListener('DOMContentLoaded',function(){
+    var ideBtn=document.getElementById('ideBtn');
+    if(ideBtn){
+        ideBtn.onclick=function(e){
+            e.stopPropagation();
+            document.getElementById('ideMenu').classList.toggle('show');
+        };
+    }
+    document.querySelectorAll('.dropdown-item').forEach(function(el){
+        el.onclick=function(e){
+            e.preventDefault();
+            window.open(this.dataset.url,'_blank');
+            document.getElementById('ideMenu').classList.remove('show');
+        };
+    });
+    document.addEventListener('click',function(){
+        document.getElementById('ideMenu').classList.remove('show');
+    });
+});
+
+// ========== 主题 ==========
+if(LS('theme','dark')==='light')document.body.classList.add('light');
+function toggleTheme(){
+    const il=document.body.classList.toggle('light');
+    LSset('theme',il?'light':'dark');
+    document.getElementById('themeBtn').textContent=il?'☀️浅色':'🌙深色';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('themeBtn').textContent=document.body.classList.contains('light')?'☀️浅色':'🌙深色';
+    let mi=document.getElementById('mobileInfo');
+    if(mi){
+        mi.querySelector('.mi-lesson').textContent=LESSON_LABEL;
+        mi.querySelector('.mi-page').textContent='第1页 / 共'+total+'页';
+    }
+});
+
+
+// ========== 平铺模式（连续显示全部页面，导出 PDF 用） ==========
+function toggleFlat(){
+    const on=document.body.classList.toggle('flat-mode');
+    document.documentElement.classList.toggle('flat-mode',on);
+    const btn=document.getElementById('flatBtn');
+    if(btn)btn.textContent=on?'🗂️ 分页':'📄 平铺';
+    LSset('flat',on?'1':'0');
+    if(!on)showSlide(curr);   // 切回分页时回到当前页
+}
+// ========== 图片显示模式（右侧小图 / 下方大图） ==========
+function toggleImgBottom(){
+    const on=document.body.classList.toggle('img-bottom');
+    document.documentElement.classList.toggle('img-bottom',on);
+    const btn=document.getElementById('imgBtn');
+    if(btn)btn.textContent=on?'🖼️ 侧图':'🖼️ 图下';
+    LSset('imgmode',on?'1':'0');
+}
+
+
+// ========== 字号 ==========
+const FONT_SIZES=['xs','sm','md','lg','xl'];
+let fontIdx=FONT_SIZES.indexOf(LS('font','md'));
+if(fontIdx<0)fontIdx=2;
+if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+function changeFont(d){
+    document.body.classList.remove('font-'+FONT_SIZES[fontIdx]);
+    fontIdx=Math.max(0,Math.min(FONT_SIZES.length-1,fontIdx+d));
+    if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+    LSset('font',FONT_SIZES[fontIdx]);
+}
+
+// ========== 幻灯片 ==========
+let slides=document.querySelectorAll('.slide,.cover'),
+    navLinks=document.querySelectorAll('.nav-link'),
+    curr=0,total=9,contentTotal=7;
+
+// 进度圆点
+// 侧边栏点击
+navLinks.forEach((l,i)=>l.addEventListener('click',e=>{e.preventDefault();showSlide(i);}));
+let dotsHtml='';
+for(let i=0;i<total;i++)dotsHtml+=`<span class="progress-dot" data-idx="${i}" onclick="showSlide(${i})"></span>`;
+document.getElementById('progressDots').innerHTML=dotsHtml;
+let dots=document.querySelectorAll('.progress-dot');
+
+function showSlide(idx){
+    if(idx<0||idx>=total)return;
+    slides.forEach((s,i)=>s.classList.toggle('active',i===idx));
+    navLinks.forEach((l,i)=>l.classList.toggle('active',i===idx));
+    dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
+    curr=idx;
+    let cp=Math.max(0,Math.min(idx,contentTotal));
+    document.getElementById('progressFill').style.width=(cp/contentTotal*100)+'%';
+    document.getElementById('progressText').textContent=cp+' / '+contentTotal;
+    let mi=document.getElementById('mobileInfo');
+    if(mi){
+        mi.querySelector('.mi-lesson').textContent=LESSON_LABEL;
+        mi.querySelector('.mi-page').textContent='第'+(idx+1)+'页 / 共'+total+'页';
+    }
+    document.getElementById('mainArea').scrollTop=0;
+    document.querySelectorAll('.nav-status')[idx]?.classList.add('seen');
+    updateNav();
+}
+function goSlide(d){ showSlide(curr+d); }
+function updateNav(){
+    document.getElementById('prevBtn').disabled=curr===0;
+    document.getElementById('nextBtn').disabled=curr===total-1;
+    LSset('page_'+window.location.pathname.split('/').pop(), curr);
+}
+
+// 键盘
+document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')goSlide(1);
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')goSlide(-1);
+    if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openSearch();}
+    if(e.key==='Escape'){closeSearch();closeHelp();closeZoom();closeCatalog();}
+});
+
+// ========== 搜索 ==========
+function openSearch(){document.getElementById('searchPanel').classList.add('open');document.getElementById('searchInput').focus();document.getElementById('searchInput').value='';document.getElementById('searchResults').innerHTML=''}
+function closeSearch(){document.getElementById('searchPanel').classList.remove('open')}
+function toggleHelp(){document.getElementById('helpOverlay').classList.toggle('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+// 课件目录
+function toggleCatalog(){
+    let p=document.getElementById('catalogPanel');
+    if(!p.classList.contains('open')){loadCatalog();p.classList.add('open')}else{p.classList.remove('open')}
+}
+function closeCatalog(){document.getElementById('catalogPanel').classList.remove('open')}
+function loadCatalog(){
+    let c=document.getElementById('catalogList');
+    if(c.children.length>0)return;
+    let current=decodeURIComponent(window.location.pathname.split('/').pop());
+    let items=window.__CATALOG__||[];
+    if(!items.length){c.innerHTML='<div class="catalog-item" style="color:var(--text-muted)">暂无课件</div>';return}
+    items.forEach(item=>{
+        let a=document.createElement('a');a.className='catalog-item';a.href=encodeURIComponent(item.file);
+        if(item.file===current)a.classList.add('current');
+        a.innerHTML=`<span class="catalog-num">${item.label.split(' · ')[0]}</span><span>${item.label.split(' · ').slice(1).join(' · ')||item.label}</span>`;
+        c.appendChild(a);
+    });
+}
+function zoomQR(img){document.getElementById('qrZoomImg').src=img.src;document.getElementById('qrZoom').classList.add('show')}
+function closeZoom(){document.getElementById('qrZoom').classList.remove('show')}
+function doSearch(){
+    let q=document.getElementById('searchInput').value,qLower=q.toLowerCase(),c=document.getElementById('searchResults');
+    c.innerHTML='';if(q.length<2)return;
+    let r=[];
+    slides.forEach((s,i)=>{
+        let raw=s.textContent,lower=raw.toLowerCase(),idx=lower.indexOf(qLower);
+        if(idx<0)return;
+        let start=Math.max(0,idx-15),end=Math.min(raw.length,idx+q.length+30);
+        let ex=raw.substring(start,end);
+        if(start>0)ex='...'+ex;
+        if(end<raw.length)ex=ex+'...';
+        // 高亮匹配词
+        let re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+        ex=ex.replace(re,'<mark>$1</mark>');
+        r.push({idx:i,excerpt:ex,slide:s});
+    });
+    r.slice(0,20).forEach(x=>{
+        let a=document.createElement('a');a.className='search-item';a.href='#';
+        let title=navLinks[x.idx]?.textContent.replace(/^\d+\.\s*/,'')||('页面'+(x.idx+1));
+        a.innerHTML=`<div class="sr-lesson">${x.idx+1}. ${title}</div><div class="sr-text">${x.excerpt}</div>`;
+        a.onclick=e=>{e.preventDefault();showSlide(x.idx);closeSearch();};
+        c.appendChild(a);
+    });
+}
+
+// ========== 复制 ==========
+function copyCode(cid,btn){
+    let code=document.getElementById(cid).textContent;
+    navigator.clipboard.writeText(code).then(()=>{
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    }).catch(()=>{
+        // fallback
+        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
+        document.execCommand('copy');document.body.removeChild(ta);
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    });
+}
+
+// ========== 初始化 ==========
+hljs.highlightAll();
+// 折叠面板
+function toggleFold(btn){
+    btn.classList.toggle('open');
+    let content=btn.nextElementSibling;
+    if(!content||!content.classList.contains('fold-content')) content=content.nextElementSibling;
+    if(content&&content.classList.contains('fold-content')) content.classList.toggle('show');
+}
+let savedPage=parseInt(LS('page_'+window.location.pathname.split('/').pop(),'0'));
+if(savedPage>0&&savedPage<total)showSlide(savedPage);else showSlide(0);
+// 恢复上次的平铺/分页模式
+if(LS('flat','0')==='1')toggleFlat();
+if(LS('imgmode','0')==='1')toggleImgBottom();
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>课件19_视线检测与图层 — C#先知课堂</title>
+<link rel="stylesheet" href="vendor/atom-one-dark.min.css">
+<script src="vendor/highlight.min.js"></script>
+<style>
+/* ===== 色彩变量 ===== */
+:root{
+--bg-primary:#0A0E27;--bg-secondary:#0D1430;--bg-card:rgba(17,24,39,0.95);
+--bg-input:#0B1020;--border:rgba(255,255,255,0.06);
+--text:#E8EAED;--text-muted:#9AA0A6;
+--accent:#00D4AA;--accent2:#4FC3F7;--accent-dim:rgba(0,212,170,0.08);
+--orange:#F59E0B;--blue:#818CF8;
+--green:#22C55E;--green-bg:rgba(34,197,94,0.08);--green-border:rgba(34,197,94,0.3);
+--red:#EF4444;--red-bg:rgba(239,68,68,0.08);--red-border:rgba(239,68,68,0.3);
+--yellow:#F59E0B;--purple:#C084FC;--teal:#86EFAC;--teal-border:rgba(34,197,94,0.3);
+--font-size:16px;
+}
+.light{
+--bg-primary:#ffffff;--bg-secondary:#f6f8fa;--bg-card:#f6f8fa;--bg-input:#ffffff;
+--border:#d0d7de;--text:#24292f;--text-muted:#656d76;
+--accent:#0969da;--accent2:#0550ae;--accent-dim:rgba(9,105,218,0.08);
+--orange:#cf222e;--blue:#0550ae;
+--green:#1a7f37;--green-bg:#eefdf2;--green-border:#86d9a0;
+--red:#cf222e;--red-bg:#ffebe9;--red-border:#fdaeb7;
+--yellow:#9a6700;--purple:#8250df;--teal:#0550ae;--teal-border:#4ac26b;
+}
+body.font-xs{--font-size:12px}body.font-sm{--font-size:14px}body.font-md{--font-size:16px}body.font-lg{--font-size:19px}body.font-xl{--font-size:22px}
+
+/* ===== 全局 ===== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microsoft YaHei',sans-serif;background:linear-gradient(180deg,var(--bg-primary),var(--bg-secondary));color:var(--text);line-height:1.6;font-size:var(--font-size)}
+.container{display:flex;height:100vh}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.02)}
+::-webkit-scrollbar-thumb{background:rgba(0,212,170,0.2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,212,170,0.4)}
+
+/* ===== 侧边栏 ===== */
+.sidebar{width:260px;min-width:260px;height:100vh;background:linear-gradient(180deg,rgba(10,14,39,0.98),rgba(13,20,48,0.95));border-right:1px solid var(--border);overflow-y:auto;padding:12px 0;flex-shrink:0;backdrop-filter:blur(10px);position:relative;z-index:10}
+.sidebar-title{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-size:16px;font-weight:700;padding:0 14px 10px;border-bottom:1px solid rgba(0,212,170,0.15);margin-bottom:6px}
+.nav-link{display:flex;align-items:center;color:var(--text-muted);text-decoration:none;padding:8px 14px;font-size:12px;border-left:3px solid transparent;transition:all .2s}
+.nav-link:hover{color:var(--accent);background:var(--accent-dim);border-left-color:rgba(0,212,170,0.4)}
+.nav-link.active{color:#fff!important;background:linear-gradient(90deg,rgba(0,212,170,0.18),transparent);border-left:3px solid var(--accent);font-weight:600}
+.nav-status{width:7px;height:7px;border-radius:50%;margin-right:7px;flex-shrink:0;background:rgba(255,255,255,0.1);transition:all .3s}
+.nav-status.seen{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,0.5)}
+
+/* ===== Header ===== */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header-bar{display:flex;align-items:center;gap:16px;padding:10px 24px;background:rgba(10,14,39,0.95);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;position:relative;z-index:5}
+.progress-wrap{flex:1;min-width:200px;display:flex;align-items:center;gap:12px}
+.progress-bar{flex:1;height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,0.3)}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .5s ease;width:0;box-shadow:0 0 8px rgba(0,212,170,0.4)}
+.progress-text{font-size:11px;color:var(--text-muted);white-space:nowrap}
+.header-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .25s;white-space:nowrap}
+.header-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 8px rgba(0,212,170,0.1);transform:translateY(-1px)}
+.header-dropdown{position:relative;display:inline-block}
+.dropdown-menu{display:none;position:absolute;top:100%;right:0;margin-top:6px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;min-width:180px;z-index:100;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.dropdown-menu.show{display:block}
+.dropdown-item{display:block;padding:10px 16px;color:var(--text);font-size:13px;text-decoration:none;transition:background .2s;cursor:pointer;white-space:nowrap}
+.dropdown-item:hover{background:var(--accent-dim);color:var(--accent)}
+.dropdown-item:not(:last-child){border-bottom:1px solid var(--border)}
+
+/* ===== 幻灯片 ===== */
+.slides-container{flex:1;position:relative !important;overflow:hidden}
+#mainArea .slides-container{position:relative !important;overflow:hidden !important;min-height:calc(100vh - 60px)}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transform:translateX(30px);transition:opacity .35s,transform .35s;pointer-events:none;overflow-y:auto}
+.slide::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:.6;z-index:10}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto;z-index:1}
+.slide-inner{max-width:920px;margin:0 auto;padding:56px 48px 80px}
+
+/* 标题 */
+.slide-inner h1{color:#fff;font-size:26px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid rgba(0,212,170,0.2);letter-spacing:-0.3px}
+.slide-inner h2{color:var(--accent2);font-size:20px;margin:28px 0 14px;font-weight:600}
+.slide-inner h3{color:var(--accent);font-size:calc(var(--font-size) * 1.06);margin:20px 0 10px;font-weight:600;padding-left:10px;border-left:3px solid var(--accent)}
+.slide-inner h3.h-example{color:var(--accent2);border-left-color:var(--accent2)}
+.slide-inner h3.h-practice{color:var(--orange);border-left-color:var(--orange)}
+.slide-inner p{color:var(--text);margin-bottom:10px;line-height:1.85}
+.slide-inner ul,.slide-inner ol{margin-left:22px;margin-bottom:14px}
+.slide-inner li{color:#CBD5E1;margin-bottom:6px;line-height:1.75}
+
+/* 内联代码 */
+.slide-inner strong{color:var(--accent2);font-weight:700}
+.slide-inner em{color:var(--orange);font-style:normal;font-weight:500}
+.slide-inner code{background:rgba(0,212,170,0.08);color:var(--accent);padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:90%;border:1px solid rgba(0,212,170,0.15);font-weight:600}
+.tag-new{display:inline-block;background:rgba(79,195,247,.16);color:#4FC3F7;border:1px solid rgba(79,195,247,.5);border-radius:4px;padding:0 6px;font-size:.8em;font-weight:700;margin-right:6px;vertical-align:1px;line-height:1.5}
+.tag-edit{display:inline-block;background:rgba(245,166,35,.16);color:#F5A623;border:1px solid rgba(245,166,35,.5);border-radius:4px;padding:0 6px;font-size:.8em;font-weight:700;margin-right:6px;vertical-align:1px;line-height:1.5}
+
+/* 表格 */
+.slide-inner table{width:100%;border-collapse:collapse;font-size:calc(var(--font-size) * 0.94);margin:12px 0;border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.slide-inner table td,.slide-inner table th{padding:8px 14px;border:1px solid var(--border);text-align:left}
+.slide-inner table th{background:linear-gradient(135deg,rgba(17,24,39,0.9),rgba(15,23,41,0.9));color:var(--accent);font-weight:600;font-size:calc(var(--font-size) * 1.0);text-transform:uppercase;letter-spacing:.5px}
+.slide-inner table tr:nth-child(odd){background:rgba(255,255,255,0.015)}
+.slide-inner table tr:hover{background:var(--accent-dim)}
+
+/* 链接 */
+.slide-inner a{color:var(--accent2);text-decoration:underline;text-decoration-color:rgba(79,195,247,0.3);text-underline-offset:3px;transition:all .2s}
+.slide-inner a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+
+/* ===== 卡片 ===== */
+.card,.homework-card,.ok-box,.prompt-box{margin:10px 0;border-radius:12px;transition:all .3s}
+.card{background:linear-gradient(135deg,var(--bg-card),rgba(13,20,48,0.85));border:1px solid var(--border);padding:14px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.2);overflow:hidden}
+.card .card-img{float:right;max-width:200px;max-height:250px;margin:0 0 8px 16px;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 标题+图片+列表 类型的卡片：确定性两栏（左文右图），不依赖 float 环绕 */
+.card.side-card{display:flex;align-items:flex-start;gap:18px;overflow:hidden}
+.card.side-card .side-body{flex:1;min-width:0}
+.card.side-card .side-body h3{margin-top:0}
+.card.side-card .card-img{float:none;flex:0 0 auto;max-width:200px;max-height:250px;margin:0;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.card.side-card .side-body ul,.card.side-card .side-body ol{margin:8px 0 0;padding-left:22px}
+.card.side-card .side-body ul li,.card.side-card .side-body ol li{margin:4px 0}
+.card table .card-img{float:none;max-width:280px;max-height:none;margin:4px auto;display:block;border-radius:4px}
+.card table .card-img-sm{float:none;max-width:100px;max-height:none;margin:4px 0;display:inline-block;border-radius:4px}
+.card-img{display:block;max-width:100%;margin:16px auto;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+/* 表格单元格内图片（发展四时代等）：小图居中，破图自动隐藏 */
+.slide-inner table td img.card-img,.slide-inner table th img.card-img{display:block;max-width:150px;max-height:105px;width:auto;height:auto;margin:6px auto;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+.slide-inner table td img.card-img-sm,.slide-inner table th img.card-img-sm{display:block;max-width:96px;max-height:66px;margin:4px auto;border-radius:4px}
+/* 竞赛照片三图并排 */
+.contest-row{display:flex;gap:12px;justify-content:center;margin:16px 0;flex-wrap:wrap}
+.contest-row img{flex:1;min-width:0;max-width:280px;max-height:200px;object-fit:cover;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer}
+.card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.12);transform:translateY(-1px)}
+.card h3{margin-top:0}
+
+/* 代码块 */
+.prompt-box{background:var(--bg-input);border:1px solid rgba(0,212,170,0.2);border-left:3px solid var(--accent);overflow:hidden;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03)}
+.code-toolbar{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.04)}
+.code-lang{font-size:10px;color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.copy-btn{background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2);color:var(--accent);padding:3px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-family:inherit;transition:all .2s}
+.copy-btn:hover{background:rgba(0,212,170,0.2);border-color:var(--accent)}
+.copy-btn.copied{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.prompt-box pre{background:transparent;padding:12px 16px;margin:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;overflow-x:auto}
+.prompt-box pre code{background:transparent;padding:0;font-size:calc(var(--font-size) * 0.85);line-height:1.7;font-family:'JetBrains Mono','Menlo','Monaco',monospace;color:#E2E8F0;border:none}
+
+/* ok-box / homework-card */
+.homework-card{background:linear-gradient(135deg,rgba(0,212,170,0.06),var(--bg-card));border:1px solid var(--teal-border);padding:14px 18px}
+.homework-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(0,212,170,0.08)}
+.homework-card h3{color:var(--teal)}
+.ok-box{background:linear-gradient(135deg,rgba(34,197,94,0.06),var(--bg-card));border:1px solid var(--green-border);padding:14px 18px}
+.ok-box:hover{border-color:var(--green);box-shadow:0 8px 24px rgba(34,197,94,0.08)}
+.ok-box ul,.ok-box ol{margin:6px 0;padding-left:1.5em}
+.ok-box li{margin:3px 0;line-height:1.7}
+
+/* 高亮标记 */
+.markable li,.markable p{cursor:pointer;transition:all .15s;border-radius:3px;padding:1px 3px}
+.markable li.marked,.markable p.marked{background:rgba(192,132,252,.12);border-left:3px solid var(--purple);padding-left:8px}
+
+/* ===== 折叠面板 ===== */
+.fold-toggle{display:inline-flex;align-items:center;gap:6px;background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:calc(var(--font-size) * 1.06);font-family:inherit;transition:all .2s;margin:8px 0;user-select:none}
+.fold-toggle:hover{background:rgba(0,212,170,0.15);box-shadow:0 2px 8px rgba(0,212,170,0.15)}
+.fold-toggle .arrow{display:inline-block;transition:transform .3s;font-size:10px}
+.fold-toggle.open .arrow{transform:rotate(90deg)}
+.fold-content{max-height:0;overflow:hidden;transition:max-height .4s ease;opacity:0}
+.fold-content.show{max-height:3000px;opacity:1}
+/* 提示折叠 绿色 */
+.fold-toggle.hint{color:var(--green);border-color:var(--green-border);background:var(--green-bg)}
+.fold-toggle.hint:hover{background:rgba(34,197,94,0.12)}
+/* 答案折叠 紫色 */
+.fold-toggle.solution{color:var(--purple);border-color:rgba(192,132,252,0.4);background:rgba(192,132,252,0.08)}
+.fold-toggle.solution:hover{background:rgba(192,132,252,0.15)}
+/* 问答折叠 橙色 */
+.fold-toggle.qa{color:var(--orange);border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.08)}
+.fold-toggle.qa:hover{background:rgba(245,158,11,0.15)}
+/* 填空代码 */
+.code-blank{color:var(--orange);background:rgba(245,158,11,0.1);padding:2px 6px;border-radius:4px;font-weight:600}
+
+/* ===== 导航按钮 ===== */
+.nav-buttons{position:fixed;bottom:24px;right:32px;display:flex;gap:8px;z-index:100}
+.nav-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:10px 22px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:500;transition:all .25s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 4px 16px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
+.progress-dots{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:100}
+.progress-dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:all .3s;cursor:pointer}
+.progress-dot:hover{background:var(--accent2)}
+.progress-dot.active{background:var(--accent);transform:scale(1.4);box-shadow:0 0 8px rgba(0,212,170,0.5)}
+
+/* ===== 搜索 ===== */
+.search-panel{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:300;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.search-panel.open{right:0}
+.search-panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.search-panel-header span{font-size:15px;font-weight:600;color:var(--text)}
+.search-panel-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.search-panel-close:hover{color:var(--text);background:var(--accent-dim)}
+
+/* ===== 课件目录 ===== */
+.catalog-panel{position:fixed;top:0;right:-320px;width:320px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:298;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.catalog-panel.open{right:0}
+.catalog-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.catalog-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.catalog-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.catalog-list{flex:1;overflow-y:auto;padding:8px 0}
+.catalog-item{display:flex;align-items:center;gap:10px;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.catalog-item:hover{background:var(--accent-dim);border-left-color:var(--accent)}
+.catalog-item.current{color:var(--accent)!important;background:var(--accent-dim);border-left-color:var(--accent);font-weight:600}
+.catalog-num{color:var(--accent);font-size:11px;font-weight:700;min-width:40px;white-space:nowrap}
+.search-input{width:100%;padding:14px 18px;background:var(--bg-input);border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:15px;outline:none;flex-shrink:0}
+.search-input::placeholder{color:var(--text-muted)}
+.search-results{flex:1;overflow-y:auto;padding:8px 0}
+.search-item{display:block;padding:10px 18px;color:var(--text);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .2s}
+.search-item:hover,.search-item.focus{background:var(--accent-dim);border-left-color:var(--accent)}
+.help-overlay{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:299;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.3)}
+.help-overlay.open{right:0}
+.help-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--text);flex-shrink:0}
+.help-close-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:all .2s}
+.help-close-btn:hover{color:var(--text);background:var(--accent-dim)}
+.help-body{flex:1;overflow-y:auto;padding:16px 22px 24px}
+.help-body h3{color:var(--accent);font-size:14px;margin:16px 0 8px;padding-left:0;border-left:none}
+.help-body p{font-size:13px;color:var(--text-muted);margin-bottom:8px}
+.help-body table{font-size:13px}
+.help-body table td{padding:4px 12px 4px 0}
+.help-body table td:first-child{white-space:nowrap;padding-right:16px}
+.search-item mark{background:rgba(0,212,170,0.2);color:var(--accent);border-radius:2px;padding:0 3px}
+
+/* ===== Toast ===== */
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:400;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);padding:16px 28px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.toast.show{opacity:1}
+
+/* ===== 浅色覆盖 ===== */
+.light body,.light html{background:var(--bg-primary)!important}
+.light .sidebar{background:var(--bg-secondary)!important;border-right-color:var(--border)!important}
+.light .sidebar-title{-webkit-text-fill-color:var(--text);font-weight:600}
+.light .goal-card,.light .card{background:var(--bg-card)!important;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.light .homework-card{background:var(--accent-dim)!important}
+.light .ok-box{background:var(--green-bg)!important;border-color:var(--green-border)!important;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.light .header-bar{background:var(--bg-secondary)!important;backdrop-filter:none!important}
+.light .slide-inner table th{background:var(--bg-input)!important;color:var(--text)!important}
+.light .slide-inner h1{color:var(--text)!important}
+.light .slide-inner h2{color:var(--accent)!important}
+.light .slide-inner h3{color:var(--accent2)!important}
+.light .slide-inner li,.light .slide-inner p{color:var(--text)!important}
+.light .nav-link.active{color:var(--accent)!important;background:var(--accent-dim)!important}
+.light .progress-fill{box-shadow:none!important}
+.light .cover{background:radial-gradient(ellipse at 30% 20%,rgba(9,105,218,0.08),transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(5,80,174,0.06),transparent 55%),var(--bg-primary)!important}
+.light .cover-tag{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-label{background:var(--accent-dim);color:var(--accent);border-color:rgba(9,105,218,0.3)}
+.light .cover-meta-text{color:var(--text)!important}
+.light .cover-sub{color:var(--text-muted)!important}
+.light .end-thanks{background:var(--bg-card);border-color:rgba(9,105,218,0.15)}
+.light .end-title{color:var(--accent)!important}
+.light .prompt-box pre code{color:var(--text)!important}
+.light .code-toolbar{background:rgba(0,0,0,0.05)}
+.hljs-comment.cmt-new{color:#3DD68C!important;font-weight:600}
+.light .hljs-comment.cmt-new{color:#0B7A52!important;font-weight:600}
+/* 深色主题下注释颜色调亮（原atom-one-dark太暗） */
+.hljs-comment,.hljs-meta{color:#8b949e!important}
+
+/* ===== 封面 ===== */
+.cover{display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;height:100vh;box-sizing:border-box;background:radial-gradient(ellipse at 30% 20%,rgba(0,212,170,0.18) 0%,transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(79,195,247,0.12) 0%,transparent 55%),linear-gradient(180deg,#0A0E27 0%,#0D1430 100%);position:relative;overflow:hidden}
+.cover.active{display:flex!important}
+.cover::after{content:'';position:absolute;top:-120px;right:-120px;width:400px;height:400px;background:radial-gradient(circle,rgba(0,212,170,0.08),transparent 70%);border-radius:50%;pointer-events:none}
+.cover-tag{display:inline-block;font-size:14px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);border-radius:20px;padding:8px 22px;margin-bottom:24px;letter-spacing:2px}
+.cover h1{font-size:52px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;letter-spacing:-1px;border:none;line-height:1.2;max-width:800px}
+.cover-sub{font-size:16px;color:var(--text-muted);margin-bottom:40px;max-width:650px;line-height:1.8}
+.cover-meta{font-size:14px;color:#6B7280;line-height:2.2;display:flex;flex-direction:column;gap:8px;align-items:center}
+.cover-meta-row{display:flex;align-items:center;gap:8px}
+.cover-meta-label{font-size:13px;font-weight:600;color:var(--accent);background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.3);border-radius:6px;padding:3px 12px}
+.cover-meta-text{font-size:16px;color:#CBD5E1}
+
+/* ===== 结束页 ===== */
+.end-page{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:100%;box-sizing:border-box;max-width:920px;margin:0 auto;padding:36px 48px}
+.end-page h2{text-align:center;border-bottom:none;margin-bottom:32px}
+.end-thanks{display:flex;align-items:center;justify-content:center;gap:60px;flex-wrap:wrap;padding:60px 56px;border:2px solid rgba(0,212,170,0.3);border-radius:16px;background:linear-gradient(135deg,rgba(0,212,170,0.06),rgba(17,24,39,0.95))}
+.end-left{flex:1;min-width:200px;text-align:center}
+.end-right{flex:0 0 auto;text-align:center;padding-left:24px;border-left:1px solid rgba(0,212,170,0.2)}
+.end-icon{font-size:48px;margin-bottom:16px}
+.end-title{font-size:24px;color:var(--accent);font-weight:700;margin-bottom:20px}
+.end-sub{font-size:18px;color:var(--text-muted)}
+.end-contact{margin-top:16px;font-size:13px;color:var(--text-muted);line-height:1.7}
+.end-right img{width:120px;height:120px;border-radius:10px;margin-bottom:10px;border:2px solid var(--border);transition:transform .2s}
+.end-right img:hover{transform:scale(1.05)}
+.end-right p{font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5}
+.end-link{display:inline-block;color:var(--accent);text-decoration:none;font-size:13px;border:1px solid rgba(0,212,170,0.3);padding:8px 16px;border-radius:8px;transition:all .25s;white-space:nowrap}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+.end-next-link{display:inline-block;margin-top:20px;color:var(--accent2);text-decoration:none;font-size:15px;font-weight:600;padding:10px 24px;border:2px solid var(--accent2);border-radius:10px;transition:all .25s}
+.end-next-link:hover{background:rgba(79,195,247,0.1);box-shadow:0 4px 20px rgba(79,195,247,0.2);transform:translateY(-2px)}
+/* 二维码放大 */
+.qr-zoom-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;cursor:pointer}
+.qr-zoom-overlay.show{display:flex}
+.qr-zoom-overlay img{max-width:80vw;max-height:80vh;border-radius:12px;box-shadow:0 8px 32px rgba(0,212,170,0.2)}
+.end-link:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.15)}
+
+/* ===== 学习目标 ===== */
+.goal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:8px}
+.goal-card{background:linear-gradient(135deg,var(--bg-card),var(--bg-secondary));border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:14px;transition:all .3s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.goal-card:hover{border-color:rgba(0,212,170,0.5);box-shadow:0 4px 20px rgba(0,212,170,0.15);transform:translateY(-2px)}
+.goal-icon{font-size:28px;flex-shrink:0;transition:transform .3s}
+.goal-card:hover .goal-icon{transform:scale(1.15)}
+.goal-text{font-size:calc(var(--font-size) * 1.05);color:var(--text);line-height:1.6}
+/* ===== 三段动画对比（待机 / 跳跃 / 攻击） ===== */
+.state-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0 14px}
+.state-cell{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:10px 12px 12px;text-align:center}
+.state-name{font-size:calc(var(--font-size) * 0.95);font-weight:700;color:var(--accent);margin-bottom:8px;letter-spacing:.3px}
+.state-cell img{display:block;width:100%;max-width:100%;height:auto;margin:0 auto 8px;border-radius:8px;border:1px solid var(--border)}
+.state-cell p{font-size:calc(var(--font-size) * 0.86);color:var(--text-muted);margin:0;line-height:1.65;text-align:left}
+.light .state-cell{background:#fff}
+
+/* 侧边栏 - 特殊链接（无序号） */
+.nav-special{font-style:italic;color:var(--accent2)!important}
+/* 导航标签 */
+.nav-badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:6px;font-weight:600;vertical-align:1px}
+.nav-badge.practice{color:var(--accent2);background:rgba(79,195,247,0.12);border:1px solid rgba(79,195,247,0.25)}
+.nav-badge.comprehensive{color:var(--purple);background:rgba(192,132,252,0.12);border:1px solid rgba(192,132,252,0.25)}
+.nav-badge.homework{color:var(--orange);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25)}
+
+/* ===== 响应式 ===== */
+/* ===== 移动端 header 精简按钮 ===== */
+.mobile-info{display:none;font-size:13px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.mobile-info .mi-lesson{color:var(--accent);font-weight:600}
+.mobile-info .mi-sep{margin:0 4px;color:var(--text-muted);opacity:0.5}
+.mobile-info .mi-page{color:var(--text)}
+.mobile-more{display:none;position:relative}
+.mobile-more-menu{display:none;position:absolute;top:100%;right:0;margin-top:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:4px 0;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:50;min-width:160px}
+.mobile-more-menu.open{display:block}
+.mobile-more-menu .mm-item{display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--text);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.mobile-more-menu .mm-item:hover{background:var(--accent-dim);color:var(--accent)}
+@media(max-width:768px){.sidebar{display:none}.slide-inner{padding:18px 18px 80px}.cover{padding-left:40px;padding-right:40px}.cover h1{font-size:32px}.nav-buttons{right:12px;bottom:12px}.header-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap}.header-btn[onclick="toggleTheme()"]{padding:6px 6px}.progress-wrap{display:none}.header-dropdown{display:none}.header-btn[onclick^="changeFont"]{display:none}.header-btn[onclick="openSearch()"]{display:none}.header-btn[onclick="toggleHelp()"]{display:none}.mobile-info{display:flex;align-items:center;gap:2px}.mi-page{display:none}.mobile-more{display:inline-block}.slides-container{min-height:calc(100vh - 54px)}}
+/* ===== 平铺模式（连续显示全部页面，用于导出 PDF） ===== */
+html.flat-mode,body.flat-mode{height:auto;overflow:visible}
+.flat-mode .container{height:auto;overflow:visible}
+.flat-mode .main-area{overflow:visible}
+.flat-mode .sidebar{display:none}
+.flat-mode .slides-container{overflow:visible;height:auto;min-height:0!important}
+.flat-mode .slide{position:static;opacity:1!important;transform:none!important;pointer-events:auto;height:auto;overflow:visible;margin:0 0 28px}
+.flat-mode .slide::before{display:none}
+.flat-mode .slide,.flat-mode .cover{transition:none!important}
+.flat-mode .slide-inner{padding:36px 48px 32px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,0.02)}
+.flat-mode .cover{display:flex!important;position:static;opacity:1!important;transform:none!important;pointer-events:auto;height:auto;overflow:visible;margin:0 0 28px;border:1px solid var(--border);border-radius:14px}
+.flat-mode .nav-buttons{display:none}
+.flat-mode .progress-dots{display:none}
+.flat-mode .header-bar{position:sticky;top:0}
+/* ===== 图片显示模式（右侧小图 / 下方大图） ===== */
+.img-bottom .card .card-img{float:none;display:block;width:100%;max-width:100%;max-height:none;margin:16px auto 4px}
+.img-bottom .card table .card-img{width:auto;max-width:100%;margin:4px auto}
+.img-bottom .card .card-img-sm{width:auto;max-width:120px;max-height:none}
+.img-bottom .side-card{flex-direction:column;align-items:stretch}
+
+
+/* 平铺/PDF导出：并排多图改为单独一行放大显示（保持可点击放大） */
+.flat-mode .contest-row{display:block}
+.flat-mode .contest-row img{display:block;width:100%;max-width:100%;max-height:none;object-fit:contain;margin:16px auto 4px}
+/* 多图并排一行：等宽、不裁切 */
+.img-pair{display:flex;gap:14px;align-items:flex-start;margin:16px 0}
+.img-pair img,.img-pair img.card-img{flex:1 1 0;min-width:0;width:100%;max-width:100%;max-height:none;height:auto;display:block;float:none;margin:0;object-fit:contain;border-radius:10px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer}
+/* 平铺 / 打印（导出 PDF）时改为上下排列，避免缩得太小 */
+.flat-mode .img-pair{display:block}
+.flat-mode .img-pair img,.flat-mode .img-pair img.card-img{display:block;width:100%;max-width:100%;margin:16px auto}
+/* 步骤内配图：跟在对应 <li> 下方，整幅宽 */
+.step-img{display:block;margin:10px 0 2px}
+.step-img img{display:block;width:100%;max-width:100%;max-height:none;height:auto;margin:0;object-fit:contain;border-radius:10px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer}
+.step-img.half img{width:50%;max-width:50%;margin:0 auto}
+/* 打印/PDF：目标页的 8 张目标卡整块另起一页，避免被切成 6+2 */
+@media print{
+  /* 目标页 8 张卡放不进同一 A4 页：让整块目标卡另起一页，绝不切成 6+2 */
+  .slide[data-page="2"] .goal-grid{break-before:page;break-inside:avoid}
+  .goal-card{break-inside:avoid}
+}
+
+/* ===== 缺图占位：老师还没放图时显示，文件名可一键复制 ===== */
+.img-missing{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;box-sizing:border-box;
+  width:100%;max-width:540px;margin:10px auto;padding:14px 16px;border:1.5px dashed var(--border);border-radius:10px;
+  background:var(--bg-input);color:var(--text-muted);font-size:13px;line-height:1.5;text-align:center}
+.img-missing .im-name{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--accent);
+  background:var(--bg-secondary);padding:3px 8px;border-radius:6px;border:1px solid var(--border);word-break:break-all}
+.img-missing button{cursor:pointer;font:inherit;font-size:12px;padding:4px 10px;border-radius:6px;
+  border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
+.img-missing button:hover{border-color:var(--accent);color:var(--accent)}
+.img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+</style>
+</head>
+<body>
+<script>
+// ========== 缺图占位：显示文件名 + 一键复制 ==========
+function imgMissing(img){
+    const src=img.getAttribute('src')||'';
+    const name=src.split('/').pop();
+    const dir=src.slice(0,src.lastIndexOf('/'));
+    const d=document.createElement('div');
+    d.className='img-missing';
+    d.innerHTML='<span>🖼️ 缺图</span>'
+        +'<code class="im-name">'+name+'</code>'
+        +'<button type="button" onclick="copyImgName(this)">复制文件名</button>'
+        +'<div class="im-dir">放到 '+dir+' 目录下，刷新页面即显示</div>';
+    if(img.parentNode) img.parentNode.replaceChild(d,img);
+}
+function copyImgName(btn){
+    const name=btn.parentNode.querySelector('.im-name').textContent;
+    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
+        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
+        try{document.execCommand('copy');}catch(e){}
+        document.body.removeChild(ta);done();};
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(name).then(done).catch(fb);
+    }else{fb();}
+}
+</script>
+
+<div class="container">
+<nav class="sidebar">
+    <div class="sidebar-title">📘 课件19_视线检测与图层</div>
+<a href="#" class="nav-link nav-special" data-page="1"><span class="nav-status"></span>封面</a>
+<a href="#" class="nav-link" data-page="2"><span class="nav-status"></span>1. 本节学习目标</a>
+<a href="#" class="nav-link" data-page="3"><span class="nav-status"></span>2. 加墙 · 从资源商店取建筑</a>
+<a href="#" class="nav-link" data-page="4"><span class="nav-status"></span>3. 摆房子 · 从预制体到巷道</a>
+<a href="#" class="nav-link" data-page="5"><span class="nav-status"></span>4. 重烘 · 房子摆好了，地图还是旧的</a>
+<a href="#" class="nav-link" data-page="6"><span class="nav-status"></span>5. 布点 · 让动物在巷道里巡逻</a>
+<a href="#" class="nav-link" data-page="7"><span class="nav-status"></span>6. 预制体 · 覆盖与重建</a>
+<a href="#" class="nav-link" data-page="8"><span class="nav-status"></span>7. 透视眼 · 敌人只看距离</a>
+<a href="#" class="nav-link" data-page="9"><span class="nav-status"></span>8. 图层（Layer）· 给碰撞体分类</a>
+<a href="#" class="nav-link" data-page="10"><span class="nav-status"></span>9. 射线 · 从起点打到终点</a>
+<a href="#" class="nav-link" data-page="11"><span class="nav-status"></span>10. 视线检测 · 接入 AnimalGuard</a>
+<a href="#" class="nav-link" data-page="12"><span class="nav-status"></span>11. 作业 · 给敌人加视野角 <span class="nav-badge homework">作业</span></a>
+<a href="#" class="nav-link nav-special" data-page="13"><span class="nav-status"></span>结束页</a>
+
+</nav>
+<div class="main-area" id="mainArea">
+    <div class="header-bar">
+        <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <span class="progress-text" id="progressText">0 / 11</span>
+        </div>
+        <div class="mobile-info" id="mobileInfo" onclick="mobileInfoTap()" style="cursor:pointer"><span class="mi-lesson"></span><span class="mi-sep">·</span><span class="mi-page"></span></div>
+                <button class="header-btn" id="flatBtn" onclick="toggleFlat()" title="切换分页 / 平铺（平铺便于打印导出 PDF）">📄 平铺</button>
+        <button class="header-btn" id="imgBtn" onclick="toggleImgBottom()" title="切换图片显示位置（右侧小图 / 下方大图）">🖼️ 图下</button>
+
+        <button class="header-btn" id="themeBtn" onclick="toggleTheme()">🌙 深色</button>
+        <div class="header-dropdown">
+          <button class="header-btn" id="ideBtn">💻 在线编辑器 ▾</button>
+          <div class="dropdown-menu" id="ideMenu">
+            <a href="#" class="dropdown-item" data-url="https://www.runoob.com/try/runcode.php?filename=helloworld&type=csharp">菜鸟教程</a>
+            <a href="#" class="dropdown-item" data-url="https://www.tutorialspoint.com/compilers/online-csharp-compiler.htm">Tutorialspoint（支持输入）</a>
+            <a href="#" class="dropdown-item" data-url="https://dotnetfiddle.net/">DotNetFiddle</a>
+          </div>
+        </div>
+        <button class="header-btn" onclick="changeFont(-1)">A-</button>
+        <button class="header-btn" onclick="changeFont(1)">A+</button>
+        <button class="header-btn" onclick="openSearch()">🔍</button>
+        <button class="header-btn" onclick="toggleHelp()" title="使用帮助">❓</button>
+        <button class="header-btn" onclick="toggleCatalog()" title="课件目录">📚</button>
+        <div class="mobile-more">
+          <button class="header-btn" onclick="toggleMobileMore()" title="更多">☰</button>
+          <div class="mobile-more-menu" id="mobileMoreMenu">
+            <div class="mm-item" onclick="mobileAction('ide')">💻 在线编辑器</div>
+            <div class="mm-item" onclick="mobileAction('fontDown')">🔤 A- 缩小字号</div>
+            <div class="mm-item" onclick="mobileAction('fontUp')">🔤 A+ 放大字号</div>
+            <div class="mm-item" onclick="mobileAction('search')">🔍 搜索</div>
+                        <div class="mm-item" onclick="mobileAction('flat')">📄 平铺/分页</div>
+            <div class="mm-item" onclick="mobileAction('imgbottom')">🖼️ 图下/侧图</div>
+
+            <div class="mm-item" onclick="mobileAction('help')">❓ 使用帮助</div>
+          </div>
+        </div>
+    </div>
+    <div class="slides-container"><div class="cover" data-page="1">
+    <div class="cover-tag">数字产品设计</div>
+    <h1>视线检测与图层</h1>
+    <div class="cover-sub">敌人会追会咬了，但它是个「透视眼」——隔着一堵墙也能看见你。这节课给它装一双「眼睛」（视线检测），再用「图层（Layer）」管住这双眼睛和「穿墙」，把它变成一只<strong>会看路、能被墙挡住</strong>的敌人。</div>
+    <div class="cover-meta">
+        <div class="cover-meta-row"><span class="cover-meta-label">授课教师</span><span class="cover-meta-text">彭堉斌</span></div>
+        <div class="cover-meta-row"><span class="cover-meta-label">学校</span><span class="cover-meta-text">汕头职业技术学院</span></div>
+    </div>
+</div>
+<div class="slide" data-page="2"><div class="slide-inner markable">
+<h1>本节学习目标</h1>
+<img src="images/课件19/敌人视线检测.gif" alt="最终效果：躲到墙后就看不见你" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>本课要做出来的效果</h3><p>上一课的敌人（动物守卫）会追会咬了，但它是个<strong>透视眼</strong>——隔着一堵墙也能发现你。这节课给它装上「眼睛」：<strong>中间有墙，就看不见你</strong>；你躲到墙后，它就<strong>放弃、回去巡逻</strong>。</p></div>
+<div class="goal-grid"><div class="goal-card"><span class="goal-icon">🧱</span><span class="goal-text">导入小屋当遮挡、重烘导航网格，把生成中心和巡逻点挪进巷道</span></div><div class="goal-card"><span class="goal-icon">🧩</span><span class="goal-text">用「覆盖（Overrides）→ 应用全部」把巡逻点写回预制体，新刷的动物才走新路线</span></div><div class="goal-card"><span class="goal-icon">🔍</span><span class="goal-text">发现敌人的毛病：它是「透视眼」，隔墙也追你</span></div><div class="goal-card"><span class="goal-icon">🗂️</span><span class="goal-text">确认房屋碰撞体，用图层（Layer）把墙体归为 <code>Wall</code></span></div><div class="goal-card"><span class="goal-icon">🧮</span><span class="goal-text">看懂<strong>图层碰撞矩阵</strong>：它管「谁和谁能撞」，和射线的检测名单不是一回事</span></div><div class="goal-card"><span class="goal-icon">👁️</span><span class="goal-text">学习 <code>Linecast</code> 的起点、终点、命中结果与图层过滤</span></div><div class="goal-card"><span class="goal-icon">🎯</span><span class="goal-text">把 <code>CanSeePlayer()</code> 接进 <code>AnimalGuard</code>，不再隔墙发现，遮挡后放弃</span></div><div class="goal-card"><span class="goal-icon">📐</span><span class="goal-text">作业：用 <code>Vector3.Angle</code> 加视野角，从背后接近不会被发现</span></div></div>
+</div></div>
+<div class="slide" data-page="3"><div class="slide-inner markable">
+<h1>加墙 · 从资源商店取建筑</h1>
+<div class="card"><p>场地一片空旷，敌人追你一览无余。要讲「视线」，得先有东西能挡视线——从资源商店取一栋免费的<strong>低多边形小屋</strong>（包里一栋房屋 + 一个木桶，共两个预制体），摆几栋就是现成的掩体。</p></div>
+<div class="card"><h3>① 添加至我的资源</h3><ul><li>浏览器打开资源链接：<a href="https://assetstore.u3d.cn/packages/3d/environments/fantasy/assetstore-package-20005819" target="_blank" rel="noopener">Lowpoly Baker's House - 低多边形面包师小屋</a>（直接打开详情页，不用再搜）</li><li>详情页点「<strong>免费获取（添加至我的资源）</strong>」——这一步只是把资源记到账号下，<strong>还没下载到电脑</strong></li><li>弹窗点「<strong>我已阅读并同意</strong>」，网页显示「<strong>添加至我的资源</strong>」</li><li>之后可在商店右上角「<strong>我的资源</strong>」里核对</li></ul></div>
+<div class="img-pair"><img src="images/课件19/加墙1-免费获取.png" alt="详情页点免费获取，添加到我的资源" class="card-img pair" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件19/加墙2-同意协议.png" alt="弹窗点我已阅读并同意" class="card-img pair" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件19/加墙3-已添加至我的资源.png" alt="网页显示添加至我的资源" class="card-img pair" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="card"><h3>② 回 Unity 下载导入</h3><ul><li>菜单 <strong>窗口（Window）→ 包管理器（Package Manager）</strong>，左上角把「<strong>包：内置</strong>」切换成「<strong>我的资产</strong>」——账号获取过的资源都在这里</li><li>找到「Lowpoly Baker's House」→ 点「<strong>下载</strong>」把资源包拉到本地 → 下载完点「<strong>导入</strong>」→ 弹出确认窗口再点一次「<strong>导入</strong>」</li><li><strong>项目（Project）窗口</strong>的 <code>Assets</code> 下会多出一个资源文件夹</li></ul></div>
+<div class="img-pair"><img src="images/课件19/加墙4-下载导入.png" alt="包管理器我的资产中下载并导入" class="card-img pair" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件19/加墙5-导入确认窗口.png" alt="导入确认窗口再点一次导入" class="card-img pair" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="ok-box">如果「我的资产」列表是空的：检查编辑器右上角登录的是不是同一个 Unity 中国账号——账号不一致就看不到资源。</div>
+</div></div>
+<div class="slide" data-page="4"><div class="slide-inner markable">
+<h1>摆房子 · 从预制体到巷道</h1>
+<div class="card"><h3>③ 添加模型到场景中</h3><ol><li><strong>找到预制体</strong>：打开导入的资源文件夹，<code>Prefabs</code> 里只有两个——一栋<strong>房屋</strong>、一个<strong>木桶</strong>，没有单独的墙块，<strong>房子本身就是遮挡</strong>（木桶只是点缀，用不用都行）<div class="step-img"><img src="images/课件19/加墙6-预制体列表.png" alt="资源的 Prefabs 文件夹里只有房屋和木桶两个预制体" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li><li><strong>拖进场景</strong>：把房屋预制体拖进场景视图，层级（Hierarchy）窗口里会多出这个对象，用<strong>位置（Position）/ 旋转（Rotation）/ 缩放（Scale）</strong>摆到空地上<div class="step-img"><img src="images/课件19/加墙7-拖进场景.png" alt="把房屋预制体拖进场景，Hierarchy 里出现该对象" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li><li><strong>复制成巷道</strong>：选中它按 <strong>Ctrl + D</strong> 复制两三栋，前后错开留出过道——绕到屋后，敌人就看不见你<div class="step-img"><img src="images/课件19/加墙8-复制成巷道.png" alt="Ctrl+D 复制两三栋错开摆放，留出过道" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li></ol><p>别悬空、别互相穿插；拖太多项目会卡。</p></div>
+</div></div>
+<div class="slide" data-page="5"><div class="slide-inner markable">
+<h1>重烘 · 房子摆好了，地图还是旧的</h1>
+<div class="card"><h3>④ 重新烘焙导航网格（NavMesh）</h3><p><strong>房子不会自动变成「墙」</strong>：导航网格是课件16 烘焙出来的<strong>旧地图</strong>，房子脚下那块地在图上还标着「能走」——不重烘，敌人直接从屋里穿过去。所以加完房子还要走这三步：</p><ol><li><strong>勾上静态</strong>：选中房子（复制出来的几栋按住 <strong>Ctrl</strong> 一起选），在<strong>检查器（Inspector）</strong>顶部勾上「<strong>静态的（Static）</strong>」——烘焙只认静态物体，不勾等于白摆<div class="step-img"><img src="images/课件19/加墙9-勾选静态.png" alt="选中房子，检查器顶部勾上静态的" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li><li><strong>点烘焙</strong>：菜单<strong>窗口（Window）→ AI → 导航（过时）（Navigation (Obsolete)）</strong>，切到「<strong>烘焙（Bake）</strong>」页，点「<strong>烘焙（Bake）</strong>」——这一步会<strong>覆盖</strong>场景旁边那个 <code>NavMesh.asset</code>，旧地图就换成新的了（装 AI Navigation、代理半径那些，课件16 已经讲过一遍）<div class="step-img"><img src="images/课件19/加墙10-点烘焙.png" alt="导航（过时）窗口切到烘焙页，点烘焙" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li><li><strong>确认烘对了</strong>：Scene 视图里那片<strong>蓝色可走区域</strong>，在房子位置被<strong>挖空</strong>——房子成了地图上的一个「洞」，敌人只能绕着走<div class="step-img"><img src="images/课件19/加墙11-烘焙后挖空.png" alt="烘焙后蓝色可走区域在房子位置被挖空" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li></ol></div>
+<div class="ok-box">⚠️ 以后只要场地变了（加房子、挪墙、加障碍），都得回来<strong>重烘一遍</strong>——这一步最容易忘，忘了敌人就穿墙。</div>
+</div></div>
+<div class="slide" data-page="6"><div class="slide-inner markable">
+<h1>布点 · 让动物在巷道里巡逻</h1>
+<img src="images/课件19/加墙14-巷道巡逻.gif" alt="动物在房屋之间的巷道里巡逻" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><p>房子一摆，原来那套<strong>生成</strong>和<strong>巡逻</strong>全对不上号了：生成范围圈到了房子上，巡逻点落在了屋里。要改的其实只有<strong>位置</strong>——把这两样各挪一次；挪完还有一步最容易漏：把改动<strong>覆盖回预制体</strong>。</p></div>
+<div class="card"><h3>⑤ 生成中心与巡逻点，各挪一次</h3><ol><li><strong>生成中心</strong>：课件15 建的那个空对象 <code>SpawnCenter</code> 就是生成范围的圆心（它身上挂过图标，场景里能直接点中）。范围一旦压到房子，动物就可能生成在屋里、屋顶上——那儿没有可走的地面，导航代理找不到落脚点，一开局就卡死。把它拖到巷道空地上；还嫌大就回脚本把 <code>spawnRadius</code> 调小。<div class="step-img"><img src="images/课件19/加墙12-挪生成中心.png" alt="把 SpawnCenter 拖到巷道空地上，范围圆不再压房子" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li><li><strong>巡逻点</strong>：<code>Waypoints</code> 父对象下那几个空子物体，脚本按序号一个一个走过去。点落在房子里就<strong>不可达</strong>——代理会把它贴到最近的可走点，动物走到墙边就停住，看着像「不巡了」。把它们挨个拖进巷道，点与点之间别隔着房子。<div class="step-img"><img src="images/课件19/加墙13-巡逻点进巷道.png" alt="把巡逻点挨个拖进巷道，前后错开、路线不穿房子" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li></ol><p><strong>怎么算摆对</strong>：Scene 视图切俯视——生成范围那圈虚线圆只圈住空地和巷道；巡逻点 1→2→3 连起来的路线整段落在<strong>蓝色可走区域</strong>上，不穿房子。</p></div>
+<div class="ok-box">💡 挪生成中心和巡逻点都只是<strong>挪位置</strong>，不用再烘一次：导航网格只认房子这类静态物体，空对象不参与烘焙。</div>
+</div></div>
+<div class="slide" data-page="7"><div class="slide-inner markable">
+<h1>预制体 · 覆盖与重建</h1>
+<div class="card"><h3>⑥ 覆盖到预制体 · 应用全部</h3><ul><li><strong>为什么必须覆盖</strong>：动物是从<strong>预制体</strong>刷出来的，你在场景里挪的巡逻点只是<strong>这一只</strong>身上的副本——预制体里那份还是旧的。重新运行、生成中心再刷出来的动物，走的还是老路线</li><li><strong>怎么做</strong>：选中场景里改过的那只动物，在<strong>检查器（Inspector）</strong>顶部点「<strong>覆盖（Overrides）</strong>」→「<strong>应用全部（Apply All）</strong>」——改动写回预制体，六只动物（以及以后刷出来的）一起用上新巡逻点</li><li><strong>怎么确认</strong>：层级（Hierarchy）窗口里对象名右边的覆盖标记消失，检查器顶部的「覆盖」也不再显示改动条数</li></ul></div>
+<img src="images/课件19/加墙15-覆盖应用全部.png" alt="检查器顶部点覆盖，下拉菜单里选应用全部" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>⑦ 覆盖不管用？删掉预制体，重新存一个</h3><p>「应用全部」偶尔推不上去：明明点过了，跑起来动物还是走老路线，或者巡逻点位置乱了。这多半是预制体里的巡逻点结构和场景里对不上——最干脆的办法是<strong>把预制体整个换掉</strong>。</p><ol>
+<li><strong>先存场景，再删原预制体</strong>：按 <strong>Ctrl + S</strong> 保存场景，然后在 <strong>项目（Project）窗口</strong>里选中那只动物的预制体，按 <strong>Delete</strong> 删掉。删完场景里那几只<strong>还在原地</strong>，只是不再和预制体挂钩了<div class="step-img half"><img src="images/课件19/加墙16-删原预制体.png" alt="在 Project 窗口选中原动物预制体并删除" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li>
+<li><strong>把场景里这只存成新预制体</strong>：在层级（Hierarchy）里选中<strong>已经调好巡逻点</strong>的那只动物，<strong>拖进项目（Project）窗口</strong>的资源文件夹——Unity 会把它存成一个新预制体，名字可以还叫原来的。拖完这一只就变回「预制体实例」了<div class="step-img"><img src="images/课件19/加墙17-存为新预制体.png" alt="把场景里的动物拖进 Project 窗口，存成新的预制体" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li>
+<li><strong>把新预制体挂回生成中心</strong>：旧预制体一删，生成中心脚本里的预制体槽位就变成 <strong>Missing（缺失）</strong>——把新预制体重新拖进那个槽位，否则重新运行时会报空引用、一只都刷不出来<div class="step-img"><img src="images/课件19/加墙18-挂回生成中心.png" alt="把新预制体重新拖进生成中心的预制体槽位，Missing 变回正常引用" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li>
+</ol></div>
+<div class="ok-box">⚠️ 顺序别搞反：<strong>先存场景、再删预制体</strong>。删完之后场景里的动物只是「不再挂钩」，位置都在；但生成中心的槽位已经 Missing，必须马上把新预制体挂回去。另外场景里其它几只还是<strong>旧副本</strong>，最省事是重新运行一次，让生成中心按新预制体重刷。</div>
+<div class="card"><h3>⑧ 播放，看效果</h3><p>位置挪完了、预制体也覆盖好了，到这里就该按一次 <strong>▶ 播放</strong>（或 <strong>Ctrl + P</strong>）验收：动物从巷道里的空地刷出来，沿着几个巡逻点在巷道中往返走，<strong>不穿墙、不进屋、不在墙边卡住</strong>。</p></div>
+<div class="step-img"><img src="images/课件19/加墙14-巷道巡逻.gif" alt="运行后动物在房屋之间的巷道里往返巡逻" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="ok-box">💡 还有哪只停在墙边不动、或者一开局就生成在房顶上，说明对应的<strong>巡逻点</strong>或<strong>生成中心</strong>还没挪干净——回到「布点 · 让动物在巷道里巡逻」重新摆一次，再播放验收。</div>
+</div></div>
+<div class="slide" data-page="8"><div class="slide-inner markable">
+<h1>透视眼 · 敌人只看距离</h1>
+<div class="card"><h3>先调大发现距离</h3><p>选中动物预制体，在<strong>检查器（Inspector）</strong>的 <code>AnimalGuard</code> 组件里修改两项：</p><ul><li><strong>发现距离（Sight Range）</strong>改为 <code>15</code>：玩家进入 15 米范围，动物就会发现</li><li><strong>放弃距离（Lose Range）</strong>改为 <code>20</code>：玩家跑出 20 米，动物才放弃，给发现和放弃之间留出缓冲</li></ul><p><strong>攻击距离（Attack Distance）</strong>保持 <code>1.5</code>，<strong>攻击间隔（Attack Interval）</strong>保持 <code>2</code>。</p><div class="step-img"><img src="images/课件19/设置发现与放弃距离.png" alt="在动物警戒脚本组件中把发现距离改为15、放弃距离改为20" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<img src="images/课件19/敌人穿墙看见你.gif" alt="隔着房屋也能发现玩家，这就是透视眼" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>这样就是「透视眼」</h3><p>让玩家和动物分别站在房屋两侧。只要两者的水平距离不超过 15 米，动物照样发现玩家，就好像能隔着房屋看见一样。</p><p>因为现在的 <code>AnimalGuard</code> <strong>只判断距离，不检查中间有没有房屋</strong>。玩家躲到房屋后，只要还没跑出 20 米，动物也不会放弃。</p></div>
+<div class="ok-box">💡 要修掉这双「透视眼」，还需要给动物加上<strong>视线检测</strong>：不仅距离够近，还要确认它和玩家之间没有被墙挡住。</div>
+</div></div>
+<div class="slide" data-page="9"><div class="slide-inner markable">
+<h1>图层（Layer）· 给碰撞体分类</h1>
+<div class="card"><h3>图层是什么</h3><p><strong>图层（Layer）</strong>是引擎用来给对象分类的一套规则。普通游戏里，可以先按「这是谁、它要参与什么玩法」把场景对象分组：</p>
+<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:14px auto 8px;font-family:inherit" role="img" aria-label="普通游戏场景中的玩家、怪物、NPC、花草树木和房屋围墙分别归入不同图层，并对应不同玩法规则">
+<rect x="1" y="1" width="678" height="298" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
+<text x="24" y="30" font-size="14" font-weight="700" fill="var(--accent2)">普通游戏里的图层设计（示例）</text>
+<text x="24" y="52" font-size="12" fill="var(--text-muted)">同一个场景里的对象，按「是谁、参与什么规则」分类</text>
+
+<g>
+<rect x="20" y="70" width="120" height="140" rx="10" fill="var(--bg-card)" stroke="var(--accent2)"/>
+<rect x="20" y="70" width="120" height="5" rx="2" fill="var(--accent2)"/>
+<circle cx="80" cy="111" r="18" fill="var(--accent2)" opacity="0.22" stroke="var(--accent2)"/>
+<circle cx="80" cy="106" r="5" fill="var(--accent2)"/>
+<path d="M69 126 Q80 114 91 126" fill="none" stroke="var(--accent2)" stroke-width="3" stroke-linecap="round"/>
+<text x="80" y="151" font-size="13" font-weight="700" fill="var(--text)" text-anchor="middle">Player 层</text>
+<text x="80" y="172" font-size="12" fill="var(--text-muted)" text-anchor="middle">玩家</text>
+<text x="80" y="194" font-size="11" fill="var(--accent2)" text-anchor="middle">移动 / 碰撞</text>
+</g>
+<g>
+<rect x="150" y="70" width="120" height="140" rx="10" fill="var(--bg-card)" stroke="var(--red)"/>
+<rect x="150" y="70" width="120" height="5" rx="2" fill="var(--red)"/>
+<path d="M210 90 L229 125 L191 125 Z" fill="var(--red)" opacity="0.22" stroke="var(--red)"/>
+<circle cx="203" cy="114" r="2.5" fill="var(--red)"/><circle cx="217" cy="114" r="2.5" fill="var(--red)"/>
+<text x="210" y="151" font-size="13" font-weight="700" fill="var(--text)" text-anchor="middle">Enemy 层</text>
+<text x="210" y="172" font-size="12" fill="var(--text-muted)" text-anchor="middle">怪物</text>
+<text x="210" y="194" font-size="11" fill="var(--red)" text-anchor="middle">警戒 / 攻击</text>
+</g>
+<g>
+<rect x="280" y="70" width="120" height="140" rx="10" fill="var(--bg-card)" stroke="var(--purple)"/>
+<rect x="280" y="70" width="120" height="5" rx="2" fill="var(--purple)"/>
+<path d="M340 89 L361 110 L340 131 L319 110 Z" fill="var(--purple)" opacity="0.22" stroke="var(--purple)"/>
+<circle cx="334" cy="108" r="2.5" fill="var(--purple)"/><circle cx="346" cy="108" r="2.5" fill="var(--purple)"/>
+<path d="M333 118 Q340 123 347 118" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round"/>
+<text x="340" y="151" font-size="13" font-weight="700" fill="var(--text)" text-anchor="middle">NPC 层</text>
+<text x="340" y="172" font-size="12" fill="var(--text-muted)" text-anchor="middle">商人 / 守卫</text>
+<text x="340" y="194" font-size="11" fill="var(--purple)" text-anchor="middle">对话 / 任务</text>
+</g>
+<g>
+<rect x="410" y="70" width="120" height="140" rx="10" fill="var(--bg-card)" stroke="var(--green)"/>
+<rect x="410" y="70" width="120" height="5" rx="2" fill="var(--green)"/>
+<rect x="466" y="111" width="8" height="22" rx="2" fill="var(--green)" opacity="0.65"/>
+<circle cx="470" cy="103" r="19" fill="var(--green)" opacity="0.22" stroke="var(--green)"/>
+<path d="M444 133 Q450 122 456 133 M484 133 Q490 122 496 133" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"/>
+<text x="470" y="151" font-size="13" font-weight="700" fill="var(--text)" text-anchor="middle">Plant 层</text>
+<text x="470" y="172" font-size="12" fill="var(--text-muted)" text-anchor="middle">花草树木</text>
+<text x="470" y="194" font-size="11" fill="var(--green)" text-anchor="middle">装饰 / 可选遮挡</text>
+</g>
+<g>
+<rect x="540" y="70" width="120" height="140" rx="10" fill="var(--bg-card)" stroke="var(--orange)"/>
+<rect x="540" y="70" width="120" height="5" rx="2" fill="var(--orange)"/>
+<path d="M574 108 L600 88 L626 108 V134 H574 Z" fill="var(--orange)" opacity="0.18" stroke="var(--orange)"/>
+<rect x="592" y="115" width="15" height="19" fill="var(--bg-input)" stroke="var(--orange)"/>
+<text x="600" y="151" font-size="13" font-weight="700" fill="var(--text)" text-anchor="middle">Wall 层</text>
+<text x="600" y="172" font-size="12" fill="var(--text-muted)" text-anchor="middle">房屋 / 围墙</text>
+<text x="600" y="194" font-size="11" fill="var(--orange)" text-anchor="middle">碰撞 / 挡视线</text>
+</g>
+<rect x="20" y="226" width="640" height="52" rx="9" fill="var(--accent-dim)" stroke="var(--border)"/>
+<text x="340" y="247" font-size="12" font-weight="700" fill="var(--accent)" text-anchor="middle">Layer 只负责「分类」，不会自动产生这些行为</text>
+<text x="340" y="266" font-size="11" fill="var(--text-muted)" text-anchor="middle">是否碰撞、是否挡射线、能否交互，仍由碰撞矩阵、LayerMask 和脚本规则决定</text>
+</svg>
+<p>它和<strong>标签（Tag）</strong>不是一回事：标签常用于代码里找对象，例如 <code>FindGameObjectWithTag("Player")</code>；图层常用于引擎规则，例如碰撞和射线过滤。一个对象可以同时拥有自己的标签和图层。</p></div>
+<div class="card"><h3>图层能管哪三件事</h3><table><thead><tr><th>作用</th><th>谁来使用这份分类</th><th>本课例子</th></tr></thead><tbody><tr><td><strong>分类管理</strong></td><td>场景与脚本按类别识别对象</td><td>房屋统一归为 <code>Wall</code></td></tr><tr><td><strong>碰撞过滤</strong></td><td>物理系统与图层碰撞矩阵</td><td>决定 <code>Player</code> 与 <code>Wall</code> 是否碰撞</td></tr><tr><td><strong>射线过滤</strong></td><td><code>Linecast</code> 等物理查询</td><td>只让 <code>Wall</code> 参与遮挡检测</td></tr></tbody></table><p>只改图层的名字，不会让物体自动获得新行为；要把这层接进碰撞矩阵或 <code>LayerMask</code>，规则才真正生效。</p></div>
+<div class="card"><h3>创建 Wall 层，并分给房屋</h3><ol><li><strong>打开图层列表</strong>：选中房屋，在<strong>检查器（Inspector）</strong>右上角点<strong>图层（Layer）→ 添加图层…（Add Layer…）</strong></li><li><strong>新建图层</strong>：在<strong>用户图层（User Layers）</strong>的空白行输入 <code>Wall</code>，然后回到场景中的房屋<div class="step-img"><img src="images/课件19/添加图层.png" alt="在用户图层空白行新建 Wall 图层" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li><li><strong>分给实际碰撞体</strong>：把房屋父对象的图层改为 <code>Wall</code>，在弹窗中选择<strong>「是，更改子对象（Yes, change children）」</strong>，让房屋模型子对象一起改为 <code>Wall</code>。再展开层级核对实际碰撞体，并把修改应用回房屋预制体<div class="step-img"><img src="images/课件19/设置Wall图层.png" alt="修改父对象图层后选择是，更改子对象" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li></ol><p><strong>一栋都不能漏</strong>：场景里<strong>所有房屋</strong>都要设成 <code>Wall</code>——同一份预制体的实例，改完并应用回预制体会一起变；来源不同的房子（另拖进来的、单独复制出来的）要各自设一遍。漏掉的那栋还是 <code>Default</code>，射线直接从它身上穿过去，看起来就像「这面墙不挡视线」。</p></div>
+<div class="ok-box">⚠️ <strong>弹窗别点错</strong>。Unity 问的是「是否也要将所有子对象的层设置为 Wall？」——点<strong>「是，更改子对象」</strong>，层才会一路分到真正带 <code>Mesh Collider</code> 的子对象；点了<strong>「否，仅此对象」</strong>，父对象显示 <code>Wall</code>、带碰撞体的子对象却还留在 <code>Default</code>，射线名单里没有它，视线就直接穿墙。改完点开那个子对象核对一眼：检查器右上角写着 <code>Wall</code> 才算改到位；点错了就再给父对象设一次层，重选「是」。</div>
+<div class="card"><h3>图层碰撞矩阵 · 谁和谁能撞</h3><p>分好类之后，物理引擎还要回答一句：<strong>这两层碰上了算不算数</strong>？答案在<strong>图层碰撞矩阵（Layer Collision Matrix）</strong>里。打开方式：<strong>编辑（Edit）→ 项目设置（Project Settings）→ 物理（Physics）</strong>。</p><div class="step-img"><img src="images/课件19/打开物理设置.png" alt="编辑菜单进项目设置，左侧选中物理" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><p>物理面板<strong>底部</strong>那张表就是它：层名横排一遍、竖排一遍，交叉那一格决定这两层的关系——<strong>打勾＝会相撞</strong>（挡住、推开、站得住），<strong>取消＝互相当空气</strong>。行是层、列也是层，同一行里哪几列打勾，这个层就和哪几层相撞。</p><div class="step-img half"><img src="images/课件19/矩阵默认全勾.png" alt="图层碰撞矩阵默认全部打勾，任意两层都会相撞" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><p>上图是<strong>默认状态</strong>：全部打勾，任何两层都正常碰撞，所以平时根本不用管它。它是<strong>项目级</strong>规则，改一次整个工程生效，不是某栋房子的私有开关——真要动它，多半是以后想让玩家能穿过某一类墙（比如做暗门），那时再去取消对应的那一格。</p></div>
+</div></div>
+<div class="slide" data-page="10"><div class="slide-inner markable">
+<h1>射线 · 从起点打到终点</h1>
+<div class="card"><h3>Linecast · 检查两点之间的线段</h3><p><code>Physics.Linecast</code> 从起点向终点检查一条<strong>有限长度的线段</strong>。只要线段碰到检测名单里的碰撞体，就返回 <code>true</code>；什么都没碰到，就返回 <code>false</code>。它不是无限长的直线，也不会因为模型看起来是一堵墙就自动生效。</p></div>
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:14px auto 8px;font-family:inherit" role="img" aria-label="从敌人到玩家的线段被墙截断，表示射线检测到墙体碰撞体">
+<rect x="1" y="1" width="678" height="218" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
+<text x="26" y="30" font-size="13" font-weight="700" fill="var(--accent2)">俯视图：从敌人到玩家打一条线段，中间撞到了墙</text>
+<g font-size="12" fill="var(--text-muted)" text-anchor="middle"><text x="100" y="54">起点：敌人</text><text x="340" y="54">Wall 碰撞体</text><text x="580" y="54">终点：玩家</text></g>
+<circle cx="100" cy="120" r="22" fill="var(--accent)" opacity="0.2" stroke="var(--accent)" stroke-width="1.5"/>
+<circle cx="580" cy="120" r="22" fill="var(--accent2)" opacity="0.2" stroke="var(--accent2)" stroke-width="1.5"/>
+<rect x="315" y="70" width="50" height="100" rx="4" fill="var(--bg-card)" stroke="var(--orange)" stroke-width="1.5"/>
+<line x1="122" y1="120" x2="315" y2="120" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 5"/>
+<line x1="365" y1="120" x2="558" y2="120" stroke="var(--text-muted)" stroke-width="1.5" stroke-dasharray="4 6" opacity="0.5"/>
+<text x="128" y="106" font-size="11" fill="var(--accent)">Linecast 检查这一段</text>
+<text x="340" y="196" font-size="12" fill="var(--text-muted)" text-anchor="middle">碰到 Wall → Linecast 返回 true → 记录 hit</text>
+</svg>
+<div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c19_lc_min',this)">复制</button></div><pre id="c19_lc_min"><code class="language-csharp">// V1：只回答「这两点之间有没有东西挡着」
+Vector3 origin = transform.position + Vector3.up;
+Vector3 target = player.position + Vector3.up;
+
+bool blocked = Physics.Linecast(origin, target);
+// true = 挡住了。但挡的是谁它不知道：树、动物、自己的子物体都算</code></pre></div>
+<div class="card"><h3>LayerMask · 给射线一张检测名单</h3><p><code>LayerMask</code> 不是某一个图层，而是一份「<strong>哪些层可以参与检测</strong>」的名单。只放入 <code>Wall</code>，线段就只会检测墙体碰撞体，其他层不会参与这次查询。</p><p>它和<strong>图层碰撞矩阵（Layer Collision Matrix）</strong>不是一回事：碰撞矩阵在<strong>项目设置</strong>里，决定<strong>物理引擎</strong>让哪两层撞上；<code>LayerMask</code> 在<strong>脚本</strong>里，只决定<strong>这一次查询</strong>看哪些层。哪怕在矩阵里取消 <code>Player</code> 与 <code>Wall</code>，玩家能穿墙走过去，射线照样被墙挡住——碰撞放行不等于视线放行。</p><svg viewBox="0 0 680 210" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:14px auto 8px;font-family:inherit" role="img" aria-label="同一条线段在名单只含Wall时，树和动物被忽略，只有房屋挡住">
+<rect x="1" y="1" width="678" height="208" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
+<text x="26" y="30" font-size="13" font-weight="700" fill="var(--accent2)">同一条线段，名单里只有 Wall：树和动物被直接忽略</text>
+<line x1="100" y1="120" x2="430" y2="120" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 5"/>
+<line x1="474" y1="120" x2="580" y2="120" stroke="var(--text-muted)" stroke-width="1.5" stroke-dasharray="4 6" opacity="0.45"/>
+<circle cx="80" cy="120" r="20" fill="var(--accent)" opacity="0.2" stroke="var(--accent)" stroke-width="1.5"/>
+<circle cx="600" cy="120" r="20" fill="var(--accent2)" opacity="0.2" stroke="var(--accent2)" stroke-width="1.5"/>
+<text x="80" y="124" font-size="12" fill="var(--text)" text-anchor="middle">敌人</text>
+<text x="600" y="124" font-size="12" fill="var(--text)" text-anchor="middle">玩家</text>
+<path d="M204 120 L224 76 L244 120 Z" fill="var(--accent)" opacity="0.16" stroke="var(--accent)" stroke-width="1.2"/>
+<rect x="220" y="120" width="8" height="14" fill="var(--accent)" opacity="0.35"/>
+<text x="224" y="176" font-size="11" fill="var(--text-muted)" text-anchor="middle">树 · 忽略</text>
+<rect x="330" y="104" width="32" height="32" rx="5" fill="var(--accent2)" opacity="0.16" stroke="var(--accent2)" stroke-width="1.2"/>
+<text x="346" y="176" font-size="11" fill="var(--text-muted)" text-anchor="middle">动物 · 忽略</text>
+<rect x="430" y="84" width="44" height="76" rx="4" fill="var(--bg-card)" stroke="var(--orange)" stroke-width="1.6"/>
+<text x="452" y="74" font-size="11" font-weight="700" fill="var(--orange)" text-anchor="middle">房屋 · Wall</text>
+<text x="452" y="176" font-size="11" font-weight="700" fill="var(--orange)" text-anchor="middle">挡住 → true</text>
+</svg></div>
+<div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c19_mask',this)">复制</button></div><pre id="c19_mask"><code class="language-csharp">// V2：把「哪几层算遮挡」做成一份名单
+// public 字段会在检查器里变成一个可多选的「图层」下拉框
+public LayerMask obstacleMask;
+// 只勾 Wall，就只有墙算遮挡；其它层撞上也不参与这次查询</code></pre></div>
+<div class="card"><h3>合起来：名单 + 命中结果</h3><p>把名单塞进第三个参数，再要一个 <code>out hit</code> 看究竟撞到了谁——这才是 <code>AnimalGuard</code> 里真正要用的写法。<strong>先看片段，还不用覆盖脚本</strong>。</p></div>
+<div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c19_linecast',this)">复制</button></div><pre id="c19_linecast"><code class="language-csharp">// V3：名单 + 命中结果——AnimalGuard 里真正要用的写法（从胸口附近打到胸口附近）
+Vector3 origin = transform.position + Vector3.up;
+Vector3 target = player.position + Vector3.up;
+
+RaycastHit hit;
+bool blocked = Physics.Linecast(
+    origin, target, out hit, obstacleMask);
+
+if (blocked)
+{
+    Debug.Log("视线被 " + hit.collider.name + " 挡住了");
+}</code></pre></div>
+<div class="card"><h3>代码讲解</h3><ol><li><strong>起点与终点</strong>：<code>origin</code> 和 <code>target</code> 决定检测哪一段。两个点都抬高 <code>Vector3.up</code>，避免沿着脚底贴地检测。</li><li><strong>命中结果</strong>：<code>out hit</code> 把撞到的碰撞体、位置等信息装进 <code>hit</code>；只有返回 <code>true</code> 时，才读取 <code>hit.collider</code>。</li><li><strong>图层名单</strong>：<code>obstacleMask</code> 决定哪些层参与。如果只勾 <code>Wall</code>，房屋必须先在<strong>实际碰撞体所在对象</strong>上设好 <code>Wall</code>。</li><li><strong>返回值</strong>：<code>blocked = true</code> 表示线段撞到了名单里的东西；<code>false</code> 表示这段路没有碰到任何参与检测的碰撞体。</li><li><strong>还不等于敌人 AI</strong>：<code>Linecast</code> 只负责回答「有没有遮挡」。什么时候检测、看见后做什么、看不见后是否放弃，要由 <code>AnimalGuard</code> 接管。</li></ol></div>
+<div class="ok-box">⚠️ 射线一直返回 <code>false</code> 时，按顺序检查：<strong>房屋有没有 Collider → 实际 Collider 是否为 Wall → obstacleMask 是否勾了 Wall</strong>。中间这条最容易翻车：父对象显示 <code>Wall</code> 不算数，要点开带 <code>Mesh Collider</code> 的子对象看它自己的层。名单如果是 <code>无内容（Nothing）</code>，射线就什么也不会检测。</div>
+<div class="card"><h3>确认：房屋必须有碰撞体</h3><p>射线检测的是 <strong>Collider</strong>，不是看得见的美术模型。以 <code>Baker_house</code> 为例，展开房屋层级，选中真正带 <code>Mesh Renderer</code> 的子对象，检查它的<strong>网格碰撞体（Mesh Collider）</strong>：</p><ul><li>组件已启用，<code>Mesh</code> 槽位已经引用房屋网格</li><li><code>Is Trigger</code> 不勾；固定不动的房屋不需要刚体（Rigidbody）</li><li>如果没有 Mesh Collider，就在这个模型子对象上添加，不要只加到空父物体上</li></ul><div class="step-img"><img src="images/课件19/检查房屋碰撞体.png" alt="选中房屋模型子对象，检查网格碰撞体组件和网格引用" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+</div></div>
+<div class="slide" data-page="11"><div class="slide-inner markable">
+<h1>视线检测 · 接入 AnimalGuard</h1>
+<img src="images/课件19/敌人视线检测.gif" alt="接入视线检测后，躲到墙后敌人就放弃追击" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>把「有没有遮挡」变成「能不能看见」</h3><p>射线已经能检测墙，接下来用一个 <code>CanSeePlayer()</code> 方法封装判断：<strong>撞到 Wall 就返回 false，没撞到就返回 true</strong>。再把它接进两处 AI 逻辑：</p><ul><li><strong>第一次发现</strong>：进入 15 米，并且视线通畅，才进入警戒</li><li><strong>追击途中</strong>：跑出 20 米，或者视线被墙挡住，就放弃并恢复巡逻</li></ul></div>
+<div class="card"><h3><span class="tag-edit">修改</span>AnimalGuard.cs · 在上一课脚本上接着写</h3><p>不新建脚本，直接打开已有的 <code>AnimalGuard.cs</code>。下面是可以整份覆盖的完整版本，标了 ①②③④ 的部分是本课相对于课件18 的新增内容；<code>AnimalFollow</code> 继续保持关闭。</p></div>
+<div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c19_vision',this)">复制</button></div><pre id="c19_vision"><code class="language-csharp">// AnimalGuard.cs —— 课件19版：接入距离与视线检测
+// 完整脚本，可覆盖原文件；①②③④是本课新增
+using UnityEngine;
+using UnityEngine.AI;
+
+public class AnimalGuard : MonoBehaviour
+{
+    public float sightRange = 15f;
+    public float attackDistance = 1.5f;
+    public float attackInterval = 2f;
+    public float loseRange = 20f;
+
+    // ① 新增：在检查器里只勾 Wall
+    public LayerMask obstacleMask;
+
+    private NavMeshAgent agent;
+    private AnimalRoam roam;
+    private AnimalAnim anim;
+    private Transform player;
+    private bool alerted;
+    private float timer;
+
+    void Start()
+    {
+        agent = GetComponent&lt;NavMeshAgent&gt;();
+        roam = GetComponent&lt;AnimalRoam&gt;();
+        anim = GetComponent&lt;AnimalAnim&gt;();
+        // 按标签只找一次，Update 里反复使用
+        player = GameObject.FindGameObjectWithTag("Player").transform;
+    }
+
+    void Update()
+    {
+        timer += Time.deltaTime;
+
+        Vector3 me = transform.position;
+        Vector3 you = player.position;
+        me.y = 0f;
+        you.y = 0f;
+        float d = Vector3.Distance(me, you);
+
+        if (!alerted)
+        {
+            // ② 新增：距离够了才检查视线
+            if (d &lt;= sightRange &amp;&amp; CanSeePlayer())
+            {
+                alerted = true;
+                roam.enabled = false;
+                anim.PlayJump();
+            }
+            return;
+        }
+
+        // ③ 新增：先判断距离，必要时才检查视线
+        if (d &gt; loseRange || !CanSeePlayer())
+        {
+            alerted = false;
+            roam.enabled = true;
+            agent.isStopped = false;
+            roam.RestartRoam();
+            return;
+        }
+
+        if (d &lt;= attackDistance)
+        {
+            agent.ResetPath();
+            agent.isStopped = true;
+            if (timer &gt;= attackInterval)
+            {
+                anim.PlayAttack();
+                timer = 0f;
+            }
+            return;
+        }
+
+        agent.isStopped = false;
+        Vector3 dir = (me - you).normalized;
+        agent.SetDestination(you + dir * attackDistance);
+    }
+
+    bool CanSeePlayer()
+    {
+        Vector3 origin = transform.position + Vector3.up;
+        Vector3 target = player.position + Vector3.up;
+
+        // ④ 新增：只让 obstacleMask 里的层参与检测
+        if (Physics.Linecast(origin, target, obstacleMask))
+        {
+            return false;
+        }
+        return true;
+    }
+}</code></pre></div>
+<div class="card"><h3>代码讲解</h3><ol><li><strong>整份脚本</strong>：保留课件18 的巡逻、发现、追击、攻击和放弃；新增 <code>obstacleMask</code> 与 <code>CanSeePlayer()</code>，不需要再建一个脚本文件。</li><li><strong>公开槽位</strong>：<code>public LayerMask obstacleMask</code> 会在检查器里出现一个可多选的图层下拉框。这里勾哪几层，射线就检测哪几层。</li><li><strong>三个参数</strong>：<code>Linecast(origin, target, obstacleMask)</code> 依次是起点、终点和图层名单。第三个参数不是距离，而是过滤条件。</li><li><strong>结果取反</strong>：只检测墙以后，返回 <code>true</code> 表示有墙，所以方法返回 <code>false</code>；什么都没撞到才返回 <code>true</code>。</li><li><strong>不再取 hit</strong>：前面用 <code>hit</code> 是为了看清撞到了什么；这里只问「有没有墙」，因此使用不返回 <code>RaycastHit</code> 的重载，代码更直接。</li><li><strong>距离先行</strong>：两处都把 <code>CanSeePlayer()</code> 放在条件最后。没进入发现距离，或者已经超出放弃距离，都不会做射线检测。</li><li><strong>两处判断</strong>：第一次发现仍要求「够近 + 看得见」；追击途中仍然是「跑远或看不见就放弃」。15～20 米之间属于追击保持区，仍会继续检查视线。</li><li><strong>空名单</strong>：如果 <code>obstacleMask</code> 没勾任何层，<code>Linecast</code> 永远返回 <code>false</code>，敌人就会把所有方向都当成视线通畅。</li></ol></div>
+<div class="card"><h3>把 Wall 填进 obstacleMask</h3><ol><li>在<strong>项目（Project）</strong>窗口选中动物预制体；有几个动物预制体，就逐个检查，不能只改场景里的某一只</li><li>在 <code>AnimalGuard</code> 组件里找到 <code>Obstacle Mask</code></li><li>勾选 <code>Wall</code>，不要选「所有（Everything）」；保存预制体，让生成中心刷出的动物也带上这份设置<div class="step-img"><img src="images/课件19/设置obstacleMask.png" alt="动物预制体的 AnimalGuard 组件中勾选 Wall" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li></ol></div>
+<div class="ok-box">💡 验收时分三种情况看：<code>无内容（Nothing）</code> 是什么都检测不到，<code>所有（Everything）</code> 是检测所有层、容易被其他物体误挡，<strong>只勾 <code>Wall</code></strong> 才是「墙能挡视线，其他层不参与」。</div>
+</div></div>
+<div class="slide" data-page="12"><div class="slide-inner markable">
+<h1>作业 · 给敌人加视野角</h1>
+<img src="images/课件19/作业_视野角.gif" alt="敌人只能发现正前方视野角内的玩家" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>基本要求</h3><p>沿用已经完成的 <code>AnimalGuard</code>：<code>Linecast</code> 能挡视线，<code>obstacleMask</code> 已配置，<code>AnimalFollow</code> 保持关闭。现在的敌人虽然会看遮挡，却仍然是<strong>360° 全向发现</strong>——从背后贴近也会被发现。</p><p>给它加上 <strong>120° 视野角</strong>：只有正前方左右各 60° 内的玩家才可能被发现；从背后接近，不应触发警戒。</p></div>
+<div class="card"><h3>核心要求</h3><ul><li>用 <code>Vector3.Angle</code> 计算敌人正前方与「敌人指向玩家」方向的夹角</li><li>120° 是<strong>整个视野角</strong>，判断时要用 <code>fieldOfView * 0.5f</code></li><li>第一次发现必须同时满足：<strong>距离够近 + 在视野角内 + 视线无遮挡</strong></li><li>已经警戒后，玩家跑出视野角也要放弃，并完整恢复巡逻，不能只把 <code>alerted</code> 改回 <code>false</code></li></ul></div>
+<div class="card"><h3>本次作业（必做）：把角度接进警戒判断</h3><p>只修改 <code>AnimalGuard.cs</code>，不用新建脚本。按下面四段补到对应位置；原有巡逻、追击和攻击代码保持不动。</p></div>
+<div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c19_hw',this)">复制</button></div><pre id="c19_hw"><code class="language-csharp">// ① 字段区：新增完整视野角，默认 120°
+public float fieldOfView = 120f;
+
+// ② Update()：量完 d 后，计算正前方与目标方向的夹角
+Vector3 direction = player.position - transform.position;
+direction.y = 0f;
+float angle = Vector3.Angle(transform.forward, direction);
+bool inView = angle &lt;= fieldOfView * 0.5f;
+
+// ③ 没发现时：把原发现条件替换为下面三个条件
+if (d &lt;= sightRange &amp;&amp; inView &amp;&amp; CanSeePlayer())
+{
+    // 原来的 alerted、roam、PlayJump 三行保持不动
+}
+
+// ④ 已发现时：把原放弃条件也补上「不在视野里」
+if (d &gt; loseRange || !inView || !CanSeePlayer())
+{
+    // 原来的四行恢复巡逻代码保持不动
+}</code></pre></div>
+<div class="card"><h3>代码讲解</h3><ol><li><strong>视野字段</strong>：<code>fieldOfView</code> 是完整角度，所以 120° 在判断时要除以 2；直接写 <code>angle &lt;= 120f</code>，实际会得到左右各 120° 的超宽视野。</li><li><strong>目标方向</strong>：<code>player.position - transform.position</code> 是「从敌人指向玩家」。写反后会测到相反方向，正前方就可能变成正后方。</li><li><strong>压平方向</strong>：把 <code>direction.y</code> 设为 <code>0</code>，视野角只在水平面上判断，上下坡不会额外改变结果。</li><li><strong>两个条件</strong>：<code>inView</code> 管「在不在前方」，<code>CanSeePlayer()</code> 管「有没有被墙挡住」。它们不能互相替代；把射线调用放在最后，距离或角度不满足时就不会执行。</li><li><strong>发现与放弃</strong>：③ 只管第一次发现；④ 管追击途中跑出视野。两处都接上，才是完整的视野角行为。</li></ol></div>
+<div class="ok-box">⚠️ <code>Vector3.Angle</code> 返回 <strong>0°～180° 的无符号夹角</strong>，它只告诉你「偏了多少」，不区分左右。本作业不需要分左右，直接用 <code>angle &lt;= fieldOfView * 0.5f</code> 即可。</div>
+<div class="card"><h3>挑战（选做）</h3><ul><li>用 <code>OnDrawGizmos()</code> 在场景视图画出 <code>sightRange</code> 的视野圆，以及左右两条视野边界，让 120° 范围不用播放也能看见</li><li>把不同动物设成 60°、120°、180°，比较它们的警戒范围；只改预制体上的参数，不为每种动物复制一份脚本</li></ul></div>
+</div></div>
+<div class="slide" data-page="13"><div class="slide-inner end-page">
+
+<div class="end-thanks">
+    <div class="end-left">
+        <div class="end-icon">💪</div>
+        <div class="end-title">感谢各位同学的参与!</div>
+        <div class="end-sub">祝大家学习进步</div>
+    </div>
+    <div class="end-right">
+        <img src="images/tencent-docs-qrcode.png" alt="腾讯文档二维码" onerror="imgMissing(this)" onclick="zoomQR(this)" style="cursor:pointer">
+        <p>扫码查看作业完成情况</p>
+        <a href="https://docs.qq.com/sheet/DV2tKZ2pSTUNwUFpX?tab=bo2p4o" target="_blank" class="end-link">📊 查看作业完成情况文档</a>
+    </div>
+</div>
+<a href="课件20_玩家血条与被接触攻击.html" class="end-next-link">📖 下一节：课件20 · 玩家血条与被接触攻击 →</a>
+</div></div>
+
+
+</div>
+</div>
+</div>
+
+<div class="search-panel" id="searchPanel">
+    <div class="search-panel-header">
+        <span>🔍 全局搜索</span>
+        <button class="search-panel-close" onclick="closeSearch()">✕</button>
+    </div>
+    <input class="search-input" id="searchInput" placeholder="输入关键词搜索..." oninput="doSearch()" autocomplete="off">
+    <div class="search-results" id="searchResults"></div>
+</div>
+
+<div class="help-overlay" id="helpOverlay">
+    <div class="help-header"><span>📖 使用帮助</span><button class="help-close-btn" onclick="closeHelp()">✕</button></div>
+    <div class="help-body">
+            <h3>⌨️ 快捷键</h3>
+            <table><tr><td><code>Ctrl+K</code></td><td>打开搜索</td></tr><tr><td><code>← →</code></td><td>上一页 / 下一页</td></tr><tr><td><code>Esc</code></td><td>关闭弹窗</td></tr></table>
+            <h3>🎯 导航</h3>
+            <p>左侧边栏点击切换页面；底部圆点快速跳转；进度条显示学习完成度。</p>
+            <h3>💻 在线编辑器</h3>
+            <p>顶部「在线编辑器」下拉提供菜鸟教程、Tutorialspoint、DotNetFiddle 三个在线 C# 编译器。</p>
+            <h3>🌙 主题与字号</h3>
+            <p>深色/浅色切换；A- / A+ 调整字号；刷新后保留设置。</p>
+            <h3>🔍 搜索</h3>
+            <p>支持中英文关键词，匹配结果高亮显示，点击跳转到对应页面。</p>
+        </div>
+</div>
+
+<div class="catalog-panel" id="catalogPanel">
+    <div class="catalog-header">
+        <span>📚 课件目录</span>
+        <button class="catalog-close-btn" onclick="closeCatalog()">✕</button>
+    </div>
+    <div class="catalog-list" id="catalogList"></div>
+</div>
+
+<div class="qr-zoom-overlay" id="qrZoom" onclick="closeZoom()">
+    <img id="qrZoomImg" src="" alt="二维码放大">
+</div>
+
+<div class="nav-buttons">
+    <button class="nav-btn" id="prevBtn" onclick="goSlide(-1)">◀ 上一页</button>
+    <button class="nav-btn" id="nextBtn" onclick="goSlide(1)">下一页 ▶</button>
+</div>
+<div class="progress-dots" id="progressDots"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+window.__CATALOG__ = [{"file": "课件1_认识Unity与课程介绍.html", "label": "课件1 · 认识Unity与课程介绍"}, {"file": "课件2_注册与安装软件.html", "label": "课件2 · 注册与安装软件"}, {"file": "课件3_Unity引擎概览.html", "label": "课件3 · Unity引擎概览"}, {"file": "课件4_场景与物体.html", "label": "课件4 · 场景与物体"}, {"file": "课件5_移动视野与物体.html", "label": "课件5 · 移动视野与物体"}, {"file": "课件6_旋转缩放多选.html", "label": "课件6 · 旋转缩放多选"}, {"file": "课件7_网格与材质.html", "label": "课件7 · 网格与材质"}, {"file": "课件8_C#核心语法.html", "label": "课件8 · C#核心语法"}, {"file": "课件9_Fbx导入与脚本入门.html", "label": "课件9 · Fbx导入与脚本入门"}, {"file": "课件10_资源商店与模型资源.html", "label": "课件10 · 资源商店与模型资源"}, {"file": "课件11_键盘控制移动.html", "label": "课件11 · 键盘控制移动"}, {"file": "课件12_刚体与碰撞体.html", "label": "课件12 · 刚体与碰撞体"}, {"file": "课件13_角色移动与视角.html", "label": "课件13 · 角色移动与视角"}, {"file": "课件14_访问其他游戏对象.html", "label": "课件14 · 访问其他游戏对象"}, {"file": "课件15_游戏管理器与生成物体.html", "label": "课件15 · 游戏管理器与生成物体"}, {"file": "课件16_动物自由巡游与定点巡逻.html", "label": "课件16 · 动物自由巡游与定点巡逻"}, {"file": "课件17_走近动物跟着走.html", "label": "课件17 · 走近动物跟着走"}, {"file": "课件18_动物交互动画切换.html", "label": "课件18 · 动物交互动画切换"}, {"file": "课件19_视线检测与图层.html", "label": "课件19 · 视线检测与图层"}, {"file": "课件20_玩家血条与被接触攻击.html", "label": "课件20 · 玩家血条与被接触攻击"}, {"file": "课件21_死亡与游戏管理器.html", "label": "课件21 · 死亡与游戏管理器"}, {"file": "课件22_撤离点与粒子系统.html", "label": "课件22 · 撤离点与粒子系统"}, {"file": "课件23_启动页面.html", "label": "课件23 · 启动页面"}, {"file": "课件24_FPS场景玩家武器.html", "label": "课件24 · FPS场景玩家武器"}, {"file": "课件25_射击准心与鼠标锁定.html", "label": "课件25 · 射击准心与鼠标锁定"}, {"file": "课件26_消灭敌人与孵化器.html", "label": "课件26 · 消灭敌人与孵化器"}, {"file": "课件27_拾取物品.html", "label": "课件27 · 拾取物品"}, {"file": "课件28_更换枪械.html", "label": "课件28 · 更换枪械"}, {"file": "课件29_修改动画状态机.html", "label": "课件29 · 修改动画状态机"}, {"file": "课件30_NPC对话.html", "label": "课件30 · NPC对话"}, {"file": "课件31_NPC对话进阶.html", "label": "课件31 · NPC对话进阶"}, {"file": "课件32_任务队列.html", "label": "课件32 · 任务队列"}];
+let LESSON_LABEL='';(function(){
+  let cur=window.location.pathname.split('/').pop();
+  let items=window.__CATALOG__||[];
+  for(let i=0;i<items.length;i++){if(items[i].file===cur){LESSON_LABEL=items[i].label;break}}
+  if(!LESSON_LABEL)LESSON_LABEL=document.title.split(' — ')[0]||'';
+})();
+
+// ========== 移动端 "更多" 菜单 ==========
+function toggleMobileMore(){document.getElementById('mobileMoreMenu').classList.toggle('open')}
+function mobileAction(act){
+  document.getElementById('mobileMoreMenu').classList.remove('open');
+  if(act==='ide'){let m=document.getElementById('ideMenu');if(m)m.classList.add('show')}
+  else if(act==='fontDown')changeFont(-1);
+  else if(act==='fontUp')changeFont(1);
+  else if(act==='search')openSearch();
+  else if(act==='flat')toggleFlat();
+  else if(act==='imgbottom')toggleImgBottom();
+  else if(act==='help')toggleHelp();
+}
+document.addEventListener('click',function(e){
+  let mm=document.getElementById('mobileMoreMenu');
+  if(mm&&mm.classList.contains('open')&&!e.target.closest('.mobile-more'))mm.classList.remove('open');
+});
+// 点击移动端信息条跳转下一页
+function mobileInfoTap(){goSlide(1)}
+
+// ========== localStorage ==========
+const LS=(k,d)=>localStorage.getItem(k)||d;
+const LSset=(k,v)=>localStorage.setItem(k,v);
+
+// ========== 主题 ==========
+// ========== 在线编辑器下拉 ==========
+document.addEventListener('DOMContentLoaded',function(){
+    var ideBtn=document.getElementById('ideBtn');
+    if(ideBtn){
+        ideBtn.onclick=function(e){
+            e.stopPropagation();
+            document.getElementById('ideMenu').classList.toggle('show');
+        };
+    }
+    document.querySelectorAll('.dropdown-item').forEach(function(el){
+        el.onclick=function(e){
+            e.preventDefault();
+            window.open(this.dataset.url,'_blank');
+            document.getElementById('ideMenu').classList.remove('show');
+        };
+    });
+    document.addEventListener('click',function(){
+        document.getElementById('ideMenu').classList.remove('show');
+    });
+});
+
+// ========== 主题 ==========
+if(LS('theme','dark')==='light')document.body.classList.add('light');
+function toggleTheme(){
+    const il=document.body.classList.toggle('light');
+    LSset('theme',il?'light':'dark');
+    document.getElementById('themeBtn').textContent=il?'☀️浅色':'🌙深色';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('themeBtn').textContent=document.body.classList.contains('light')?'☀️浅色':'🌙深色';
+    let mi=document.getElementById('mobileInfo');
+    if(mi){
+        mi.querySelector('.mi-lesson').textContent=LESSON_LABEL;
+        mi.querySelector('.mi-page').textContent='第1页 / 共'+total+'页';
+    }
+});
+
+
+// ========== 平铺模式（连续显示全部页面，导出 PDF 用） ==========
+function toggleFlat(){
+    const on=document.body.classList.toggle('flat-mode');
+    document.documentElement.classList.toggle('flat-mode',on);
+    const btn=document.getElementById('flatBtn');
+    if(btn)btn.textContent=on?'🗂️ 分页':'📄 平铺';
+    LSset('flat',on?'1':'0');
+    if(!on)showSlide(curr);   // 切回分页时回到当前页
+}
+// ========== 图片显示模式（右侧小图 / 下方大图） ==========
+function toggleImgBottom(){
+    const on=document.body.classList.toggle('img-bottom');
+    document.documentElement.classList.toggle('img-bottom',on);
+    const btn=document.getElementById('imgBtn');
+    if(btn)btn.textContent=on?'🖼️ 侧图':'🖼️ 图下';
+    LSset('imgmode',on?'1':'0');
+}
+
+
+// ========== 字号 ==========
+const FONT_SIZES=['xs','sm','md','lg','xl'];
+let fontIdx=FONT_SIZES.indexOf(LS('font','md'));
+if(fontIdx<0)fontIdx=2;
+if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+function changeFont(d){
+    document.body.classList.remove('font-'+FONT_SIZES[fontIdx]);
+    fontIdx=Math.max(0,Math.min(FONT_SIZES.length-1,fontIdx+d));
+    if(fontIdx!==2)document.body.classList.add('font-'+FONT_SIZES[fontIdx]);
+    LSset('font',FONT_SIZES[fontIdx]);
+}
+
+// ========== 幻灯片 ==========
+let slides=document.querySelectorAll('.slide,.cover'),
+    navLinks=document.querySelectorAll('.nav-link'),
+    curr=0,total=13,contentTotal=11;
+
+// 进度圆点
+// 侧边栏点击
+navLinks.forEach((l,i)=>l.addEventListener('click',e=>{e.preventDefault();showSlide(i);}));
+let dotsHtml='';
+for(let i=0;i<total;i++)dotsHtml+=`<span class="progress-dot" data-idx="${i}" onclick="showSlide(${i})"></span>`;
+document.getElementById('progressDots').innerHTML=dotsHtml;
+let dots=document.querySelectorAll('.progress-dot');
+
+function showSlide(idx){
+    if(idx<0||idx>=total)return;
+    slides.forEach((s,i)=>s.classList.toggle('active',i===idx));
+    navLinks.forEach((l,i)=>l.classList.toggle('active',i===idx));
+    dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
+    curr=idx;
+    let cp=Math.max(0,Math.min(idx,contentTotal));
+    document.getElementById('progressFill').style.width=(cp/contentTotal*100)+'%';
+    document.getElementById('progressText').textContent=cp+' / '+contentTotal;
+    let mi=document.getElementById('mobileInfo');
+    if(mi){
+        mi.querySelector('.mi-lesson').textContent=LESSON_LABEL;
+        mi.querySelector('.mi-page').textContent='第'+(idx+1)+'页 / 共'+total+'页';
+    }
+    document.getElementById('mainArea').scrollTop=0;
+    document.querySelectorAll('.nav-status')[idx]?.classList.add('seen');
+    updateNav();
+}
+function goSlide(d){ showSlide(curr+d); }
+function updateNav(){
+    document.getElementById('prevBtn').disabled=curr===0;
+    document.getElementById('nextBtn').disabled=curr===total-1;
+    LSset('page_'+window.location.pathname.split('/').pop(), curr);
+}
+
+// 键盘
+document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')goSlide(1);
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')goSlide(-1);
+    if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openSearch();}
+    if(e.key==='Escape'){closeSearch();closeHelp();closeZoom();closeCatalog();}
+});
+
+// ========== 搜索 ==========
+function openSearch(){document.getElementById('searchPanel').classList.add('open');document.getElementById('searchInput').focus();document.getElementById('searchInput').value='';document.getElementById('searchResults').innerHTML=''}
+function closeSearch(){document.getElementById('searchPanel').classList.remove('open')}
+function toggleHelp(){document.getElementById('helpOverlay').classList.toggle('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+// 课件目录
+function toggleCatalog(){
+    let p=document.getElementById('catalogPanel');
+    if(!p.classList.contains('open')){loadCatalog();p.classList.add('open')}else{p.classList.remove('open')}
+}
+function closeCatalog(){document.getElementById('catalogPanel').classList.remove('open')}
+function loadCatalog(){
+    let c=document.getElementById('catalogList');
+    if(c.children.length>0)return;
+    let current=decodeURIComponent(window.location.pathname.split('/').pop());
+    let items=window.__CATALOG__||[];
+    if(!items.length){c.innerHTML='<div class="catalog-item" style="color:var(--text-muted)">暂无课件</div>';return}
+    items.forEach(item=>{
+        let a=document.createElement('a');a.className='catalog-item';a.href=encodeURIComponent(item.file);
+        if(item.file===current)a.classList.add('current');
+        a.innerHTML=`<span class="catalog-num">${item.label.split(' · ')[0]}</span><span>${item.label.split(' · ').slice(1).join(' · ')||item.label}</span>`;
+        c.appendChild(a);
+    });
+}
+function zoomQR(img){document.getElementById('qrZoomImg').src=img.src;document.getElementById('qrZoom').classList.add('show')}
+function closeZoom(){document.getElementById('qrZoom').classList.remove('show')}
+function doSearch(){
+    let q=document.getElementById('searchInput').value,qLower=q.toLowerCase(),c=document.getElementById('searchResults');
+    c.innerHTML='';if(q.length<2)return;
+    let r=[];
+    slides.forEach((s,i)=>{
+        let raw=s.textContent,lower=raw.toLowerCase(),idx=lower.indexOf(qLower);
+        if(idx<0)return;
+        let start=Math.max(0,idx-15),end=Math.min(raw.length,idx+q.length+30);
+        let ex=raw.substring(start,end);
+        if(start>0)ex='...'+ex;
+        if(end<raw.length)ex=ex+'...';
+        // 高亮匹配词
+        let re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+        ex=ex.replace(re,'<mark>$1</mark>');
+        r.push({idx:i,excerpt:ex,slide:s});
+    });
+    r.slice(0,20).forEach(x=>{
+        let a=document.createElement('a');a.className='search-item';a.href='#';
+        let title=navLinks[x.idx]?.textContent.replace(/^\d+\.\s*/,'')||('页面'+(x.idx+1));
+        a.innerHTML=`<div class="sr-lesson">${x.idx+1}. ${title}</div><div class="sr-text">${x.excerpt}</div>`;
+        a.onclick=e=>{e.preventDefault();showSlide(x.idx);closeSearch();};
+        c.appendChild(a);
+    });
+}
+
+// ========== 复制 ==========
+function copyCode(cid,btn){
+    let code=document.getElementById(cid).textContent;
+    navigator.clipboard.writeText(code).then(()=>{
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    }).catch(()=>{
+        // fallback
+        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
+        document.execCommand('copy');document.body.removeChild(ta);
+        btn.textContent='✅ 已复制';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
+    });
+}
+
+// ========== 初始化 ==========
+hljs.highlightAll();
+// 标了 ①②③④ 的新增行注释标绿：hljs 在 DOMContentLoaded 之后才重写代码块，只能等它跑完再标
+function markNewComments(){
+    document.querySelectorAll('pre code .hljs-comment').forEach(el=>{
+        if(/[①②③④⑤]\s*新增/.test(el.textContent)) el.classList.add('cmt-new');
+    });
+}
+window.addEventListener('DOMContentLoaded',markNewComments);
+window.addEventListener('load',markNewComments);
+// 折叠面板
+function toggleFold(btn){
+    btn.classList.toggle('open');
+    let content=btn.nextElementSibling;
+    if(!content||!content.classList.contains('fold-content')) content=content.nextElementSibling;
+    if(content&&content.classList.contains('fold-content')) content.classList.toggle('show');
+}
+let savedPage=parseInt(LS('page_'+window.location.pathname.split('/').pop(),'0'));
+if(savedPage>0&&savedPage<total)showSlide(savedPage);else showSlide(0);
+// 恢复上次的平铺/分页模式
+if(LS('flat','0')==='1')toggleFlat();
+if(LS('imgmode','0')==='1')toggleImgBottom();
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>数字产品设计（Unity 引擎技术）— 教学进度与实验计划</title>
+<style>
+:root{
+  --bg:#0A0E27;--bg2:#0D1430;--card:rgba(17,24,39,0.95);--border:rgba(255,255,255,0.08);
+  --text:#E8EAED;--muted:#9AA0A6;--accent:#00D4AA;--accent2:#4FC3F7;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--text);font-family:'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.7;padding:40px 20px}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:28px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.sub{color:var(--muted);margin-bottom:8px}
+.meta{display:flex;gap:24px;flex-wrap:wrap;margin:18px 0 32px;font-size:13px;color:var(--muted)}
+.meta b{color:var(--accent2)}
+h2{font-size:20px;margin:34px 0 14px;padding-left:12px;border-left:4px solid var(--accent);color:var(--text)}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--border);font-size:14px;vertical-align:top}
+th{background:rgba(0,212,170,0.10);color:var(--accent);font-weight:700;letter-spacing:.5px}
+tr:last-child td{border-bottom:none}
+.week{font-weight:700;color:var(--accent2);white-space:nowrap}
+.hours{font-weight:700;color:#fff}
+td .kp{display:inline-block;background:rgba(79,195,247,0.10);border:1px solid rgba(79,195,247,0.25);color:var(--accent2);border-radius:6px;padding:1px 8px;margin:2px 4px 2px 0;font-size:13px}
+td.content{color:var(--text)}
+.note{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);color:#F59E0B;padding:12px 16px;border-radius:10px;font-size:13px;margin:18px 0;line-height:1.7}
+footer{margin-top:40px;color:var(--muted);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>数字产品设计（Unity 引擎技术）· 教学进度与实验计划</h1>
+  <p class="sub">课程项目：第一人称射击（FPS）完整关卡　|　授课教师：彭堉斌　|　引擎：Unity 2022 LTS</p>
+  <div class="meta">
+    <span>📅 总学时：<b>40 学时</b></span>
+    <span>📚 课件：<b>34 个</b></span>
+    <span>🗓️ 周次：<b>第 1–18 周</b></span>
+    <span>⏱️ 学时分布：<b>1–14 周 2 学时/周，15–16 周  `4 学时/周，17–18 周 2 学时/周</b></span>
+  </div>
+
+  <h2>一、教学进度计划（周次 / 周课时数 / 教学内容）</h2>
+  <table>
+    <thead><tr><th style="width:90px">周次</th><th style="width:90px">周课时</th><th>教学内容（对应课件）</th></tr></thead>
+    <tbody>
+      <tr><td class="week">第 1 周</td><td class="hours">2</td><td class="content"><span class="kp">课件1</span>认识Unity与课程介绍　<span class="kp">课件2</span>注册与安装软件</td></tr>
+      <tr><td class="week">第 2 周</td><td class="hours">2</td><td class="content"><span class="kp">课件3</span>Unity引擎概览　<span class="kp">课件4</span>场景与物体</td></tr>
+      <tr><td class="week">第 3 周</td><td class="hours">2</td><td class="content"><span class="kp">课件5</span>移动视野与物体　<span class="kp">课件6</span>旋转缩放多选</td></tr>
+      <tr><td class="week">第 4 周</td><td class="hours">2</td><td class="content"><span class="kp">课件7</span>网格与材质</td></tr>
+      <tr><td class="week">第 5 周</td><td class="hours">2</td><td class="content"><span class="kp">课件8</span>C#核心语法</td></tr>
+      <tr><td class="week">第 6 周</td><td class="hours">2</td><td class="content"><span class="kp">课件9</span>Fbx导入与脚本入门</td></tr>
+      <tr><td class="week">第 7 周</td><td class="hours">2</td><td class="content"><span class="kp">课件10</span>资源商店与模型资源</td></tr>
+      <tr><td class="week">第 8 周</td><td class="hours">2</td><td class="content"><span class="kp">课件11</span>键盘控制移动</td></tr>
+      <tr><td class="week">第 9 周</td><td class="hours">2</td><td class="content"><span class="kp">课件12</span>访问游戏对象与实例化　<span class="kp">课件13</span>访问其他游戏对象</td></tr>
+      <tr><td class="week">第 10 周</td><td class="hours">2</td><td class="content"><span class="kp">课件14</span>刚体与碰撞体　<span class="kp">课件15</span>受力运动</td></tr>
+      <tr><td class="week">第 11 周</td><td class="hours">2</td><td class="content"><span class="kp">课件16</span>主控脚本与随机生成　<span class="kp">课件17</span>中文显示与打包</td></tr>
+      <tr><td class="week">第 12 周</td><td class="hours">2</td><td class="content"><span class="kp">课件18</span>FPS场景玩家武器　<span class="kp">课件19</span>移动射击</td></tr>
+      <tr><td class="week">第 13 周</td><td class="hours">2</td><td class="content"><span class="kp">课件20</span>跳跃与穿墙　<span class="kp">课件21</span>敌人简易跟踪</td></tr>
+      <tr><td class="week">第 14 周</td><td class="hours">2</td><td class="content"><span class="kp">课件22</span>AI敌人巡逻　<span class="kp">课件23</span>敌人动画切换</td></tr>
+      <tr><td class="week">第 15 周</td><td class="hours">4</td><td class="content"><span class="kp">课件24</span>启动页面　<span class="kp">课件25</span>玩家血条与被接触攻击　<span class="kp">课件26</span>死亡与游戏管理器</td></tr>
+      <tr><td class="week">第 16 周</td><td class="hours">4</td><td class="content"><span class="kp">课件27</span>消灭敌人与孵化器　<span class="kp">课件28</span>粒子系统与随机生成　<span class="kp">课件29</span>拾取物品</td></tr>
+      <tr><td class="week">第 17 周</td><td class="hours">2</td><td class="content"><span class="kp">课件30</span>更换枪械　<span class="kp">课件31</span>修改动画状态机　<span class="kp">课件32</span>NPC对话</td></tr>
+      <tr><td class="week">第 18 周</td><td class="hours">2</td><td class="content"><span class="kp">课件33</span>NPC对话进阶　<span class="kp">课件34</span>任务队列（含期末综合实训与课程考核）</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    ⚠️ 说明：34 个课件与 40 学时并非 1:1 对应。前段基础内容各占 1–2 个课件/周；第 15–18 周为进阶与综合模块，部分紧密关联的课件合并在同一教学单元讲授，最后两周含综合实训与考核。实际执行可按班级进度微调。
+  </div>
+
+  <h2>二、课程实验计划（周次 / 实验内容 / 实验要求 / 学时）</h2>
+  <table>
+    <thead><tr><th style="width:90px">周次</th><th style="width:200px">实验内容</th><th>实验要求</th><th style="width:70px">学时</th></tr></thead>
+    <tbody>
+      <tr><td class="week">第 1 周</td><td>Unity Hub 安装与项目创建</td><td>完成 Unity Hub 安装、注册 unity.cn 账号、激活个人版许可证，新建 3D 项目并能识别 Scene/Game/Hierarchy/Inspector/Project 五大窗口。</td><td class="hours">2</td></tr>
+      <tr><td class="week">第 2 周</td><td>场景与物体基本操作</td><td>在场景中添加多种游戏对象，练习移动/旋转/缩放/多选，理解父子层级关系与本地/世界坐标。</td><td class="hours">2</td></tr>
+      <tr><td class="week">第 3 周</td><td>材质贴图与资源导入</td><td>导入贴图与模型，给物体赋 Material 与 Skybox，能从免费资源站下载并应用素材美化场景。</td><td class="hours">2</td></tr>
+      <tr><td class="week">第 4 周</td><td>C# 脚本入门</td><td>创建首个 C# 脚本，掌握变量、分支、循环（含 foreach），挂载脚本到物体并输出调试信息。</td><td class="hours">2</td></tr>
+      <tr><td class="week">第 5 周</td><td>模型导入与键盘移动</td><td>导入 FBX 模型并修改材质，使用脚本实现键盘控制物体二维/三维移动，理解 Transform 运动。</td><td class="hours">2</td></tr>
+      <tr><td class="week">第 6 周</td><td>字段可见性与对象通信</td><td>用 public / SerializeField 暴露参数到 Inspector，使用 Find / GetComponent / Tag 访问其他游戏对象。</td><td class="hours">2</td></tr>
+      <tr><td class="week">第 7 周</td><td>物理运动与碰撞</td><td>添加 Rigidbody 与 Collider，用 AddForce 实现跳跃手感，掌握碰撞检测与触发器（Trigger）。</td><td class="hours">2</td></tr>
+      <tr><td class="week">第 8 周</td><td>主控脚本与随机生成</td><td>编写单例 GameManager 式主控脚本，实现随机位置生成与基础场景管理逻辑。</td><td class="hours">2</td></tr>
+      <tr><td class="week">第 9 周</td><td>FPS 控制器搭建</td><td>搭建第一人称控制器，配置摄像机与武器模型，实现角色移动与视角跟随。</td><td class="hours">2</td></tr>
+      <tr><td class="week">第 10 周</td><td>射击与防穿墙</td><td>用 Raycast 实现射击逻辑与敌人受击扣血，实现角色跳跃并处理刚体插值防穿墙。</td><td class="hours">2</td></tr>
+      <tr><td class="week">第 11 周</td><td>场景美化</td><td>导入 Poly Haven 资源，布置灯光与材质细节，提升 FPS 关卡整体氛围。</td><td class="hours">2</td></tr>
+      <tr><td class="week">第 12 周</td><td>敌人 AI 巡逻</td><td>烘焙 NavMesh，实现敌人面向/跟踪玩家，以及巡逻点之间的状态切换与寻路移动。</td><td class="hours">2</td></tr>
+      <tr><td class="week">第 13 周</td><td>动画状态机</td><td>配置 Animator，通过动画参数实现敌人移动/攻击动画的状态切换。</td><td class="hours">2</td></tr>
+      <tr><td class="week">第 14 周</td><td>UI 与游戏流程</td><td>制作启动页面与按钮事件，实现 UI 血条、玩家受伤死亡逻辑及 GameManager 状态控制。</td><td class="hours">2</td></tr>
+      <tr><td class="week">第 15 周</td><td>敌人消灭与特效系统集成</td><td>实现敌人死亡处理、孵化器波次生成（对象复用）、粒子特效，以及道具拾取与换枪基础。</td><td class="hours">4</td></tr>
+      <tr><td class="week">第 16 周</td><td>NPC 对话与任务系统</td><td>实现 NPC 对话 UI（逐字显示、分支选项、任务触发），并用任务队列追踪目标进度与奖励反馈。</td><td class="hours">4</td></tr>
+      <tr><td class="week">第 17 周</td><td>换枪动画与动画层</td><td>修改动画状态机，使用 Avatar Mask 与混合树实现换枪动画的参数驱动切换。</td><td class="hours">2</td></tr>
+      <tr><td class="week">第 18 周</td><td>综合实训与发布</td><td>整合全部功能完成 FPS 关卡，使用 Build Settings 打包为可执行文件，完成课程考核。</td><td class="hours">2</td></tr>
+    </tbody>
+  </table>
+
+  <footer>© 2026 汕头职业技术学院 · 电子信息学院 · 彭堉斌　|　数字产品设计（Unity 虚拟现实引擎技术）</footer>
+</div>
+</body>
+</html>

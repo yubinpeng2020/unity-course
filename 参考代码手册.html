@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数字产品设计 · 参考代码手册</title>
+<link rel="stylesheet" href="vendor/atom-one-dark.min.css">
+<style>
+  :root{--bg:#0f1115;--bg2:#171a21;--card:#1c2029;--border:#2a2f3a;--text:#e6e9ef;--muted:#9aa3b2;--accent:#00d4aa;--accent2:#4aa8ff;--green:#3ddc84;--warn:#ffb454;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.6;}
+  header{background:linear-gradient(135deg,#10231f,#15233a);padding:28px 40px;border-bottom:1px solid var(--border);}
+  header h1{margin:0 0 6px;font-size:24px;}
+  header p{margin:4px 0;color:var(--muted);font-size:14px;}
+  .layout{display:flex;align-items:flex-start;}
+  nav{position:sticky;top:0;width:260px;flex:0 0 260px;height:100vh;overflow:auto;background:var(--bg2);border-right:1px solid var(--border);padding:18px 14px;font-size:13px;}
+  .toc{list-style:none;padding-left:0;margin:0;}
+  .toc ul{list-style:none;padding-left:14px;margin:4px 0;}
+  .toc a{color:var(--muted);text-decoration:none;}
+  .toc a:hover{color:var(--accent);}
+  main{flex:1;padding:24px 40px 80px;max-width:1000px;}
+  section{margin-bottom:40px;}
+  h2{font-size:20px;border-left:4px solid var(--accent);padding-left:12px;margin:30px 0 16px;}
+  .code-card{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:22px;overflow:hidden;}
+  .code-head{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#12151c;border-bottom:1px solid var(--border);}
+  .fname{color:var(--accent);font-family:"SFMono-Regular",Consolas,monospace;font-weight:600;}
+  .ftitle{color:var(--muted);font-size:13px;flex:1;}
+  .code-head .copy-btn{background:rgba(0,212,170,.1);border:1px solid rgba(0,212,170,.25);color:var(--accent);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;}
+  .code-head .copy-btn:hover{background:rgba(0,212,170,.22);}
+  .code-head .copy-btn.done{background:rgba(61,220,132,.15);border-color:var(--green);color:var(--green);}
+  .fdesc{margin:0;padding:10px 14px;font-size:13px;color:#c4ccd8;background:#141821;border-bottom:1px dashed var(--border);}
+  pre{margin:0;padding:14px;overflow:auto;font-size:13px;}
+  pre code{font-family:"SFMono-Regular",Consolas,monospace;}
+  .hint{background:rgba(255,180,84,.08);border:1px solid rgba(255,180,84,.3);color:var(--warn);padding:10px 14px;border-radius:8px;font-size:13px;margin:0 0 20px;}
+  @media(max-width:860px){nav{display:none;}main{padding:16px;}}
+</style>
+</head>
+<body>
+<header>
+  <h1>数字产品设计 · 参考代码手册</h1>
+  <p>课程：数字产品设计（Unity 3D 交互开发） | 授课教师：彭堉斌 | 汕头职业技术学院</p>
+  <p>所有脚本集中、可一键复制，并已修正 2025 版课件 PPT 中的代码 bug。课堂用 PPT 演示，课后在此复制正确代码。</p>
+</header>
+<div class="layout">
+  <nav><ul class="toc"><li><a href="#sec0">模块A · 基础入门</a><ul>
+<li><a href="#code1">BeeBehaviour.cs</a></li>
+<li><a href="#code2">BNUTransR.cs</a></li>
+<li><a href="#code3">BeePingPong.cs</a></li>
+</ul></li>
+<li><a href="#sec4">模块B · 键盘控制与受力</a><ul>
+<li><a href="#code5">BeeMove.cs</a></li>
+<li><a href="#code6">BeeJump.cs</a></li>
+<li><a href="#code7">ForceMove.cs</a></li>
+</ul></li>
+<li><a href="#sec8">模块C · FPS 玩家控制</a><ul>
+<li><a href="#code9">PlayerMove.cs</a></li>
+<li><a href="#code10">PlayerRotate.cs</a></li>
+<li><a href="#code11">PlayerJump.cs</a></li>
+<li><a href="#code12">ShootingMouseLock.cs</a></li>
+<li><a href="#code13">WeaponController.cs</a></li>
+</ul></li>
+<li><a href="#sec14">模块D · 敌人与战斗</a><ul>
+<li><a href="#code15">EnemyControl.cs</a></li>
+<li><a href="#code16">EnemyData.cs</a></li>
+<li><a href="#code17">HealthChange.cs</a></li>
+<li><a href="#code18">EnemyAttacked.cs</a></li>
+</ul></li>
+<li><a href="#sec19">模块E · 事件与孵化器</a><ul>
+<li><a href="#code20">Events.cs</a></li>
+<li><a href="#code21">CreateMonster.cs</a></li>
+</ul></li>
+<li><a href="#sec22">模块F · 启动与界面</a><ul>
+<li><a href="#code23">StartScene.cs</a></li>
+</ul></li>
+<li><a href="#sec24">模块G · C# 基础小程序</a><ul>
+<li><a href="#code25">MaxOfThree.cs</a></li>
+<li><a href="#code26">NineNineTable.cs</a></li>
+</ul></li></ul></nav>
+  <main>
+    <p class="hint">💡 使用说明：点击每个代码块右上角「复制」按钮即可复制全部代码；右上角图标可切换深色/浅色（跟随系统）。代码已按 Unity 2021+ / C# 语法校验，可直接粘贴使用。</p>
+    <section id="sec0"><h2>模块A · 基础入门</h2>
+
+<div class="code-card" id="code1">
+  <div class="code-head">
+    <span class="fname">BeeBehaviour.cs</span>
+    <span class="ftitle">基础 · 生命周期与对象信息</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">所有脚本都继承 MonoBehaviour。Start 在场景加载后调用一次，Update 每帧调用。Debug.Log 在控制台打印，transform/gameObject 读取对象本身。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+
+public class BeeBehaviour : MonoBehaviour
+{
+    // Start：场景加载后、第一次 Update 前调用一次，适合初始化
+    void Start()
+    {
+        Debug.Log("蜜蜂启动！");
+
+        // gameObject / this：拿到脚本所在的游戏对象
+        string beeName = this.gameObject.name;
+        Debug.Log("【蜜蜂】所属模型：" + beeName);
+
+        // transform：拿到变换组件，读取三维坐标
+        Vector3 position = this.transform.position;
+        Debug.Log("【蜜蜂】三维坐标：" + position.ToString("F3"));
+    }
+
+    // Update：每一帧调用一次，大部分游戏逻辑写在这里
+    void Update()
+    {
+        Debug.Log("【蜜蜂】当前时间：" + Time.time);
+        Debug.Log("【蜜蜂】距上次帧间隔：" + Time.deltaTime);
+    }
+}</code></pre>
+</div>
+
+<div class="code-card" id="code2">
+  <div class="code-head">
+    <span class="fname">BNUTransR.cs</span>
+    <span class="ftitle">基础 · 旋转 / 位移 / 匀速运动</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">Transform.Rotate 绕轴旋转，Transform.Translate 沿相对方向位移。乘 Time.deltaTime 后变为与帧率无关的匀速运动。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+
+public class BNUTransR : MonoBehaviour
+{
+    void Update()
+    {
+        // 不乘 deltaTime：受帧率影响，非匀速
+        this.transform.Rotate(2, 0, 0);                  // 每帧绕 X 轴转 2°
+        this.transform.Translate(0, 0, 1);               // 每帧沿 Z 轴移 1 单位
+
+        // 乘 deltaTime：匀速（推荐）
+        this.transform.Rotate(10 * Time.deltaTime, 0, 0);
+        this.transform.Translate(0, 0, 1 * Time.deltaTime);
+    }
+}</code></pre>
+</div>
+
+<div class="code-card" id="code3">
+  <div class="code-head">
+    <span class="fname">BeePingPong.cs</span>
+    <span class="ftitle">基础 · 往返运动（作业参考）</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">在上下边界之间来回运动。用 Translate 做相对位移，比直接改 position 更清晰。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+
+public class BeePingPong : MonoBehaviour
+{
+    public float top = 3f;       // 上边界
+    public float bottom = -3f;   // 下边界
+    public float speed = 2f;     // 速度
+    private int dir = 1;         // 方向：1 向上，-1 向下
+
+    void Update()
+    {
+        float z = transform.position.z;
+        if (z &gt; top) dir = -1;
+        else if (z &lt; bottom) dir = 1;
+
+        transform.Translate(0, 0, dir * speed * Time.deltaTime);
+    }
+}</code></pre>
+</div>
+</section>
+<section id="sec4"><h2>模块B · 键盘控制与受力</h2>
+
+<div class="code-card" id="code5">
+  <div class="code-head">
+    <span class="fname">BeeMove.cs</span>
+    <span class="ftitle">键盘移动（Input.GetAxis 优化版）</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">用 Input.GetAxis 拿到 -1~1 的平滑输入，比一堆 if GetKey 简洁。VerticalY 是自定义轴线（输入管理器里 Name=VerticalY，Alt Negative=K，Alt Positive=J）。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+
+public class BeeMove : MonoBehaviour
+{
+    public float moveSpeed = 6f;
+
+    void Update()
+    {
+        float horizontal = Input.GetAxis("Horizontal");   // A/D 或 ←/→
+        float vertical   = Input.GetAxis("Vertical");     // W/S 或 ↑/↓
+        float verticalY  = Input.GetAxis("VerticalY");    // 自定义：J/K 升降
+
+        Vector3 move = new Vector3(horizontal, verticalY, vertical);
+        transform.Translate(move * moveSpeed * Time.deltaTime);
+    }
+}</code></pre>
+</div>
+
+<div class="code-card" id="code6">
+  <div class="code-head">
+    <span class="fname">BeeJump.cs</span>
+    <span class="ftitle">受力跳跃（已修正）</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">【修正 2025 PPT 的 bug】原 PPT 末尾多写了 '}}' 导致编译错误，已删除。水平移动用运动学 Translate，跳跃用刚体 AddForce 冲量。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+
+public class BeeJump : MonoBehaviour
+{
+    private Rigidbody rb;
+    public float jumpForce = 5f;
+    public float moveSpeed = 6f;
+
+    void Start()
+    {
+        rb = GetComponent&lt;Rigidbody&gt;();
+    }
+
+    void Update()
+    {
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical   = Input.GetAxis("Vertical");
+        float verticalY  = Input.GetAxis("VerticalY");
+        Vector3 move = new Vector3(horizontal, verticalY, vertical);
+        transform.Translate(move * moveSpeed * Time.deltaTime);
+
+        if (Input.GetButtonDown("Jump"))
+        {
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        }
+    }
+}</code></pre>
+</div>
+
+<div class="code-card" id="code7">
+  <div class="code-head">
+    <span class="fname">ForceMove.cs</span>
+    <span class="ftitle">小球受力滚动（已修正）</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">【修正 2025 PPT 的 bug】原 PPT 末尾多写了 '}}' 导致编译错误，已删除。每帧施加方向力，小球滚动。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+
+public class ForceMove : MonoBehaviour
+{
+    private Rigidbody rb;
+    public float force = 5f;
+
+    void Start()
+    {
+        rb = GetComponent&lt;Rigidbody&gt;();
+    }
+
+    void Update()
+    {
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical   = Input.GetAxis("Vertical");
+        rb.AddForce(new Vector3(horizontal, 0, vertical) * force);
+    }
+}</code></pre>
+</div>
+</section>
+<section id="sec8"><h2>模块C · FPS 玩家控制</h2>
+
+<div class="code-card" id="code9">
+  <div class="code-head">
+    <span class="fname">PlayerMove.cs</span>
+    <span class="ftitle">角色控制器移动</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">用 CharacterController 而非刚体，移动可控、不穿墙。transform.right/forward 跟随玩家朝向。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+
+public class PlayerMove : MonoBehaviour
+{
+    public CharacterController controller;
+    public float moveSpeed = 10f;
+
+    void Start()
+    {
+        controller = GetComponent&lt;CharacterController&gt;();
+    }
+
+    void Update()
+    {
+        float horizontal = Input.GetAxis("Horizontal"); // A/D
+        float vertical   = Input.GetAxis("Vertical");   // W/S
+        Vector3 move = transform.right * horizontal + transform.forward * vertical;
+        controller.Move(move * moveSpeed * Time.deltaTime);
+    }
+}</code></pre>
+</div>
+
+<div class="code-card" id="code10">
+  <div class="code-head">
+    <span class="fname">PlayerRotate.cs</span>
+    <span class="ftitle">鼠标控制视角</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">身体（playerTrans）绕 Y 轴左右转，摄像机（主摄像机为玩家子物体）绕 X 轴上下俯仰并限制角度，避免翻转。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+
+public class PlayerRotate : MonoBehaviour
+{
+    public Transform playerTrans;       // 玩家（身体）Transform
+    public Transform mainCameraTrans;   // 主摄像机 Transform（挂载为玩家子物体）
+    public float rotateSpeed = 180f;
+    [Range(2f, 4f)]
+    public float rotateRatio = 3f;      // 旋转敏捷度
+
+    private float xRotateOffset;        // 摄像机俯仰偏移
+
+    void Update()
+    {
+        float mouseX = Input.GetAxis("Mouse X");
+        float mouseY = Input.GetAxis("Mouse Y");
+
+        playerTrans.Rotate(Vector3.up * mouseX * rotateSpeed * rotateRatio * Time.deltaTime);
+
+        xRotateOffset -= mouseY * rotateSpeed * rotateRatio * Time.deltaTime;
+        xRotateOffset = Mathf.Clamp(xRotateOffset, -60f, 60f);
+
+        mainCameraTrans.localRotation = Quaternion.Euler(xRotateOffset, 0f, 0f);
+    }
+}</code></pre>
+</div>
+
+<div class="code-card" id="code11">
+  <div class="code-head">
+    <span class="fname">PlayerJump.cs</span>
+    <span class="ftitle">角色控制器跳跃（补充课件13）</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">CharacterController 没有自带重力，需自己维护竖直速度。用 isGrounded 判断在地面，否则会无限跳。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+
+public class PlayerJump : MonoBehaviour
+{
+    public CharacterController controller;
+    public float moveSpeed = 10f;
+    public float jumpHeight = 2f;
+    public float gravity = -9.81f;
+
+    private Vector3 velocity;
+
+    void Update()
+    {
+        if (controller.isGrounded &amp;&amp; velocity.y &lt; 0)
+            velocity.y = -2f;
+
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
+        Vector3 move = transform.right * h + transform.forward * v;
+        controller.Move(move * moveSpeed * Time.deltaTime);
+
+        if (Input.GetButtonDown("Jump") &amp;&amp; controller.isGrounded)
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
+    }
+}</code></pre>
+</div>
+
+<div class="code-card" id="code12">
+  <div class="code-head">
+    <span class="fname">ShootingMouseLock.cs</span>
+    <span class="ftitle">锁定鼠标</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">FPS 必须把鼠标锁在屏幕中心，否则点出窗口就打断射击。按 ESC 可解锁（调试/菜单用）。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+
+public class ShootingMouseLock : MonoBehaviour
+{
+    private bool isCursorLocked = true;
+
+    void Start()
+    {
+        LockCursor();
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            isCursorLocked = !isCursorLocked;
+            if (isCursorLocked) LockCursor();
+            else UnlockCursor();
+        }
+    }
+
+    private void LockCursor()
+    {
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked; // 锁定在中心，移出窗口也捕获输入
+        isCursorLocked = true;
+    }
+
+    private void UnlockCursor()
+    {
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+        isCursorLocked = false;
+    }
+}</code></pre>
+</div>
+
+<div class="code-card" id="code13">
+  <div class="code-head">
+    <span class="fname">WeaponController.cs</span>
+    <span class="ftitle">射击（发射子弹）</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">鼠标左键 Instantiate 子弹预制体，给刚体一个向前的速度，1 秒后 Destroy。子弹预制体需取消勾选 Use Gravity。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+
+public class WeaponController : MonoBehaviour
+{
+    public Transform bulletStartPoint; // 子弹发射位置（空物体）
+    public GameObject bullet;          // 子弹预制体
+    public float bulletSpeed = 50f;    // 子弹速度
+
+    void Update()
+    {
+        OpenFire();
+    }
+
+    private void OpenFire()
+    {
+        if (Input.GetMouseButtonDown(0)) // 鼠标左键
+        {
+            GameObject newBullet = Instantiate(bullet, bulletStartPoint.position, bulletStartPoint.rotation);
+            newBullet.GetComponent&lt;Rigidbody&gt;().velocity = newBullet.transform.forward * bulletSpeed;
+            Destroy(newBullet, 1f);
+        }
+    }
+}</code></pre>
+</div>
+</section>
+<section id="sec14"><h2>模块D · 敌人与战斗</h2>
+
+<div class="code-card" id="code15">
+  <div class="code-head">
+    <span class="fname">EnemyControl.cs</span>
+    <span class="ftitle">敌人跟踪玩家（NavMesh，已修正）</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">【修正 2025 PPT 的 bug】原 PPT 把 enemyAgent.destination 写在了 Update 大括号外面，导致编译错误，已放进 Update 内。需先 Bake NavMesh 并给敌人加 Nav Mesh Agent。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+using UnityEngine.AI;
+
+public class EnemyControl : MonoBehaviour
+{
+    private NavMeshAgent enemyAgent;
+    private GameObject player;
+
+    void Start()
+    {
+        enemyAgent = GetComponent&lt;NavMeshAgent&gt;();
+        player = GameObject.FindGameObjectWithTag("Player");
+    }
+
+    void Update()
+    {
+        // 寻路目标 = 玩家当前位置
+        enemyAgent.destination = player.transform.position;
+    }
+}</code></pre>
+</div>
+
+<div class="code-card" id="code16">
+  <div class="code-head">
+    <span class="fname">EnemyData.cs</span>
+    <span class="ftitle">敌人攻击参数（已修正）</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">【修正 2025 PPT 的 bug】原 PPT 漏声明 lastAttackTime 字段，导致编译错误，已补上。CanAttack 控制攻击间隔，避免每帧扣血。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+
+public class EnemyData : MonoBehaviour
+{
+    public float attackPower = 1f;            // 攻击力
+    public float contactAttackInterval = 1f;  // 攻击间隔（秒）
+    private float lastAttackTime = -999f;     // 上次攻击时间（已补声明）
+
+    public bool CanAttack()
+    {
+        if (Time.time - lastAttackTime &gt;= contactAttackInterval)
+        {
+            lastAttackTime = Time.time;
+            return true;
+        }
+        return false;
+    }
+}</code></pre>
+</div>
+
+<div class="code-card" id="code17">
+  <div class="code-head">
+    <span class="fname">HealthChange.cs</span>
+    <span class="ftitle">玩家血条与被接触攻击（已修正）</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">【修正 2025 PPT 的 bug】原 PPT 漏声明 healthFillImage 字段，且定义了 UpdateHealth 却从未调用——血条永远不变。已补字段并在扣血后调用。挂载在 Player 上，FillImage 拖入血条填充图。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+using UnityEngine.UI;
+
+public class HealthChange : MonoBehaviour
+{
+    public float maxHealth = 100f;
+    public float currentHealth;
+    public Image healthFillImage; // 血条填充图片（Inspector 拖入，已补声明）
+
+    void Start()
+    {
+        currentHealth = maxHealth;
+        UpdateHealth();
+    }
+
+    void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        if (hit.collider.CompareTag("Enemy"))
+        {
+            EnemyData enemyData = hit.gameObject.GetComponent&lt;EnemyData&gt;();
+            if (enemyData != null &amp;&amp; enemyData.CanAttack())
+            {
+                TakeDamage(enemyData.attackPower);
+            }
+        }
+    }
+
+    void TakeDamage(float amount)
+    {
+        currentHealth -= amount;
+        if (currentHealth &lt;= 0f)
+        {
+            currentHealth = 0f;
+            Debug.Log("玩家死亡！");
+        }
+        UpdateHealth(); // 已补：原 PPT 从不调用，血条不变
+    }
+
+    void UpdateHealth()
+    {
+        if (healthFillImage != null)
+            healthFillImage.fillAmount = currentHealth / maxHealth;
+    }
+}</code></pre>
+</div>
+
+<div class="code-card" id="code18">
+  <div class="code-head">
+    <span class="fname">EnemyAttacked.cs</span>
+    <span class="ftitle">子弹击杀敌人（课件27）</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">子弹（标签 Bullet）碰到敌人即销毁敌人，并广播敌人死亡事件，通知怪物笼补充新敌人。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+
+public class EnemyAttacked : MonoBehaviour
+{
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Bullet"))
+        {
+            Events.EnemyDeathEvent.Raise(); // 广播死亡事件
+            Destroy(gameObject);            // 击杀敌人
+        }
+    }
+}</code></pre>
+</div>
+</section>
+<section id="sec19"><h2>模块E · 事件与孵化器</h2>
+
+<div class="code-card" id="code20">
+  <div class="code-head">
+    <span class="fname">Events.cs</span>
+    <span class="ftitle">事件系统（课件26）</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">集中管理事件实例。GameEvent.Raise() 触发，监听方用 .OnRaise += 订阅。比散落的引用更解耦。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+using System;
+
+public static class Events
+{
+    public static PlayerDeathEvent PlayerDeathEvent = new PlayerDeathEvent();
+    public static EnemyDeathEvent  EnemyDeathEvent  = new EnemyDeathEvent();
+}
+
+public class GameEvent
+{
+    public event Action OnRaise;
+    public void Raise() =&gt; OnRaise?.Invoke();
+}
+
+public class PlayerDeathEvent : GameEvent { }
+public class EnemyDeathEvent : GameEvent { }</code></pre>
+</div>
+
+<div class="code-card" id="code21">
+  <div class="code-head">
+    <span class="fname">CreateMonster.cs</span>
+    <span class="ftitle">敌人孵化器（怪物笼）</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">在出生点生成限定数量的怪物，敌人死亡后通过事件补生成，维持同屏数量。挂在 MonsterCage 上。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+
+public class CreateMonster : MonoBehaviour
+{
+    public GameObject[] monsterPrefabs; // 怪物预制体列表
+    public Transform[] spawnPoints;     // 出生点（WayPoint）
+    public int maxAlive = 5;            // 同屏最大数量
+
+    private int aliveCount = 0;
+
+    void Start()
+    {
+        Events.EnemyDeathEvent.OnRaise += OnEnemyDied;
+        Spawn();
+    }
+
+    void Spawn()
+    {
+        if (aliveCount &gt;= maxAlive) return;
+        int p = Random.Range(0, monsterPrefabs.Length);
+        int s = Random.Range(0, spawnPoints.Length);
+        Instantiate(monsterPrefabs[p], spawnPoints[s].position, Quaternion.identity);
+        aliveCount++;
+    }
+
+    void OnEnemyDied()
+    {
+        aliveCount--;
+        Spawn();
+    }
+
+    void OnDestroy()
+    {
+        Events.EnemyDeathEvent.OnRaise -= OnEnemyDied;
+    }
+}</code></pre>
+</div>
+</section>
+<section id="sec22"><h2>模块F · 启动与界面</h2>
+
+<div class="code-card" id="code23">
+  <div class="code-head">
+    <span class="fname">StartScene.cs</span>
+    <span class="ftitle">启动页面：按钮 + 异步加载场景（课件24）</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">开始按钮点击后异步加载游戏场景。场景名需与 File > Build Settings 中的名称一致。Canvas 里放 Image/Button，Button 拖入此脚本的 startButton 字段。</p>
+  <pre><code class="language-csharp">using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+public class StartScene : MonoBehaviour
+{
+    public Button startButton;
+
+    void Start()
+    {
+        startButton.onClick.AddListener(LoadGame);
+    }
+
+    void LoadGame()
+    {
+        SceneManager.LoadSceneAsync("GameScene"); // 异步加载游戏场景
+    }
+}</code></pre>
+</div>
+</section>
+<section id="sec24"><h2>模块G · C# 基础小程序</h2>
+
+<div class="code-card" id="code25">
+  <div class="code-head">
+    <span class="fname">MaxOfThree.cs</span>
+    <span class="ftitle">求三个数的最大值（控制台）</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">纯 C# 控制台程序，用于熟悉变量、if 判断。在 Visual Studio 新建控制台项目运行。</p>
+  <pre><code class="language-csharp">using System;
+
+class Program
+{
+    static void Main()
+    {
+        int a = 18, b = 25, c = 12;
+        int max = a;
+        if (b &gt; max) max = b;
+        if (c &gt; max) max = c;
+        Console.WriteLine("最大值是：" + max);
+    }
+}</code></pre>
+</div>
+
+<div class="code-card" id="code26">
+  <div class="code-head">
+    <span class="fname">NineNineTable.cs</span>
+    <span class="ftitle">九九乘法表（控制台）</span>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+  <p class="fdesc">嵌套 for 循环。Console.Write 不换行，\t 制表符对齐；内层结束用 Console.WriteLine 换行。</p>
+  <pre><code class="language-csharp">using System;
+
+class Program
+{
+    static void Main()
+    {
+        for (int i = 1; i &lt;= 9; i++)
+        {
+            for (int j = 1; j &lt;= i; j++)
+            {
+                Console.Write(j + "x" + i + "=" + (i * j) + "\t");
+            }
+            Console.WriteLine();
+        }
+    }
+}</code></pre>
+</div>
+</section>
+  </main>
+</div>
+<script src="vendor/highlight.min.js"></script>
+<script>
+function copyCode(btn){
+  var card = btn.closest('.code-card');
+  var code = card.querySelector('code').innerText;
+  navigator.clipboard.writeText(code).then(function(){
+    btn.textContent='已复制'; btn.classList.add('done');
+    setTimeout(function(){btn.textContent='复制'; btn.classList.remove('done');},1500);
+  }).catch(function(){
+    var ta=document.createElement('textarea'); ta.value=code; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent='已复制'; btn.classList.add('done');
+    setTimeout(function(){btn.textContent='复制'; btn.classList.remove('done');},1500);
+  });
+}
+hljs.highlightAll();
+</script>
+</body>
+</html>
