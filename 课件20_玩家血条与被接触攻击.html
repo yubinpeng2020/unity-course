@@ -604,7 +604,55 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 </div></div>
 <div class="slide" data-page="12"><div class="slide-inner markable">
 <h1>血条原理 · 只改一个 fillAmount</h1>
-<div class="card"><p>血条变短这件事，Unity 已经替我们算好了：只要给<strong>填充总数（fillAmount）</strong> 一个 0～1 的数，它自己把红条画到相应长度。所以脚本要做的只有一句：</p><div class="prompt-box">
+<div class="card"><h3>先看全貌：整段脚本长这样</h3><p>这一课的脚本只有一个文件 <code>HealthChange.cs</code>，全部内容就是下面这段。不用逐行读懂，先认个脸熟——后面几页都是围着它转的。</p><div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_healthchange_peek',this)">复制</button></div>
+<pre id="c20_healthchange_peek"><code class="language-csharp">using UnityEngine;
+using UnityEngine.UI;   // 要用 Image，必须带上这一行
+
+public class HealthChange : MonoBehaviour
+{
+    public float MaxHealth = 100f;          // 满血
+    public float CurrentHealth;             // 当前血量
+    public Image healthFillImage;           // 血条上那条红条，检查器里拖进来
+
+    void Start()
+    {
+        CurrentHealth = MaxHealth;          // 开局满血
+        UpdateHealth();
+    }
+
+    // 玩家用角色控制器撞到东西时触发（不需要刚体）
+    void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        if (hit.collider.CompareTag("Enemy"))
+        {
+            EnemyData enemy = hit.gameObject.GetComponent&lt;EnemyData&gt;();
+            if (enemy != null &amp;&amp; enemy.canAttack())
+            {
+                TakeDamage(enemy.attackPower);
+            }
+        }
+    }
+
+    // 扣血：扣完立刻刷新血条
+    public void TakeDamage(float damage)
+    {
+        CurrentHealth = CurrentHealth - damage;
+        if (CurrentHealth &lt; 0) CurrentHealth = 0;
+        UpdateHealth();
+    }
+
+    // 把血量换算成 0~1，交给红条
+    void UpdateHealth()
+    {
+        if (healthFillImage != null)
+        {
+            healthFillImage.fillAmount = CurrentHealth / MaxHealth;
+        }
+    }
+}</code></pre>
+</div><p>血条相关的变量只有三个，先记住它们各自是什么、谁给它值：</p><table><thead><tr><th>变量</th><th>是什么</th><th>值从哪来</th></tr></thead><tbody><tr><td><code>MaxHealth</code></td><td>满血是多少</td><td>脚本里默认 <code>100</code>，检查器里也能改</td></tr><tr><td><code>CurrentHealth</code></td><td>现在还剩多少血</td><td><code>Start()</code> 里先设成满血，被撞时减</td></tr><tr><td><code>healthFillImage</code></td><td>红条那个 <code>Image</code> 组件</td><td>检查器里把 <code>FillImageHealth</code> 拖进槽位</td></tr></tbody></table></div>
+<div class="card"><p>整段脚本四十来行，跟血条长短真正有关的只有<strong>一句</strong>。血条变短这件事 Unity 已经替我们算好了：只要给<strong>填充总数（fillAmount）</strong> 一个 0～1 的数，它自己把红条画到相应长度。所以要写的只有：</p><div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_fill',this)">复制</button></div>
 <pre id="c20_fill"><code class="language-csharp">healthFillImage.fillAmount = CurrentHealth / MaxHealth;</code></pre>
 </div><p>血量 100、满血 100，除出来是 <code>1</code>，满格；50 / 100 是 <code>0.5</code>，一半；0 就是空的。</p></div>
@@ -670,7 +718,7 @@ public class EnemyData : MonoBehaviour
 </div></div>
 <div class="slide" data-page="15"><div class="slide-inner markable">
 <h1>玩家扣血 · HealthChange</h1>
-<div class="card"><p>最后一块拼图：玩家身上挂一个脚本，负责「被撞 → 扣血 → 改血条」。</p></div>
+<div class="card"><p>原理那一页看过的整段脚本，这一页动手把它写出来、挂上去：玩家身上一个脚本，负责「被撞 → 扣血 → 改血条」。</p></div>
 <div class="card"><h3>① 新建 HealthChange.cs，挂到 Player 身上</h3><p>同样右键 → 创建 → C# 脚本，命名 <code>HealthChange</code>，拖到 <strong>Player</strong> 上。</p><div class="step-img"><img src="images/课件20/玩家1-挂HealthChange.png" alt="HealthChange 脚本挂在 Player 对象上" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_healthchange',this)">复制</button></div>
