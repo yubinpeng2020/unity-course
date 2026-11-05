@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>《数字产品设计》知识图谱 — Unity 3D 交互开发</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0E110D;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;overflow:hidden;height:100vh}
+
+/* 顶部标题栏 */
+.topbar{position:fixed;top:0;left:0;right:0;height:56px;background:rgba(14,17,13,0.95);border-bottom:1px solid #2a3a2a;display:flex;align-items:center;padding:0 20px;z-index:100;backdrop-filter:blur(12px)}
+.topbar h1{font-size:17px;color:#7FC873;font-weight:600}
+.topbar .subtitle{font-size:12px;color:#888;margin-left:12px}
+.topbar .controls{margin-left:auto;display:flex;gap:8px}
+.topbar button{background:rgba(127,200,115,0.1);border:1px solid #3a5a3a;color:#7FC873;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;transition:all .2s}
+.topbar button:hover{background:rgba(127,200,115,0.2);border-color:#5BA84E}
+.topbar button.active{background:rgba(127,200,115,0.3);border-color:#7FC873}
+
+/* 侧边面板 */
+.sidepanel{position:fixed;top:56px;right:0;bottom:0;width:340px;background:rgba(18,22,18,0.97);border-left:1px solid #2a3a2a;padding:20px;overflow-y:auto;z-index:50;transform:translateX(100%);transition:transform .3s ease}
+.sidepanel.open{transform:translateX(0)}
+.sidepanel h2{color:#7FC873;font-size:15px;margin-bottom:8px;border-bottom:1px solid #2a3a2a;padding-bottom:6px}
+.sidepanel .node-info{margin-bottom:16px}
+.sidepanel .node-info .label{font-size:11px;color:#888;text-transform:uppercase;margin-bottom:3px}
+.sidepanel .node-info .value{font-size:13px;color:#c0d0c0;margin-bottom:10px;line-height:1.6}
+.sidepanel .prereq-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.sidepanel .prereq-list .chip{background:rgba(127,200,115,0.15);border:1px solid #3a5a3a;color:#7FC873;padding:3px 10px;border-radius:12px;font-size:11px;cursor:pointer;transition:all .15s}
+.sidepanel .prereq-list .chip:hover{background:rgba(127,200,115,0.3)}
+.sidepanel .concept-list .concept{background:rgba(200,200,200,0.05);border-left:3px solid #5BA84E;padding:6px 10px;margin-bottom:4px;font-size:12px;color:#b0c0b0;border-radius:0 4px 4px 0}
+
+/* 图谱容器 */
+#graph-container{position:fixed;top:56px;left:0;right:0;bottom:0;cursor:grab}
+#graph-container.dragging{cursor:grabbing}
+
+/* SVG 样式 */
+svg{width:100%;height:100%}
+.node-circle{cursor:pointer;transition:all .2s ease}
+.node-circle:hover{filter:brightness(1.3)}
+.node-label{font-size:12px;fill:#e0e0e0;pointer-events:none;text-anchor:middle;font-weight:500;text-shadow:0 1px 4px rgba(0,0,0,0.8)}
+.node-label.sub{font-size:10px;fill:#999}
+.edge-line{stroke:#2a4a2a;stroke-width:1.5;fill:none;opacity:0.4;transition:all .2s}
+.edge-line.highlight{stroke:#7FC873;opacity:0.8;stroke-width:2.5}
+.edge-line.prereq{stroke-dasharray:4,3}
+.edge-line.dependency{stroke-dasharray:none}
+
+/* 模块颜色 */
+.mod-engine{fill:#1a3a5a;stroke:#3a6a9a}
+.mod-editor{fill:#1a4a2a;stroke:#3a8a5a}
+.mod-script{fill:#3a2a4a;stroke:#7a5a9a}
+.mod-fps{fill:#4a3a1a;stroke:#9a7a3a}
+.mod-build{fill:#3a1a2a;stroke:#9a3a6a}
+.mod-advanced{fill:#1a1a3a;stroke:#5a5a9a}
+
+/* 图例 */
+.legend{position:fixed;bottom:16px;left:16px;background:rgba(18,22,18,0.9);border:1px solid #2a3a2a;border-radius:8px;padding:12px 14px;z-index:40;font-size:11px}
+.legend .title{color:#7FC873;font-weight:600;margin-bottom:8px;font-size:12px}
+.legend .item{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.legend .dot{width:12px;height:12px;border-radius:50%;border-width:2px;border-style:solid}
+
+/* 搜索框 */
+.search-box{position:fixed;top:68px;left:16px;z-index:40}
+.search-box input{background:rgba(18,22,18,0.9);border:1px solid #2a3a2a;border-radius:8px;padding:8px 12px;color:#e0e0e0;font-size:13px;width:220px;outline:none}
+.search-box input:focus{border-color:#5BA84E}
+.search-box input::placeholder{color:#666}
+
+/* 缩放控制 */
+.zoom-controls{position:fixed;bottom:16px;right:16px;display:flex;flex-direction:column;gap:4px;z-index:40}
+.zoom-controls button{width:36px;height:36px;background:rgba(18,22,18,0.9);border:1px solid #2a3a2a;border-radius:6px;color:#7FC873;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.zoom-controls button:hover{background:rgba(127,200,115,0.15)}
+
+/* 工具提示 */
+.tooltip{position:fixed;background:rgba(14,17,13,0.95);border:1px solid #3a5a3a;border-radius:8px;padding:10px 14px;font-size:12px;color:#c0d0c0;pointer-events:none;z-index:200;display:none;max-width:280px;backdrop-filter:blur(8px)}
+.tooltip.show{display:block}
+.tooltip .tt-title{color:#7FC873;font-weight:600;margin-bottom:4px}
+.tooltip .tt-meta{color:#888;font-size:11px}
+
+/* 响应式 */
+@media(max-width:768px){
+  .sidepanel{width:100%}
+  .topbar .subtitle{display:none}
+  .legend{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>🧠 数字产品设计知识图谱</h1>
+  <span class="subtitle">Unity 3D 交互开发 · 35 课件 · 6 模块 · 点击节点查看详情</span>
+  <div class="controls">
+    <button id="btnReset">重置视图</button>
+    <button id="btnLabels" class="active">显示标签</button>
+    <button id="btnEdges" class="active">显示依赖</button>
+  </div>
+</div>
+
+<div class="search-box">
+  <input type="text" id="searchInput" placeholder="🔍 搜索课件或知识点..." />
+</div>
+
+<div id="graph-container"></div>
+
+<div class="legend">
+  <div class="title">课程模块</div>
+  <div class="item"><div class="dot" style="background:#1a3a5a;border-color:#3a6a9a"></div>A 引擎认知（课件1-4）</div>
+  <div class="item"><div class="dot" style="background:#1a4a2a;border-color:#3a8a5a"></div>B 编辑器操作（课件5-9）</div>
+  <div class="item"><div class="dot" style="background:#3a2a4a;border-color:#7a5a9a"></div>C 脚本开发（课件10-16）</div>
+  <div class="item"><div class="dot" style="background:#4a3a1a;border-color:#9a7a3a"></div>D FPS实战（课件17-31）</div>
+  <div class="item"><div class="dot" style="background:#3a1a2a;border-color:#9a3a6a"></div>E 打包与大作业（课件18,大作业）</div>
+  <div class="item"><div class="dot" style="background:#1a1a3a;border-color:#5a5a9a"></div>F 进阶自学（课件33-39）</div>
+</div>
+
+<div class="zoom-controls">
+  <button id="zoomIn" title="放大">+</button>
+  <button id="zoomOut" title="缩小">−</button>
+  <button id="zoomFit" title="适应">⊡</button>
+</div>
+
+<div class="sidepanel" id="sidepanel">
+  <div id="panelContent"></div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ===== 知识图谱数据 =====
+const COURSE_DATA = {
+  nodes: [
+    // 模块A: 引擎认知
+    {id:'c1', label:'课件1', sublabel:'认识Unity与课程介绍', module:'engine',
+     concepts:['Unity引擎概念','应用领域','C#与Unity关系','课程考核','实验室守则','10周安排','大作业预告','竞赛就业'],
+     desc:'课程总览，了解Unity引擎定位、应用领域、课程要求与考核方式',
+     prereq:[], depend:['c2','c3']},
+
+    {id:'c2', label:'课件2', sublabel:'注册与安装软件', module:'engine',
+     concepts:['Unity账号注册','Unity Hub','个人许可证','LTS编辑器安装','团结引擎区别','路径提醒'],
+     desc:'注册Unity账号，安装Unity Hub与LTS编辑器',
+     prereq:['c1'], depend:['c3']},
+
+    {id:'c3', label:'课件3', sublabel:'Unity引擎概览', module:'engine',
+     concepts:['创建项目','纯英文路径','切换简体中文','菜单栏六大菜单','六大视图','Scene/Game/Hierarchy/Project/Inspector','左手坐标系','变换工具','Gizmo','渲染模式','播放模式'],
+     desc:'Unity编辑器全景认知——项目创建、六大视图、坐标系、变换工具',
+     prereq:['c2'], depend:['c4','c5','c6','c7','c8','c9']},
+
+    {id:'c4', label:'课件4', sublabel:'场景与物体', module:'engine',
+     concepts:['添加物体','视野中心','层级视图','3D Object五件套','命名/删除/复制','摄像机','光源','天空盒','栅格','场景概念'],
+     desc:'场景概念入门——添加物体、层级视图、3D Object、摄像机与光源',
+     prereq:['c3'], depend:['c5','c6','c7','c8']},
+
+    // 模块B: 编辑器基础操作
+    {id:'c5', label:'课件5', sublabel:'移动视野', module:'editor',
+     concepts:['导航器','视角切换','锁定视角','拉近拉远','滚轮精细化','旋转视角','广角','正交视角','重叠处理'],
+     desc:'场景视图导航——导航器、滚轮缩放、旋转视角、正交视角',
+     prereq:['c3','c4'], depend:['c6']},
+
+    {id:'c6', label:'课件6', sublabel:'移动物体', module:'editor',
+     concepts:['移动工具','坐标平面XY/XZ/YZ','输入坐标精确移动','Reset','切换物体','主摄像机跟随'],
+     desc:'物体移动——移动工具、坐标平面、精确输入、摄像机跟随',
+     prereq:['c4','c5'], depend:['c7']},
+
+    {id:'c7', label:'课件7', sublabel:'旋转缩放多选', module:'editor',
+     concepts:['旋转工具','输入旋转','增量旋转','Reset旋转','缩放工具','轴向缩放','中心/轴心','多选框选','Shift多选','层级窗口多选'],
+     desc:'物体变换——旋转、缩放、多选操作',
+     prereq:['c6'], depend:['c8']},
+
+    {id:'c8', label:'课件9', sublabel:'网格与材质', module:'editor',
+     concepts:['Mesh网格概念','Material材质','颜色','纹理贴图','Shader基础','Standard Shader','Skybox天空盒','Lighting窗口','PBR贴图'],
+     desc:'材质系统——Mesh、Material、Shader、天空盒、PBR贴图',
+     prereq:['c7'], depend:['c9','c23']},
+
+    {id:'c9', label:'课件8', sublabel:'Fbx模型导入', module:'editor',
+     concepts:['Fbx三要素','导入流程','纹理贴图','模型预览','模型缩放'],
+     desc:'Fbx模型导入——导入流程、纹理、预览、缩放',
+     prereq:['c8'], depend:['c20']},
+
+    {id:'c10', label:'课件9', sublabel:'C#核心语法', module:'editor',
+     concepts:['变量','数据类型','if/switch','for/while','方法定义','面向对象简述','控制台练习','求最大值','九九乘法表'],
+     desc:'Unity语境下的C#核心语法精讲——变量、流程控制、方法',
+     prereq:['c3'], depend:['c11','c12','c13']},
+
+    // 模块C: Unity脚本开发
+    {id:'c11', label:'课件10', sublabel:'脚本入门与生命周期', module:'script',
+     concepts:['MonoBehaviour','Start()','Update()','Transform操作','Time.deltaTime','位移','旋转','往返运动','脚本添加方式'],
+     desc:'脚本入门——MonoBehaviour、生命周期、Transform操作、位移旋转',
+     prereq:['c10'], depend:['c12','c13','c14','c15']},
+
+    {id:'c12', label:'课件11', sublabel:'键盘控制移动', module:'script',
+     concepts:['Input.GetAxis','输入管理器','按键映射','鼠标控制视野','摄像机跟随','Character Controller'],
+     desc:'输入系统——Input.GetAxis、按键映射、鼠标视野、摄像机跟随',
+     prereq:['c11'], depend:['c16','c21']},
+
+    {id:'c13', label:'课件12', sublabel:'变量类型与可见性', module:'script',
+     concepts:['Vector3','public/private','序列化','GameObject.Find','Mathf.Clamp'],
+     desc:'变量进阶——Vector3、访问修饰符、序列化、GameObject.Find、Mathf',
+     prereq:['c11'], depend:['c14','c16']},
+
+    {id:'c14', label:'课件13', sublabel:'访问其他游戏对象', module:'script',
+     concepts:['public变量引用','GetComponent','GameObject.Find','Tag标签系统','跨对象通信'],
+     desc:'跨对象通信——4种访问方式：public变量、GetComponent、Find、Tag',
+     prereq:['c11','c13'], depend:['c16','c20']},
+
+    {id:'c15', label:'课件14', sublabel:'刚体与碰撞体', module:'script',
+     concepts:['Rigidbody','Collider类型','BoxCollider','SphereCollider','CapsuleCollider','碰撞条件','碰撞边框调整'],
+     desc:'物理系统——Rigidbody、Collider类型、碰撞条件',
+     prereq:['c11'], depend:['c16']},
+
+    {id:'c16', label:'课件15', sublabel:'受力运动', module:'script',
+     concepts:['AddForce','跳跃实现','跌落检测','力的方向','跳跃+碰撞检测'],
+     desc:'物理运动——AddForce、跳跃、跌落、力的方向',
+     prereq:['c12','c13','c15'], depend:['c22']},
+
+    {id:'c17', label:'课件16', sublabel:'主控脚本与随机生成', module:'script',
+     concepts:['全局管理','预制体Prefab','Random','随机生成'],
+     desc:'进阶脚本——全局管理器、预制体、Random随机生成',
+     prereq:['c13','c14'], depend:['c31']},
+
+    // 模块D: FPS项目实战
+    {id:'c18', label:'课件17', sublabel:'FPS场景玩家武器', module:'fps',
+     concepts:['项目创建','导入素材包','场景搭建','地面+墙壁','胶囊体玩家','武器绑定','子弹预制体','Instantiate','velocity','Destroy'],
+     desc:'FPS实战起步——场景搭建、玩家、武器、子弹射击',
+     prereq:['c9','c14'], depend:['c19','c20']},
+
+    {id:'c19', label:'课件18', sublabel:'移动射击', module:'fps',
+     concepts:['Character Controller','移动','鼠标视角','准心','鼠标锁定','Cursor.lockState'],
+     desc:'FPS移动——Character Controller、鼠标视角、准心、锁定光标',
+     prereq:['c18'], depend:['c22','c25']},
+
+    {id:'c20', label:'课件19', sublabel:'跳跃与穿墙', module:'fps',
+     concepts:['跳跃物理','图层系统','碰撞矩阵','穿墙实现'],
+     desc:'跳跃与图层——跳跃物理、Layer系统、碰撞矩阵穿墙',
+     prereq:['c16','c19'], depend:['c25']},
+
+    {id:'c21', label:'课件20', sublabel:'场地美化与免费资源', module:'fps',
+     concepts:['材质优化','Poly Haven','HDRI','免费贴图','免费3D模型','PBR参数调整'],
+     desc:'场景美化——材质优化、Poly Haven免费资源、PBR参数',
+     prereq:['c8','c18'], depend:['c25']},
+
+    {id:'c22', label:'课件21', sublabel:'敌人简易跟踪', module:'fps',
+     concepts:['NavMesh烘焙','Nav Mesh Agent','敌人追玩家','导航网格'],
+     desc:'AI起步——NavMesh烘焙、NavMesh Agent、敌人追踪',
+     prereq:['c19','c20'], depend:['c23','c24']},
+
+    {id:'c23', label:'课件22', sublabel:'AI敌人巡逻', module:'fps',
+     concepts:['WayPoint巡逻','巡逻↔跟踪混合','Physics.Linecast','视线检测'],
+     desc:'AI进阶——WayPoint巡逻、跟踪混合、视线检测',
+     prereq:['c22'], depend:['c24']},
+
+    {id:'c24', label:'课件23', sublabel:'敌人动画切换', module:'fps',
+     concepts:['Animator状态机','巡逻动画','跟踪动画','混合树Blend Tree'],
+     desc:'动画系统——Animator状态机、动画切换、混合树',
+     prereq:['c23'], depend:['c32']},
+
+    {id:'c25', label:'课件24', sublabel:'启动页面', module:'fps',
+     concepts:['新场景','Canvas','Image','Button','鼠标hover','场景异步加载','SceneManager'],
+     desc:'UI系统——Canvas、Button、异步场景加载',
+     prereq:['c19'], depend:['c26']},
+
+    {id:'c26', label:'课件25', sublabel:'玩家血条与被接触攻击', module:'fps',
+     concepts:['Canvas Group','血条UI','Filled填充','敌人攻击','OnControllerColliderHit'],
+     desc:'UI+战斗——血条UI、敌人攻击、碰撞回调',
+     prereq:['c25'], depend:['c27']},
+
+    {id:'c27', label:'课件26', sublabel:'死亡与游戏管理器', module:'fps',
+     concepts:['死亡黑屏','GameManager','事件系统','游戏状态管理'],
+     desc:'游戏管理——死亡黑屏、GameManager、事件系统',
+     prereq:['c26'], depend:['c28']},
+
+    {id:'c28', label:'课件27', sublabel:'消灭敌人与孵化器', module:'fps',
+     concepts:['子弹击杀','碰撞检测','敌人预制体','定点生成','限定数量','孵化器'],
+     desc:'战斗闭环——子弹击杀、敌人预制体、定点生成孵化器',
+     prereq:['c27'], depend:['c29']},
+
+    {id:'c29', label:'课件28', sublabel:'粒子系统与随机生成', module:'fps',
+     concepts:['粒子参数','粒子资源','粒子效果','随机位置生成敌人'],
+     desc:'视觉特效——粒子系统参数、资源、随机生成',
+     prereq:['c28'], depend:['big']},
+
+    // 模块E: 打包与大作业
+    {id:'c30', label:'课件18', sublabel:'中文显示与打包', module:'build',
+     concepts:['中文字体导入','TextMeshPro','Build Settings','打包Windows','WebGL','Player Settings'],
+     desc:'打包发布——中文字体、Build Settings、Windows/WebGL打包',
+     prereq:['c18'], depend:['big']},
+
+    {id:'big', label:'大作业', sublabel:'期末大作业', module:'build',
+     concepts:['FPS基础','AI敌人','血条','死亡','额外功能','打包','文档','分组≤4人','评分标准','加分项'],
+     desc:'期末大作业——综合运用，FPS游戏完整开发+打包+文档',
+     prereq:['c29','c30'], depend:[]},
+
+    // 模块F: 进阶自学（加分项）
+    {id:'c34', label:'课件33', sublabel:'拾取物品', module:'advanced',
+     concepts:['道具系统','拾取检测','道具效果','OnTriggerEnter'],
+     desc:'进阶自学——道具拾取系统',
+     prereq:['c28'], depend:['c35']},
+
+    {id:'c35', label:'课件34', sublabel:'更换枪械', module:'advanced',
+     concepts:['多枪系统','武器切换','武器属性','按键切换'],
+     desc:'进阶自学——多枪系统与武器切换',
+     prereq:['c34'], depend:['c36']},
+
+    {id:'c36', label:'课件36', sublabel:'修改动画状态机', module:'advanced',
+     concepts:['动画进阶','状态机修改','动画层','动画事件'],
+     desc:'进阶自学——动画状态机进阶',
+     prereq:['c24','c35'], depend:['c37']},
+
+    {id:'c37', label:'课件37', sublabel:'NPC对话', module:'advanced',
+     concepts:['NPC对话系统','对话UI','触发对话','对话内容展示'],
+     desc:'进阶自学——NPC对话系统',
+     prereq:['c36'], depend:['c38']},
+
+    {id:'c38', label:'课件38', sublabel:'NPC对话进阶', module:'advanced',
+     concepts:['多段对话','对话选项','对话分支','任务触发'],
+     desc:'进阶自学——NPC对话进阶，多段对话与选项',
+     prereq:['c37'], depend:['c39']},
+
+    {id:'c39', label:'课件39', sublabel:'任务队列', module:'advanced',
+     concepts:['任务系统','任务队列','任务状态','任务完成检测'],
+     desc:'进阶自学——任务队列系统，最复杂的进阶内容',
+     prereq:['c38'], depend:[]},
+  ],
+
+  edges: [
+    // 模块A内部
+    {from:'c1', to:'c2', type:'prereq'},
+    {from:'c2', to:'c3', type:'prereq'},
+    {from:'c3', to:'c4', type:'prereq'},
+    // A→B
+    {from:'c3', to:'c5', type:'prereq'},
+    {from:'c3', to:'c10', type:'prereq'},
+    {from:'c4', to:'c5', type:'prereq'},
+    // 模块B内部
+    {from:'c5', to:'c6', type:'prereq'},
+    {from:'c6', to:'c7', type:'prereq'},
+    {from:'c7', to:'c8', type:'prereq'},
+    {from:'c8', to:'c9', type:'prereq'},
+    // B→C
+    {from:'c10', to:'c11', type:'prereq'},
+    // 模块C内部
+    {from:'c11', to:'c12', type:'prereq'},
+    {from:'c11', to:'c13', type:'prereq'},
+    {from:'c11', to:'c14', type:'prereq'},
+    {from:'c11', to:'c15', type:'prereq'},
+    {from:'c13', to:'c14', type:'prereq'},
+    {from:'c13', to:'c16', type:'prereq'},
+    {from:'c14', to:'c16', type:'prereq'},
+    {from:'c14', to:'c17', type:'prereq'},
+    {from:'c15', to:'c16', type:'prereq'},
+    {from:'c12', to:'c16', type:'prereq'},
+    // C→D
+    {from:'c12', to:'c19', type:'prereq'},
+    {from:'c9', to:'c18', type:'prereq'},
+    {from:'c14', to:'c18', type:'prereq'},
+    {from:'c16', to:'c20', type:'prereq'},
+    {from:'c8', to:'c21', type:'prereq'},
+    {from:'c17', to:'c31', type:'prereq'},
+    // 模块D内部
+    {from:'c18', to:'c19', type:'prereq'},
+    {from:'c18', to:'c20', type:'prereq'},
+    {from:'c18', to:'c21', type:'prereq'},
+    {from:'c19', to:'c20', type:'prereq'},
+    {from:'c19', to:'c22', type:'prereq'},
+    {from:'c19', to:'c25', type:'prereq'},
+    {from:'c20', to:'c22', type:'prereq'},
+    {from:'c22', to:'c23', type:'prereq'},
+    {from:'c23', to:'c24', type:'prereq'},
+    {from:'c25', to:'c26', type:'prereq'},
+    {from:'c26', to:'c27', type:'prereq'},
+    {from:'c27', to:'c28', type:'prereq'},
+    {from:'c28', to:'c29', type:'prereq'},
+    // D→E
+    {from:'c29', to:'big', type:'prereq'},
+    {from:'c18', to:'c30', type:'prereq'},
+    {from:'c30', to:'big', type:'prereq'},
+    // D→F
+    {from:'c28', to:'c34', type:'prereq'},
+    {from:'c24', to:'c36', type:'prereq'},
+    // 模块F内部
+    {from:'c34', to:'c35', type:'prereq'},
+    {from:'c35', to:'c36', type:'prereq'},
+    {from:'c36', to:'c37', type:'prereq'},
+    {from:'c37', to:'c38', type:'prereq'},
+    {from:'c38', to:'c39', type:'prereq'},
+
+    // 知识点关联（虚线，间接依赖）
+    {from:'c3', to:'c8', type:'relate'},      // 引擎概览 → 材质
+    {from:'c8', to:'c23', type:'relate'},      // 材质 → 场地美化
+    {from:'c10', to:'c13', type:'relate'},     // C#语法 → 变量类型
+    {from:'c13', to:'c17', type:'relate'},     // 变量 → 随机生成
+    {from:'c15', to:'c22', type:'relate'},     // 碰撞 → NavMesh
+    {from:'c17', to:'c28', type:'relate'},     // 预制体 → 孵化器
+    {from:'c24', to:'c32', type:'relate'},     // 动画 → 粒子（动画切换→视觉特效）
+    {from:'c25', to:'c34', type:'relate'},     // UI → 拾取UI
+    {from:'c28', to:'big', type:'relate'},     // 孵化器 → 大作业
+    {from:'c2', to:'c30', type:'relate'},      // 安装 → 打包环境
+  ]
+};
+
+// ===== 模块配置 =====
+const MODULES = {
+  engine:   {name:'A 引擎认知', color:'#1a3a5a', stroke:'#3a6a9a', cssClass:'mod-engine'},
+  editor:   {name:'B 编辑器操作', color:'#1a4a2a', stroke:'#3a8a5a', cssClass:'mod-editor'},
+  script:   {name:'C 脚本开发', color:'#3a2a4a', stroke:'#7a5a9a', cssClass:'mod-script'},
+  fps:      {name:'D FPS实战', color:'#4a3a1a', stroke:'#9a7a3a', cssClass:'mod-fps'},
+  build:    {name:'E 打包与大作业', color:'#3a1a2a', stroke:'#9a3a6a', cssClass:'mod-build'},
+  advanced: {name:'F 进阶自学', color:'#1a1a3a', stroke:'#5a5a9a', cssClass:'mod-advanced'},
+};
+
+// ===== 布局算法：螺旋时间线布局 =====
+const LAYOUT = {
+  cx: 0, cy: 0,
+  positions: {}
+};
+
+function computeLayout() {
+  const moduleOrder = ['engine','editor','script','fps','build','advanced'];
+  const nodesByModule = {};
+  COURSE_DATA.nodes.forEach(n => {
+    if(!nodesByModule[n.module]) nodesByModule[n.module] = [];
+    nodesByModule[n.module].push(n);
+  });
+
+  const centerX = 650, centerY = 450;
+  const allNodes = moduleOrder.flatMap(m => nodesByModule[m] || []);
+  const n = allNodes.length;
+
+  allNodes.forEach((node, i) => {
+    const angle = (i / n) * Math.PI * 2.8 - Math.PI/2;
+    const radius = 160 + (i / n) * 280;
+    LAYOUT.positions[node.id] = {
+      x: centerX + Math.cos(angle) * radius,
+      y: centerY + Math.sin(angle) * radius * 0.72
+    };
+  });
+}
+
+// ===== SVG 渲染 =====
+let svg, gMain, gEdges, gNodes;
+let viewBox = {x: 0, y: 0, w: 1300, h: 900};
+let showLabels = true;
+let showEdges = true;
+let selectedNode = null;
+
+function initSVG() {
+  const container = document.getElementById('graph-container');
+  container.innerHTML = '';
+
+  svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`);
+  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  defs.innerHTML = `
+    <marker id="arrow-prereq" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#3a6a3a" opacity="0.6"/>
+    </marker>
+    <marker id="arrow-relate" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#5a5a5a" opacity="0.4"/>
+    </marker>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  `;
+  svg.appendChild(defs);
+
+  gMain = document.createElementNS('http://www.w3.org/2000/svg','g');
+  gEdges = document.createElementNS('http://www.w3.org/2000/svg','g');
+  gEdges.setAttribute('id','edges-layer');
+  gNodes = document.createElementNS('http://www.w3.org/2000/svg','g');
+  gNodes.setAttribute('id','nodes-layer');
+  gMain.appendChild(gEdges);
+  gMain.appendChild(gNodes);
+  svg.appendChild(gMain);
+  container.appendChild(svg);
+
+  svg.addEventListener('click', (e) => {
+    if(e.target === svg) {
+      selectedNode = null;
+      document.querySelectorAll('.node-halo').forEach(h => h.setAttribute('opacity','0'));
+      unhighlightEdges();
+      document.getElementById('sidepanel').classList.remove('open');
+    }
+  });
+
+  renderEdges();
+  renderNodes();
+}
+
+function renderEdges() {
+  gEdges.innerHTML = '';
+  if(!showEdges) return;
+
+  COURSE_DATA.edges.forEach(edge => {
+    const from = LAYOUT.positions[edge.from];
+    const to = LAYOUT.positions[edge.to];
+    if(!from || !to) return;
+
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const midX = (from.x + to.x) / 2;
+    const midY = (from.y + to.y) / 2;
+    const offset = dist * 0.12;
+    const nx = -dy / dist;
+    const ny = dx / dist;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', `M${from.x},${from.y} Q${midX + nx*offset},${midY + ny*offset} ${to.x},${to.y}`);
+    path.setAttribute('class', `edge-line ${edge.type === 'prereq' ? 'prereq' : 'dependency'}`);
+
+    if(edge.type === 'prereq') {
+      path.setAttribute('marker-end','url(#arrow-prereq)');
+    } else {
+      path.setAttribute('marker-end','url(#arrow-relate)');
+      path.style.strokeDasharray = '2,4';
+      path.style.opacity = '0.25';
+    }
+
+    path.dataset.from = edge.from;
+    path.dataset.to = edge.to;
+    gEdges.appendChild(path);
+  });
+}
+
+function renderNodes() {
+  gNodes.innerHTML = '';
+
+  COURSE_DATA.nodes.forEach(node => {
+    const pos = LAYOUT.positions[node.id];
+    if(!pos) return;
+
+    const mod = MODULES[node.module];
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('transform', `translate(${pos.x},${pos.y})`);
+    g.dataset.nodeId = node.id;
+
+    // 外圈光晕
+    const halo = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    halo.setAttribute('r','28');
+    halo.setAttribute('fill','none');
+    halo.setAttribute('stroke', mod.stroke);
+    halo.setAttribute('stroke-width','2');
+    halo.setAttribute('opacity','0');
+    halo.setAttribute('class','node-halo');
+    g.appendChild(halo);
+
+    // 节点圆
+    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('r','20');
+    circle.setAttribute('class', `node-circle ${mod.cssClass}`);
+    circle.setAttribute('stroke-width','2');
+    g.appendChild(circle);
+
+    // 节点编号
+    const numText = document.createElementNS('http://www.w3.org/2000/svg','text');
+    numText.setAttribute('text-anchor','middle');
+    numText.setAttribute('dy','5');
+    numText.setAttribute('fill','#fff');
+    numText.setAttribute('font-size','13');
+    numText.setAttribute('font-weight','bold');
+    numText.setAttribute('pointer-events','none');
+    numText.textContent = node.label.replace('课件','').replace('大作业','★');
+    g.appendChild(numText);
+
+    // 标签
+    if(showLabels) {
+      const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+      label.setAttribute('class','node-label');
+      label.setAttribute('dy','36');
+      label.textContent = node.sublabel.length > 10 ? node.sublabel.substring(0,9)+'…' : node.sublabel;
+      g.appendChild(label);
+
+      const subLabel = document.createElementNS('http://www.w3.org/2000/svg','text');
+      subLabel.setAttribute('class','node-label sub');
+      subLabel.setAttribute('dy','50');
+      subLabel.textContent = node.label;
+      g.appendChild(subLabel);
+    }
+
+    g.style.cursor = 'pointer';
+    g.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectNode(node.id);
+    });
+
+    g.addEventListener('mouseenter', (e) => {
+      showTooltip(e, node);
+      highlightEdges(node.id);
+    });
+
+    g.addEventListener('mouseleave', () => {
+      hideTooltip();
+      unhighlightEdges();
+    });
+
+    gNodes.appendChild(g);
+  });
+}
+
+// ===== 交互逻辑 =====
+
+function selectNode(nodeId) {
+  selectedNode = nodeId;
+  const node = COURSE_DATA.nodes.find(n => n.id === nodeId);
+  if(!node) return;
+
+  document.querySelectorAll('.node-halo').forEach(h => h.setAttribute('opacity','0'));
+  const g = gNodes.querySelector(`[data-node-id="${nodeId}"]`);
+  if(g) {
+    const halo = g.querySelector('.node-halo');
+    if(halo) {
+      halo.setAttribute('opacity','0.6');
+      halo.setAttribute('r','30');
+    }
+  }
+
+  const panel = document.getElementById('sidepanel');
+  const content = document.getElementById('panelContent');
+  panel.classList.add('open');
+
+  const mod = MODULES[node.module];
+  const prereqNodes = node.prereq.map(pid => COURSE_DATA.nodes.find(n => n.id === pid)).filter(Boolean);
+  const dependNodes = node.depend.map(did => COURSE_DATA.nodes.find(n => n.id === did)).filter(Boolean);
+
+  let html = `
+    <div class="node-info">
+      <h2>${node.label} · ${node.sublabel}</h2>
+      <div class="label">所属模块</div>
+      <div class="value" style="color:${mod.stroke}">● ${mod.name}</div>
+      <div class="label">简介</div>
+      <div class="value">${node.desc}</div>
+  `;
+
+  if(prereqNodes.length > 0) {
+    html += `
+      <div class="label">前置课件（必须先学）</div>
+      <div class="prereq-list">
+        ${prereqNodes.map(p => `<span class="chip" onclick="selectNode('${p.id}')">${p.label} ${p.sublabel}</span>`).join('')}
+      </div>
+    `;
+  }
+
+  if(dependNodes.length > 0) {
+    html += `
+      <div class="label">后续课件（依赖本课）</div>
+      <div class="prereq-list">
+        ${dependNodes.map(d => `<span class="chip" onclick="selectNode('${d.id}')" style="border-color:#9a7a3a;background:rgba(154,122,58,0.15);color:#9a7a3a">${d.label} ${d.sublabel}</span>`).join('')}
+      </div>
+    `;
+  }
+
+  html += `
+    <div class="label">知识点（${node.concepts.length}个）</div>
+    <div class="concept-list">
+      ${node.concepts.map(c => `<div class="concept">${c}</div>`).join('')}
+    </div>
+  `;
+
+  html += '</div>';
+  content.innerHTML = html;
+
+  highlightEdges(nodeId);
+}
+
+function highlightEdges(nodeId) {
+  document.querySelectorAll('.edge-line').forEach(e => {
+    if(e.dataset.from === nodeId || e.dataset.to === nodeId) {
+      e.classList.add('highlight');
+    } else {
+      e.classList.remove('highlight');
+    }
+  });
+}
+
+function unhighlightEdges() {
+  if(!selectedNode) {
+    document.querySelectorAll('.edge-line').forEach(e => e.classList.remove('highlight'));
+  } else {
+    highlightEdges(selectedNode);
+  }
+}
+
+function showTooltip(e, node) {
+  const tt = document.getElementById('tooltip');
+  const mod = MODULES[node.module];
+  tt.innerHTML = `
+    <div class="tt-title">${node.label} · ${node.sublabel}</div>
+    <div class="tt-meta">${mod.name} · ${node.concepts.length}个知识点</div>
+  `;
+  tt.classList.add('show');
+  moveTooltip(e);
+}
+
+function moveTooltip(e) {
+  const tt = document.getElementById('tooltip');
+  let x = e.clientX + 14;
+  let y = e.clientY + 14;
+  if(x + 280 > window.innerWidth) x = e.clientX - 280;
+  tt.style.left = x + 'px';
+  tt.style.top = y + 'px';
+}
+
+function hideTooltip() {
+  document.getElementById('tooltip').classList.remove('show');
+}
+
+// ===== 缩放与平移 =====
+let scale = 1, panX = 0, panY = 0;
+let isDragging = false, dragStartX = 0, dragStartY = 0;
+
+function updateTransform() {
+  gMain.setAttribute('transform', `translate(${panX},${panY}) scale(${scale})`);
+}
+
+document.getElementById('graph-container').addEventListener('mousedown', (e) => {
+  if(e.target.tagName === 'svg' || e.target === document.getElementById('graph-container')) {
+    isDragging = true;
+    dragStartX = e.clientX - panX;
+    dragStartY = e.clientY - panY;
+    document.getElementById('graph-container').classList.add('dragging');
+  }
+});
+
+document.addEventListener('mousemove', (e) => {
+  if(isDragging) {
+    panX = e.clientX - dragStartX;
+    panY = e.clientY - dragStartY;
+    updateTransform();
+  }
+  const tt = document.getElementById('tooltip');
+  if(tt.classList.contains('show')) moveTooltip(e);
+});
+
+document.addEventListener('mouseup', () => {
+  isDragging = false;
+  document.getElementById('graph-container').classList.remove('dragging');
+});
+
+document.getElementById('graph-container').addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  const newScale = Math.max(0.3, Math.min(3, scale * delta));
+  const rect = svg.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  panX = mx - (mx - panX) * (newScale / scale);
+  panY = my - (my - panY) * (newScale / scale);
+  scale = newScale;
+  updateTransform();
+}, {passive:false});
+
+// 按钮控制
+document.getElementById('zoomIn').onclick = () => { scale = Math.min(3, scale * 1.2); updateTransform(); };
+document.getElementById('zoomOut').onclick = () => { scale = Math.max(0.3, scale * 0.83); updateTransform(); };
+document.getElementById('zoomFit').onclick = () => { scale = 1; panX = 0; panY = 0; updateTransform(); };
+document.getElementById('btnReset').onclick = () => {
+  scale = 1; panX = 0; panY = 0;
+  selectedNode = null;
+  document.querySelectorAll('.node-halo').forEach(h => h.setAttribute('opacity','0'));
+  unhighlightEdges();
+  document.getElementById('sidepanel').classList.remove('open');
+  document.getElementById('searchInput').value = '';
+  renderNodes();
+  updateTransform();
+};
+
+document.getElementById('btnLabels').onclick = function() {
+  showLabels = !showLabels;
+  this.classList.toggle('active', showLabels);
+  renderNodes();
+};
+
+document.getElementById('btnEdges').onclick = function() {
+  showEdges = !showEdges;
+  this.classList.toggle('active', showEdges);
+  renderEdges();
+};
+
+// 搜索
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  if(!q) {
+    renderNodes();
+    return;
+  }
+  const matches = COURSE_DATA.nodes.filter(n =>
+    n.label.toLowerCase().includes(q) ||
+    n.sublabel.toLowerCase().includes(q) ||
+    n.concepts.some(c => c.toLowerCase().includes(q))
+  );
+
+  gNodes.querySelectorAll('g[data-node-id]').forEach(g => {
+    const id = g.dataset.nodeId;
+    const isMatch = matches.some(m => m.id === id);
+    g.style.opacity = isMatch ? '1' : '0.2';
+    const circle = g.querySelector('.node-circle');
+    if(isMatch) {
+      circle.style.filter = 'brightness(1.5) drop-shadow(0 0 8px #7FC873)';
+      circle.setAttribute('r','24');
+    } else {
+      circle.style.filter = '';
+      circle.setAttribute('r','20');
+    }
+  });
+
+  gEdges.querySelectorAll('.edge-line').forEach(edge => {
+    const fromMatch = matches.some(m => m.id === edge.dataset.from);
+    const toMatch = matches.some(m => m.id === edge.dataset.to);
+    edge.style.opacity = (fromMatch && toMatch) ? '0.8' : '0.1';
+  });
+});
+
+// 触摸支持
+let touchStartX = 0, touchStartY = 0;
+document.getElementById('graph-container').addEventListener('touchstart', (e) => {
+  if(e.touches.length === 1) {
+    touchStartX = e.touches[0].clientX - panX;
+    touchStartY = e.touches[0].clientY - panY;
+  }
+}, {passive:true});
+
+document.getElementById('graph-container').addEventListener('touchmove', (e) => {
+  if(e.touches.length === 1) {
+    panX = e.touches[0].clientX - touchStartX;
+    panY = e.touches[0].clientY - touchStartY;
+    updateTransform();
+  }
+}, {passive:true});
+
+// ===== 初始化 =====
+function initApp() {
+  try {
+    computeLayout();
+    initSVG();
+    updateTransform();
+    setTimeout(() => { selectNode('c1'); }, 100);
+  } catch(e) {
+    console.error('initApp error:', e);
+    document.getElementById('graph-container').innerHTML = '<div style="padding:40px;color:#7FC873">加载出错: ' + e.message + '</div>';
+  }
+}
+
+if(document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
+</script>
+</body>
+</html>

@@ -591,10 +591,10 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <h1>生命图标 · HealthIcon</h1>
 <div class="card"><h3>① 第三个 UI 图像</h3><p>还是在 <code>PlayerHealth</code> 上右键 → <strong>UI → 图像</strong>，改名 <code>HealthIcon</code>。</p><div class="step-img half"><img src="images/课件20/血条18-建HealthIcon.png" alt="在 PlayerHealth 上建第三个 UI 图像，改名为 HealthIcon" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>② 源图像选心形图标</h3><p>源图像拖 <code>HUD_LifeBar_Icon.png</code>（心形图标）。没有图标就随便找一张也行，这一层只是为了好看。</p><div class="step-img"><img src="images/课件20/血条19-图标源图.png" alt="HealthIcon 的源图像设为心形图标" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
-<div class="card"><h3>③ 勾上「保持长宽比」</h3><p>图像组件里把 <strong>保持长宽比（Preserve Aspect）</strong> 勾上。不勾的话，图标会跟着矩形宽高被拉成扁的或长的。</p><div class="step-img half"><img src="images/课件20/血条20-保持长宽比.png" alt="图像组件里勾选保持长宽比 Preserve Aspect" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
-<div class="card"><h3>④ 压在血条左端</h3><p>锚点选 <strong>左中（middle-left）</strong>，位置 X 填 <code>28</code>、Y 填 <code>0</code>，宽度和高度都填 <code>40</code>。</p><p>X 填 28 是为了让图标左边和红条左边对齐：红条的左边离父对象左边 <code>8</code>（那是红条自己的四边偏移），图标宽 <code>40</code>、轴心在正中，左边缘等于 X 减 20，所以 X = <code>8 + 20 = 28</code>。Y 填 <code>0</code> 就行，锚点选的是左中，本来就垂直居中。</p><p>高度取 <code>40</code>：父对象高 <code>50</code>，上下各留 5 的余地；红条只有 <code>34</code> 高，图标比它略高一点点，看着像嵌在血条里。宽也给 <code>40</code>，图标才不会被拉扁。</p><p>它能压在红条上，是因为它<strong>最后建</strong>——同级里排在后面的后画，不用另外设置。血量掉得很低时，红条会缩到图标背后，所以后面作业会加<strong>血量数字</strong>和<strong>低血闪烁</strong>。</p><div class="step-img half"><img src="images/课件20/血条20b-图标位置.png" alt="HealthIcon 的矩形变换：锚点左中，位置 28 / 0，宽高各 40" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>③ 勾上「保持长宽比」</h3><p>图像组件里把 <strong>保持长宽比（Preserve Aspect）</strong> 勾上。不勾的话，图标会跟着矩形宽高被拉成扁的或长的。</p><div class="step-img"><img src="images/课件20/血条20-保持长宽比.png" alt="图像组件里勾选保持长宽比 Preserve Aspect" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>④ 摆到左端外面</h3><p>锚点选 <strong>左中（middle-left）</strong>，位置 X 填个负数（比如 <code>-20</code>），图标就探到血条左边外面一点，像血条的「脑袋」；宽度给 <code>40</code> 左右。</p></div>
 <div class="ok-box">💡 <strong>叠放顺序由层级里的上下顺序决定</strong>：同级子对象<strong>上面那层先画（在后面），下面那层后画（盖在上面）</strong>。我们是按「底板 → 红条 → 图标」的顺序建的，正好正确——别去拖层级顺序，底板一旦被拖到最后，整条血条就被它盖住了。</div>
-<div class="card"><h3>回头看：为什么非要多套一个空对象</h3><p>三样东西——半透明黑底板、红色填充、生命图标——<strong>要一起动、一起淡出</strong>。套在同一个空对象底下，以后调位置、调透明度，动这一个就够；三样各自散在画布上，改一次得改三处。</p><p>空对象自己不画任何东西，它就是这三样共用的<strong>把手</strong>。</p><p>这也是<strong>为什么不干脆用一张图当血条</strong>：血条要按比例缩短、要压在底板上、左边还要压一个图标，三件事分开做才简单，合在一张图里就改不动了。以后做蓝条、经验条、Boss 血条，都是这个三段式。</p></div></div></div>
+<div class="card"><h3>回头看：为什么非要多套一个空对象</h3><p>三样东西——半透明黑底板、红色填充、生命图标——<strong>要一起动、一起淡出</strong>。套在同一个空对象底下，以后调位置、调透明度，动这一个就够；三样各自散在画布上，改一次得改三处。</p><p>空对象自己不画任何东西，它就是这三样共用的<strong>把手</strong>。</p><p>这也是<strong>为什么不干脆用一张图当血条</strong>：血条要按比例缩短、要压在底板上、左边还要露出图标，三件事分开做才简单，合在一张图里就改不动了。以后做蓝条、经验条、Boss 血条，都是这个三段式。</p></div></div></div>
 <div class="slide" data-page="11"><div class="slide-inner markable">
 <h1>摆放验收 · 让血条待在左下角</h1>
 <div class="card"><h3>对一遍四样东西的位置</h3><table><thead><tr><th>对象</th><th>锚点</th><th>应该长什么样</th></tr></thead><tbody><tr><td><code>PlayerHealth</code></td><td>左下</td><td>整条血条离屏幕左边 50、下边 75</td></tr><tr><td><code>BackgroundImage</code></td><td>全屏拉伸 + 四边 0</td><td>和 PlayerHealth 一样大，半透明黑</td></tr><tr><td><code>FillImageHealth</code></td><td>全屏拉伸 + 四边 8</td><td>比底板小一圈的红色条</td></tr><tr><td><code>HealthIcon</code></td><td>左中</td><td>贴在血条左端，垂直居中</td></tr></tbody></table><div class="step-img"><img src="images/课件20/血条21-摆放完成.png" alt="三个子元素摆好后，2D 视图里血条的样子" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
@@ -1028,29 +1028,8 @@ function doSearch(){
 }
 
 // ========== 缺图占位：显示文件名 + 一键复制 ==========
-/* —— GitHub Pages 图片回源 ——
-   Pages 只存 LFS 指针，位图取不到原图；这里改从 media.githubusercontent.com 拿真实文件。
-   仅线上（*.github.io）生效，本地/内网打开时图片正常加载，不会走到这里。 */
-const PAGES_MEDIA_BASE='https://media.githubusercontent.com/media/yubinpeng2020/unity-course/refs/heads/master/';
-function pagesRetry(img){
-    const src0=img.dataset.origSrc||img.getAttribute('src')||'';
-    if(location.hostname.endsWith('github.io')&&!img.dataset.mediaTried
-        &&src0.indexOf('images/')===0
-        &&/\.(png|jpe?g|gif|webp|exr|hdr)$/i.test(src0)){
-        img.dataset.origSrc=src0;
-        img.dataset.mediaTried='1';
-        img.src=PAGES_MEDIA_BASE+src0;
-        return true;
-    }
-    return false;
-}
-function imgHide(img){
-    if(pagesRetry(img)) return;
-    img.style.display='none';
-}
 function imgMissing(img){
-    if(pagesRetry(img)) return;
-    const src=img.dataset.origSrc||img.getAttribute('src')||'';
+    const src=img.getAttribute('src')||'';
     const name=src.split('/').pop();
     const dir=src.slice(0,src.lastIndexOf('/'));
     const d=document.createElement('div');

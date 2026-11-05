@@ -371,29 +371,8 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <body>
 <script>
 // ========== 缺图占位：显示文件名 + 一键复制 ==========
-/* —— GitHub Pages 图片回源 ——
-   Pages 只存 LFS 指针，位图取不到原图；这里改从 media.githubusercontent.com 拿真实文件。
-   仅线上（*.github.io）生效，本地/内网打开时图片正常加载，不会走到这里。 */
-const PAGES_MEDIA_BASE='https://media.githubusercontent.com/media/yubinpeng2020/unity-course/refs/heads/master/';
-function pagesRetry(img){
-    const src0=img.dataset.origSrc||img.getAttribute('src')||'';
-    if(location.hostname.endsWith('github.io')&&!img.dataset.mediaTried
-        &&src0.indexOf('images/')===0
-        &&/\.(png|jpe?g|gif|webp|exr|hdr)$/i.test(src0)){
-        img.dataset.origSrc=src0;
-        img.dataset.mediaTried='1';
-        img.src=PAGES_MEDIA_BASE+src0;
-        return true;
-    }
-    return false;
-}
-function imgHide(img){
-    if(pagesRetry(img)) return;
-    img.style.display='none';
-}
 function imgMissing(img){
-    if(pagesRetry(img)) return;
-    const src=img.dataset.origSrc||img.getAttribute('src')||'';
+    const src=img.getAttribute('src')||'';
     const name=src.split('/').pop();
     const dir=src.slice(0,src.lastIndexOf('/'));
     const d=document.createElement('div');

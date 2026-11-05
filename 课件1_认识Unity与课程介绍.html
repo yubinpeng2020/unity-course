@@ -339,29 +339,8 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <body>
 <script>
 // ========== 缺图占位：显示文件名 + 一键复制 ==========
-/* —— GitHub Pages 图片回源 ——
-   Pages 只存 LFS 指针，位图取不到原图；这里改从 media.githubusercontent.com 拿真实文件。
-   仅线上（*.github.io）生效，本地/内网打开时图片正常加载，不会走到这里。 */
-const PAGES_MEDIA_BASE='https://media.githubusercontent.com/media/yubinpeng2020/unity-course/refs/heads/master/';
-function pagesRetry(img){
-    const src0=img.dataset.origSrc||img.getAttribute('src')||'';
-    if(location.hostname.endsWith('github.io')&&!img.dataset.mediaTried
-        &&src0.indexOf('images/')===0
-        &&/\.(png|jpe?g|gif|webp|exr|hdr)$/i.test(src0)){
-        img.dataset.origSrc=src0;
-        img.dataset.mediaTried='1';
-        img.src=PAGES_MEDIA_BASE+src0;
-        return true;
-    }
-    return false;
-}
-function imgHide(img){
-    if(pagesRetry(img)) return;
-    img.style.display='none';
-}
 function imgMissing(img){
-    if(pagesRetry(img)) return;
-    const src=img.dataset.origSrc||img.getAttribute('src')||'';
+    const src=img.getAttribute('src')||'';
     const name=src.split('/').pop();
     const dir=src.slice(0,src.lastIndexOf('/'));
     const d=document.createElement('div');
@@ -480,7 +459,7 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="10"><div class="slide-inner markable">
 <h1>电子游戏特征与发展史</h1>
-<div class="card"><h3>🔥 五特征</h3></div><div class="card"><table><tr><th>特征</th><th>说明</th></tr><tr><td>🎭 文化性</td><td>《王者荣耀》的世界观构建</td></tr><tr><td>🥽 拟态性</td><td>VR 游戏对现实的模拟</td></tr><tr><td>🎮 娱乐性</td><td>核心功能</td></tr><tr><td>💰 商业性</td><td>付费模式、IP 衍生</td></tr><tr><td>🔬 科技性</td><td>引擎技术、硬件驱动</td></tr></table></div><div class="card"><h3>📅 发展四时代</h3></div><div class="card"><table><tr><th>时代</th><th>时间</th><th>代表作</th></tr><tr><td>💡 启蒙时代</td><td>1950s-1970s</td><td><img src="images/games/era1.png" alt="图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgHide(this)"> Tennis for Two、Space War</td></tr><tr><td>🍄 任天堂时代</td><td>1980s-1990s</td><td><img src="images/games/era2.png" alt="图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgHide(this)"> 超级马里奥、塞尔达传说</td></tr><tr><td>🕹️ 3D 游戏时代</td><td>1990s-2010s</td><td><img src="images/games/era3.png" alt="图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgHide(this)"> 古墓丽影、超级马里奥 64、光环</td></tr><tr><td>📱 手机/VR 时代</td><td>2010s-</td><td><img src="images/games/era4.png" alt="图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgHide(this)"> 王者荣耀、Pokemon GO、Oculus Quest</td></tr></table></div><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 这些老游戏跟学 Unity 有什么关系？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">了解游戏发展史，才能理解 Unity 为什么能成为主流引擎——它解决了从 2D 到 3D、从单平台到跨平台的核心问题。</div></div>
+<div class="card"><h3>🔥 五特征</h3></div><div class="card"><table><tr><th>特征</th><th>说明</th></tr><tr><td>🎭 文化性</td><td>《王者荣耀》的世界观构建</td></tr><tr><td>🥽 拟态性</td><td>VR 游戏对现实的模拟</td></tr><tr><td>🎮 娱乐性</td><td>核心功能</td></tr><tr><td>💰 商业性</td><td>付费模式、IP 衍生</td></tr><tr><td>🔬 科技性</td><td>引擎技术、硬件驱动</td></tr></table></div><div class="card"><h3>📅 发展四时代</h3></div><div class="card"><table><tr><th>时代</th><th>时间</th><th>代表作</th></tr><tr><td>💡 启蒙时代</td><td>1950s-1970s</td><td><img src="images/games/era1.png" alt="图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror='this.style.display="none"'> Tennis for Two、Space War</td></tr><tr><td>🍄 任天堂时代</td><td>1980s-1990s</td><td><img src="images/games/era2.png" alt="图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror='this.style.display="none"'> 超级马里奥、塞尔达传说</td></tr><tr><td>🕹️ 3D 游戏时代</td><td>1990s-2010s</td><td><img src="images/games/era3.png" alt="图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror='this.style.display="none"'> 古墓丽影、超级马里奥 64、光环</td></tr><tr><td>📱 手机/VR 时代</td><td>2010s-</td><td><img src="images/games/era4.png" alt="图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror='this.style.display="none"'> 王者荣耀、Pokemon GO、Oculus Quest</td></tr></table></div><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 这些老游戏跟学 Unity 有什么关系？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">了解游戏发展史，才能理解 Unity 为什么能成为主流引擎——它解决了从 2D 到 3D、从单平台到跨平台的核心问题。</div></div>
 </div></div>
 <div class="slide" data-page="11"><div class="slide-inner markable">
 <h1>电子游戏分类</h1>
