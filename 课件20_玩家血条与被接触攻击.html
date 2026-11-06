@@ -348,6 +348,13 @@ html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microso
 @media print{.slide.active [data-anim]{animation:none!important}}
 @media (prefers-reduced-motion:reduce){.slide.active [data-anim]{animation:none!important}}
 
+/* ===== 动效重播按钮 ===== */
+.anim-replay-bar{display:flex;justify-content:flex-end;max-width:700px;margin:-4px auto 14px;padding:0 2px}
+.anim-replay{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;font-size:12px;font-family:inherit;line-height:1.2;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent);border-radius:999px;cursor:pointer;opacity:.62;transition:opacity .18s,transform .12s}
+.anim-replay:hover{opacity:1}
+.anim-replay:active{transform:scale(.96);opacity:1}
+@media print{.anim-replay-bar{display:none!important}}
+
 /* ===== 平铺模式（连续显示全部页面，用于导出 PDF） ===== */
 html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 .flat-mode .container{height:auto;overflow:visible}
@@ -598,6 +605,7 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <text x="470" y="166" font-size="11.5" fill="var(--text-muted)">＝ 四边永远贴住父对象</text>
 <text x="470" y="198" font-size="11.5" fill="var(--text-muted)">血条的底板、红条都用它</text>
 </svg>
+<div class="anim-replay-bar"><button type="button" class="anim-replay" onclick="replayAnim(this)" aria-label="重播这张图的动效">↻ 重播动效</button></div>
 <div class="step-img half"><img src="images/课件20/血条25-拉伸数值.png" alt="检查器里的矩形变换面板：锚点预设最右一列是拉伸，选中后位置一行变成 Left / Right / Top / Bottom 四个偏移" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
 <div class="card"><h3>锚点预设：点 Rect Transform 左上角那个方块</h3><p>面板最左上角有个<strong>小方块图标</strong>，上面画着当前锚点落在父对象的哪个角落——<strong>点它一下</strong>，锚点预设就弹出来了。血条的锚点、位置，全都从这儿开始设。</p><p>弹出的面板是 <strong>3×3 九个点</strong>，对应父对象（画布 <code>GameUI</code>）的九个位置：左上、上中、右上、左中……<strong>点哪个，锚点就落到哪个位置</strong>，「位置（Pos X / Pos Y）」这两个数字的意思也跟着换。最右边那一列是<strong>拉伸</strong>，下一页讲。</p><p>选中<strong>左下</strong>后，位置会显示 <code>0</code> / <code>0</code>——贴着左下角，元素也跟着跳过去。<strong>这不是出问题</strong>：锚点换了，参考点就换了，「离参考点 0 米」自然就是贴着角。下一步再填数值把它挪进来就行。</p><div class="step-img half"><img src="images/课件20/血条8-锚点预设.png" alt="矩形变换面板左上角的锚点预设方块，点开是九宫格预设与最右边一列的拉伸预设" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>③ 把 PlayerHealth 摆到左下角</h3><p>选中 <code>PlayerHealth</code>，点矩形变换左上角的<strong>预设方块</strong>，选 <strong>左下</strong>；宽度填 <code>400</code>、高度填 <code>50</code>，位置 X 填 <code>250</code>、Y 填 <code>100</code>。</p><p><strong>为什么位置不直接填 50 / 75？</strong>因为位置量的是<strong>元素中心</strong>，不是左下角：宽 400 的一半是 200，<code>50 + 200 = 250</code>；高 50 的一半是 25，<code>75 + 25 = 100</code>。这么算下来，血条的<strong>左边缘</strong>离屏幕左边 50、<strong>下边缘</strong>离下边 75，整条完整露在屏幕里。数值不用一模一样，按自己的截图摆到差不多就行——但<strong>锚点必须是左下</strong>。</p><div class="step-img"><img src="images/课件20/血条10-锚点左下.png" alt="PlayerHealth 的锚点设为左下，位置 250/100，宽 400 高 50，血条完整落在屏幕左下角" onclick="zoomQR(this)" style="cursor:pointer;width:66.6667%;max-width:66.6667%;margin:0 auto" onerror="imgMissing(this)"></div></div>
@@ -687,6 +695,7 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <text x="316" y="311" font-size="10" fill="var(--text-muted)">血条跟着短一截，屏幕上才看得见</text>
 <rect class="a-g4" data-anim x="300" y="272" width="356" height="48" rx="8" fill="none" stroke="var(--green)" stroke-width="2" opacity="0"/>
 </svg>
+<div class="anim-replay-bar"><button type="button" class="anim-replay" onclick="replayAnim(this)" aria-label="重播这张图的动效">↻ 重播动效</button></div>
 <div class="card"><h3>① 新建 EnemyData.cs，挂到敌人身上</h3><p>项目（Project）窗口右键 → <strong>创建（Create）→ C# 脚本</strong>，命名 <code>EnemyData</code>（大小写要和类名一致）。写完拖到动物身上，检查器里 <strong>攻击力（Attack Power）</strong> 设 <code>10</code>、<strong>攻击间隔（Attack Interval）</strong> 设 <code>1</code>。</p><div class="step-img"><img src="images/课件20/敌人3-EnemyData组件.png" alt="敌人身上挂 EnemyData，攻击力 10、攻击间隔 1" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_enemydata',this)">复制</button></div>
@@ -806,6 +815,7 @@ public class HealthChange : MonoBehaviour
 <text x="40" y="222" font-size="11" fill="var(--text-muted)">灰底是底板 BackgroundImage，红条是 FillImageHealth</text>
 <text x="40" y="242" font-size="11" fill="var(--accent)">红条从左往右缩，是因为填充方法选了「水平」、填充原点选了「左」</text>
 </svg>
+<div class="anim-replay-bar"><button type="button" class="anim-replay" onclick="replayAnim(this)" aria-label="重播这张图的动效">↻ 重播动效</button></div>
 <div class="card"><h3>这就是游戏 UI 的分工</h3><table><thead><tr><th>谁</th><th>负责</th><th>本课对应</th></tr></thead><tbody><tr><td><strong>数据</strong></td><td>血量还剩多少</td><td><code>HealthChange</code> 里的 <code>CurrentHealth</code></td></tr><tr><td><strong>显示</strong></td><td>把数字画成一根条</td><td><code>FillImageHealth</code> 的 <code>fillAmount</code></td></tr><tr><td><strong>联系</strong></td><td>一句赋值</td><td><code>fillAmount = CurrentHealth / MaxHealth</code></td></tr></tbody></table><p>把「数据」和「显示」分开，好处是改显示不用动数据：想把血条换成圆环、换成数字百分比，只改 UI 就行，脚本那行公式一个字都不用改。</p></div>
 <div class="ok-box">⚠️ 分母一定是<strong>满血 <code>MaxHealth</code></strong>，不是当前血量。写成 <code>CurrentHealth / CurrentHealth</code> 永远是 1，血条永远满格——这个错很难一眼看出来，因为画面「看起来很正常」。</div>
 </div></div>
@@ -1176,6 +1186,19 @@ if(LS('flat','0')==='1')toggleFlat();
 if(LS('imgmode','0')==='1')toggleImgBottom();
 
 
+</script>
+
+<script>
+function replayAnim(btn){
+  var bar = btn.closest('.anim-replay-bar');
+  var prev = bar && bar.previousElementSibling;
+  var svg = prev ? (prev.tagName.toLowerCase() === 'svg' ? prev : prev.querySelector('svg')) : null;
+  if (!svg) return;
+  var els = svg.querySelectorAll('[data-anim]');
+  els.forEach(function(el){ el.style.animation = 'none'; });
+  void svg.getBoundingClientRect();
+  els.forEach(function(el){ el.style.animation = ''; });
+}
 </script>
 </body>
 </html>

@@ -334,6 +334,13 @@ html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microso
 @media print{.slide.active [data-anim]{animation:none!important}}
 @media (prefers-reduced-motion:reduce){.slide.active [data-anim]{animation:none!important}}
 
+/* ===== 动效重播按钮 ===== */
+.anim-replay-bar{display:flex;justify-content:flex-end;max-width:700px;margin:-4px auto 14px;padding:0 2px}
+.anim-replay{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;font-size:12px;font-family:inherit;line-height:1.2;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent);border-radius:999px;cursor:pointer;opacity:.62;transition:opacity .18s,transform .12s}
+.anim-replay:hover{opacity:1}
+.anim-replay:active{transform:scale(.96);opacity:1}
+@media print{.anim-replay-bar{display:none!important}}
+
 /* ===== 平铺模式（连续显示全部页面，用于导出 PDF） ===== */
 html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 .flat-mode .container{height:auto;overflow:visible}
@@ -647,6 +654,7 @@ public class AnimalRoam : MonoBehaviour
 <polygon points="688,262 682,272 694,272" fill="#F5A623"/>
 <text x="561" y="414" font-size="10" fill="#F5A623" text-anchor="middle">再抽下一个点（回到上面）</text>
 </svg>
+<div class="anim-replay-bar"><button type="button" class="anim-replay" onclick="replayAnim(this)" aria-label="重播这张图的动效">↻ 重播动效</button></div>
 <p style="font-size:12px;color:var(--text-muted);text-align:center;margin:8px 0 2px">左边俯视草地：在 <code>roamRadius</code> 内随机抽一个点（落在草地外的会被 <code>SamplePosition</code> 拽回），交给代理；右边：<strong>你只管「抽点」</strong>，<strong>代理负责「怎么走」</strong>。</p>
 </div>
 <div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c16_roam_v2',this)">复制</button></div><pre id="c16_roam_v2"><code class="language-csharp">// AnimalRoam.cs —— 第 3 版：路交给导航代理去走（完整脚本）
@@ -799,6 +807,7 @@ public class AnimalRoam : MonoBehaviour
 <text x="514" y="320" font-size="10" fill="#9AA0A6" text-anchor="middle">% childCount —— 到末尾绕回 Point1</text>
 <text x="514" y="360" font-size="10.5" fill="#F5A623" text-anchor="middle">回到 ①，取下一个</text>
 </svg>
+<div class="anim-replay-bar"><button type="button" class="anim-replay" onclick="replayAnim(this)" aria-label="重播这张图的动效">↻ 重播动效</button></div>
 <p style="font-size:12px;color:var(--text-muted);text-align:center;margin:8px 0 2px">左边：父对象下挂着 4 个点，<code>GetChild(0)</code>~<code>GetChild(3)</code> 从上到下依次对应。右边：每到一个点，<code>index</code> 加一取下一个；加到 <code>childCount</code> 就取余绕回 <code>0</code>。</p>
 </div>
 <div class="card"><h3>代码讲解</h3><ol><li><strong><code>GetChild(index)</code> 是「按序号取子物体」</strong>：取父对象下<strong>第 <code>index</code> 个直接子物体</strong>（从 <code>0</code> 开始数），再 <code>.position</code> 拿到它的位置。</li><li><strong><code>childCount</code> 是「有几个子物体」</strong>：它同时也是 <code>GetChild</code> 的序号上限——挂几个点就按几个点绕，不用手动填长度。</li><li><strong><code>% waypointRoot.childCount</code> 是「绕圈」</strong>：<code>index</code> 加到 <code>4</code> 时取余变回 <code>0</code>，于是走到最后一个点会自动从第一个重新开始。</li><li><strong>路线顺序 ＝ 层级顺序</strong>：<code>GetChild(0)</code> 是层级窗口里<strong>最上面</strong>那个；顺序不对，就在层级里上下拖一下。</li><li>⚠️ <strong>只看「直接子物体」</strong>：点必须<strong>直接</strong>挂在父对象下面；中间再套一层分组，就取不到了。</li><li><strong>序号上限不用手填</strong>：<code>childCount</code> 是运行时数出来的真实子物体数——加一个点它自己变大，删一个点它自己变小，代码一个字都不用改。</li><li><strong>交给代理的还是那句 <code>SetDestination</code></strong>：这一页只换了括号里的东西——从上一页的随机点，换成巡逻点的位置。</li></ol></div>
@@ -1133,6 +1142,19 @@ if(LS('flat','0')==='1')toggleFlat();
 if(LS('imgmode','0')==='1')toggleImgBottom();
 
 
+</script>
+
+<script>
+function replayAnim(btn){
+  var bar = btn.closest('.anim-replay-bar');
+  var prev = bar && bar.previousElementSibling;
+  var svg = prev ? (prev.tagName.toLowerCase() === 'svg' ? prev : prev.querySelector('svg')) : null;
+  if (!svg) return;
+  var els = svg.querySelectorAll('[data-anim]');
+  els.forEach(function(el){ el.style.animation = 'none'; });
+  void svg.getBoundingClientRect();
+  els.forEach(function(el){ el.style.animation = ''; });
+}
 </script>
 </body>
 </html>
