@@ -306,6 +306,26 @@ html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microso
 .mobile-more-menu .mm-item{display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--text);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .2s}
 .mobile-more-menu .mm-item:hover{background:var(--accent-dim);color:var(--accent)}
 @media(max-width:768px){.sidebar{display:none}.slide-inner{padding:18px 18px 80px}.cover{padding-left:40px;padding-right:40px}.cover h1{font-size:32px}.nav-buttons{right:12px;bottom:12px}.header-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap}.header-btn[onclick="toggleTheme()"]{padding:6px 6px}.progress-wrap{display:none}.header-dropdown{display:none}.header-btn[onclick^="changeFont"]{display:none}.header-btn[onclick="openSearch()"]{display:none}.header-btn[onclick="toggleHelp()"]{display:none}.mobile-info{display:flex;align-items:center;gap:2px}.mi-page{display:none}.mobile-more{display:inline-block}.slides-container{min-height:calc(100vh - 54px)}}
+/* ===== 图示动效：仅本页可见时播放，打印/弱动效静止 ===== */
+.slide.active .k12-line{stroke-dasharray:100;animation:k12-line 4s linear infinite}
+.slide.active .k12-jump{animation:k12-jump 4s ease-out infinite}
+.slide.active .k12-float{animation:k12-float 4s ease-in-out infinite}
+.slide.active .k12-land{transform-box:fill-box;transform-origin:50% 100%;animation:k12-land 4s ease-in-out infinite}
+.slide.active .k12-grav{animation:k12-grav 4s linear infinite}
+.slide.active .k12-t1{animation:k12-t1 4s linear infinite}
+.slide.active .k12-t2{animation:k12-t2 4s linear infinite}
+.slide.active .k12-t3{animation:k12-t3 4s linear infinite}
+@keyframes k12-line{0%,6%{stroke-dashoffset:100;opacity:0}12%{opacity:1}80%,88%{stroke-dashoffset:0;opacity:1}96%,100%{stroke-dashoffset:0;opacity:0}}
+@keyframes k12-jump{0%,2%{transform:translateY(0)}10%{transform:translateY(-70px)}20%,100%{transform:translateY(0)}}
+@keyframes k12-float{0%,40%{transform:translateY(0)}50%{transform:translateY(-7px)}60%,100%{transform:translateY(0)}}
+@keyframes k12-land{0%,80%{transform:scaleY(1)}86%{transform:scaleY(.8)}92%{transform:scaleY(1.05)}100%{transform:scaleY(1)}}
+@keyframes k12-grav{0%,32%{opacity:.25}44%,70%{opacity:1}82%,100%{opacity:.25}}
+@keyframes k12-t1{0%{opacity:.42}8%,20%{opacity:1}28%,100%{opacity:.42}}
+@keyframes k12-t2{0%,38%{opacity:.42}46%,60%{opacity:1}68%,100%{opacity:.42}}
+@keyframes k12-t3{0%,80%{opacity:.42}88%,96%{opacity:1}100%{opacity:.42}}
+@media print{.slide.active [data-anim]{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.slide.active [data-anim]{animation:none!important}}
+
 /* ===== 平铺模式（连续显示全部页面，用于导出 PDF） ===== */
 html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 .flat-mode .container{height:auto;overflow:visible}
@@ -562,19 +582,20 @@ public class CollisionLogger : MonoBehaviour
 <rect x="40" y="330" width="620" height="16" rx="3" fill="#16324A" stroke="#00D4AA" stroke-width="1.2"/>
 <text x="52" y="342" font-size="11" fill="#86EFAC">地面（Collider：负责挡住落下来的角色）</text>
 <path d="M110,330 Q350,70 590,330" fill="none" stroke="#34D399" stroke-width="2.6" stroke-dasharray="7 6" opacity="0.85"/>
-<rect x="97" y="290" width="26" height="40" rx="13" fill="#4FC3F7"/>
-<rect x="337" y="160" width="26" height="40" rx="13" fill="#4FC3F7"/>
-<rect x="577" y="290" width="26" height="40" rx="13" fill="#4FC3F7"/>
+<path class="k12-line" data-anim pathLength="100" d="M110,330 Q350,70 590,330" fill="none" stroke="#34D399" stroke-width="3" stroke-linecap="round" opacity="0"/>
+<rect class="k12-jump" data-anim x="97" y="290" width="26" height="40" rx="13" fill="#4FC3F7"/>
+<rect class="k12-float" data-anim x="337" y="160" width="26" height="40" rx="13" fill="#4FC3F7"/>
+<rect class="k12-land" data-anim x="577" y="290" width="26" height="40" rx="13" fill="#4FC3F7"/>
 <line x1="110" y1="284" x2="110" y2="238" stroke="#34D399" stroke-width="3" marker-end="url(#k12JumpUp)"/>
-<line x1="440" y1="240" x2="440" y2="276" stroke="#F5A623" stroke-width="3" marker-end="url(#k12JumpDown)"/>
-<line x1="500" y1="276" x2="500" y2="312" stroke="#F5A623" stroke-width="3" marker-end="url(#k12JumpDown)"/>
+<line class="k12-grav" data-anim x1="440" y1="240" x2="440" y2="276" stroke="#F5A623" stroke-width="3" marker-end="url(#k12JumpDown)"/>
+<line class="k12-grav" data-anim x1="500" y1="276" x2="500" y2="312" stroke="#F5A623" stroke-width="3" marker-end="url(#k12JumpDown)"/>
 <text x="428" y="262" font-size="13" fill="#F5A623" text-anchor="end">重力</text>
-<text x="110" y="372" font-size="14" font-weight="600" fill="#34D399" text-anchor="middle">① 起跳</text>
-<text x="110" y="391" font-size="12" fill="#9AA0A6" text-anchor="middle">AddForce 向上冲量</text>
-<text x="350" y="372" font-size="14" font-weight="600" fill="#F5A623" text-anchor="middle">② 最高点</text>
-<text x="350" y="391" font-size="12" fill="#9AA0A6" text-anchor="middle">冲量用完，重力接管</text>
-<text x="590" y="372" font-size="14" font-weight="600" fill="#86EFAC" text-anchor="middle">③ 落地</text>
-<text x="590" y="391" font-size="12" fill="#9AA0A6" text-anchor="middle">碰撞体挡住 → 站稳</text>
+<text class="k12-t1" data-anim x="110" y="372" font-size="14" font-weight="600" fill="#34D399" text-anchor="middle">① 起跳</text>
+<text class="k12-t1" data-anim x="110" y="391" font-size="12" fill="#9AA0A6" text-anchor="middle">AddForce 向上冲量</text>
+<text class="k12-t2" data-anim x="350" y="372" font-size="14" font-weight="600" fill="#F5A623" text-anchor="middle">② 最高点</text>
+<text class="k12-t2" data-anim x="350" y="391" font-size="12" fill="#9AA0A6" text-anchor="middle">冲量用完，重力接管</text>
+<text class="k12-t3" data-anim x="590" y="372" font-size="14" font-weight="600" fill="#86EFAC" text-anchor="middle">③ 落地</text>
+<text class="k12-t3" data-anim x="590" y="391" font-size="12" fill="#9AA0A6" text-anchor="middle">碰撞体挡住 → 站稳</text>
 </svg>
 <ul>
 <li><strong>跳起来</strong>：按空格时，给刚体一个<strong>向上的冲量</strong>，人就被"弹"上去；</li>

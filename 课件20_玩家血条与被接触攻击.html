@@ -327,6 +327,24 @@ html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microso
 @keyframes p13-g4{0%,38%{opacity:0}42%,66%{opacity:1}72%,100%{opacity:0}}
 @keyframes p13-flash{0%,40%{opacity:0}44%{opacity:.95}48%{opacity:.2}52%{opacity:.9}62%,100%{opacity:0}}
 @keyframes p13-dmg{0%,40%{opacity:0;transform:translate(0,4px)}46%{opacity:1;transform:translate(0,-4px)}68%,100%{opacity:0;transform:translate(0,-26px)}}
+/* p7 拉伸：父对象宽度在窄/宽之间来回，子元素四边跟着走 */
+.slide.active .s7-w{animation:p7-w 4.2s ease-in-out infinite}
+.slide.active .s7-off{animation:p7-off 4.2s ease-in-out infinite}
+@keyframes p7-w{0%,10%{width:150px}28%,72%{width:380px}90%,100%{width:150px}}
+@keyframes p7-off{0%,16%{opacity:.45}30%,66%{opacity:1}80%,100%{opacity:.45}}
+/* p14 fillAmount：三条红条依次从 0 长到各自长度，最后一起退回 0 */
+.slide.active .s14-b1{animation:p14-b1 6.4s ease-out infinite}
+.slide.active .s14-b2{animation:p14-b2 6.4s ease-out infinite}
+.slide.active .s14-b3{animation:p14-b3 6.4s ease-out infinite}
+.slide.active .s14-t1{animation:p14-t1 6.4s linear infinite}
+.slide.active .s14-t2{animation:p14-t2 6.4s linear infinite}
+.slide.active .s14-t3{animation:p14-t3 6.4s linear infinite}
+@keyframes p14-b1{0%,3%{width:0px}18%,86%{width:360px}96%,100%{width:0px}}
+@keyframes p14-b2{0%,24%{width:0px}38%,86%{width:180px}96%,100%{width:0px}}
+@keyframes p14-b3{0%,42%{width:0px}56%,86%{width:54px}96%,100%{width:0px}}
+@keyframes p14-t1{0%,10%{opacity:.42}18%,86%{opacity:1}94%,100%{opacity:.42}}
+@keyframes p14-t2{0%,30%{opacity:.42}38%,86%{opacity:1}94%,100%{opacity:.42}}
+@keyframes p14-t3{0%,48%{opacity:.42}56%,86%{opacity:1}94%,100%{opacity:.42}}
 @media print{.slide.active [data-anim]{animation:none!important}}
 @media (prefers-reduced-motion:reduce){.slide.active [data-anim]{animation:none!important}}
 
@@ -568,15 +586,15 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <text x="24" y="30" font-size="14" font-weight="700" fill="var(--accent2)">拉伸：父对象多大，它就多大</text>
 <text x="24" y="50" font-size="11.5" fill="var(--text-muted)">锚点选成「一条边」而不是「一个点」，四条边就跟着父对象伸缩</text>
 <text x="60" y="86" font-size="10.5" fill="var(--text-muted)">窗口窄</text>
-<rect x="60" y="94" width="150" height="44" rx="5" fill="var(--accent2)" opacity="0.06" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="5 4"/>
 <rect x="60" y="94" width="150" height="44" rx="5" fill="var(--accent)" opacity="0.22" stroke="var(--accent)" stroke-width="1.5"/>
-<text x="135" y="121" font-size="10.5" fill="var(--accent)" text-anchor="middle">子元素</text>
+<rect x="60" y="94" width="150" height="44" rx="5" fill="none" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="72" y="121" font-size="10.5" fill="var(--accent)">子元素</text>
 <text x="60" y="172" font-size="10.5" fill="var(--text-muted)">窗口变宽</text>
-<rect x="60" y="180" width="380" height="44" rx="5" fill="var(--accent2)" opacity="0.06" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="5 4"/>
-<rect x="60" y="180" width="380" height="44" rx="5" fill="var(--accent)" opacity="0.22" stroke="var(--accent)" stroke-width="1.5"/>
-<text x="250" y="207" font-size="10.5" fill="var(--accent)" text-anchor="middle">子元素</text>
+<rect class="s7-w" data-anim x="60" y="180" width="380" height="44" rx="5" fill="var(--accent)" opacity="0.22" stroke="var(--accent)" stroke-width="1.5"/>
+<rect class="s7-w" data-anim x="60" y="180" width="380" height="44" rx="5" fill="none" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="72" y="207" font-size="10.5" fill="var(--accent)">子元素</text>
 <text x="470" y="110" font-size="12" fill="var(--text)">左 / 右 / 顶部 / 底部</text>
-<text x="470" y="136" font-size="12" fill="var(--text)"><tspan font-weight="700">四个偏移都填 0</tspan></text>
+<text class="s7-off" data-anim x="470" y="136" font-size="12" fill="var(--text)"><tspan font-weight="700">四个偏移都填 0</tspan></text>
 <text x="470" y="166" font-size="11.5" fill="var(--text-muted)">＝ 四边永远贴住父对象</text>
 <text x="470" y="198" font-size="11.5" fill="var(--text-muted)">血条的底板、红条都用它</text>
 </svg>
@@ -774,16 +792,16 @@ public class HealthChange : MonoBehaviour
 <rect x="1" y="1" width="678" height="262" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
 <text x="24" y="30" font-size="14" font-weight="700" fill="var(--accent2)">fillAmount 一个数，决定血条多长</text>
 <rect x="40" y="52" width="360" height="26" rx="4" fill="var(--text)" opacity="0.15"/>
-<rect x="40" y="52" width="360" height="26" rx="4" fill="var(--red)" opacity="0.9"/>
-<text x="416" y="70" font-size="12" font-weight="700" fill="var(--text)">fillAmount = 1</text>
+<rect class="s14-b1" data-anim x="40" y="52" width="360" height="26" rx="4" fill="var(--red)" opacity="0.9"/>
+<text class="s14-t1" data-anim x="416" y="70" font-size="12" font-weight="700" fill="var(--text)">fillAmount = 1</text>
 <text x="540" y="70" font-size="12" fill="var(--text-muted)">血量 100 / 100</text>
 <rect x="40" y="110" width="360" height="26" rx="4" fill="var(--text)" opacity="0.15"/>
-<rect x="40" y="110" width="180" height="26" rx="4" fill="var(--red)" opacity="0.9"/>
-<text x="416" y="128" font-size="12" font-weight="700" fill="var(--text)">fillAmount = 0.5</text>
+<rect class="s14-b2" data-anim x="40" y="110" width="180" height="26" rx="4" fill="var(--red)" opacity="0.9"/>
+<text class="s14-t2" data-anim x="416" y="128" font-size="12" font-weight="700" fill="var(--text)">fillAmount = 0.5</text>
 <text x="540" y="128" font-size="12" fill="var(--text-muted)">血量 50 / 100</text>
 <rect x="40" y="168" width="360" height="26" rx="4" fill="var(--text)" opacity="0.15"/>
-<rect x="40" y="168" width="54" height="26" rx="4" fill="var(--red)" opacity="0.9"/>
-<text x="416" y="186" font-size="12" font-weight="700" fill="var(--text)">fillAmount = 0.15</text>
+<rect class="s14-b3" data-anim x="40" y="168" width="54" height="26" rx="4" fill="var(--red)" opacity="0.9"/>
+<text class="s14-t3" data-anim x="416" y="186" font-size="12" font-weight="700" fill="var(--text)">fillAmount = 0.15</text>
 <text x="540" y="186" font-size="12" fill="var(--text-muted)">血量 15 / 100</text>
 <text x="40" y="222" font-size="11" fill="var(--text-muted)">灰底是底板 BackgroundImage，红条是 FillImageHealth</text>
 <text x="40" y="242" font-size="11" fill="var(--accent)">红条从左往右缩，是因为填充方法选了「水平」、填充原点选了「左」</text>

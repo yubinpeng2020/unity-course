@@ -338,6 +338,22 @@ svg.flow-svg .sv-acc-orange{fill:#F5A623}
 .mobile-more-menu .mm-item{display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--text);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .2s}
 .mobile-more-menu .mm-item:hover{background:var(--accent-dim);color:var(--accent)}
 @media(max-width:768px){.sidebar{display:none}.slide-inner{padding:18px 18px 80px}.cover{padding-left:40px;padding-right:40px}.cover h1{font-size:32px}.nav-buttons{right:12px;bottom:12px}.header-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap}.header-btn[onclick="toggleTheme()"]{padding:6px 6px}.progress-wrap{display:none}.header-dropdown{display:none}.header-btn[onclick^="changeFont"]{display:none}.header-btn[onclick="openSearch()"]{display:none}.header-btn[onclick="toggleHelp()"]{display:none}.mobile-info{display:flex;align-items:center;gap:2px}.mi-page{display:none}.mobile-more{display:inline-block}.slides-container{min-height:calc(100vh - 54px)}}
+/* ===== 图示动效：仅本页可见时播放，打印/弱动效静止 ===== */
+.slide.active .k17-l1{animation:k17-l1 1.6s steps(1) infinite}
+.slide.active .k17-l2{animation:k17-l2 1.6s steps(1) infinite}
+.slide.active .k17-shake{animation:k17-shake 1.6s linear infinite}
+.slide.active .k17-box{animation:k17-box 1.6s steps(1) infinite}
+@keyframes k17-l1{0%,49%{opacity:1}50%,100%{opacity:.25}}
+@keyframes k17-l2{0%,49%{opacity:.25}50%,100%{opacity:1}}
+@keyframes k17-shake{0%{transform:translateX(-11px)}12.5%{transform:translateX(11px)}25%{transform:translateX(-11px)}37.5%{transform:translateX(11px)}50%{transform:translateX(-11px)}62.5%{transform:translateX(11px)}75%{transform:translateX(-11px)}87.5%{transform:translateX(11px)}100%{transform:translateX(-11px)}}
+@keyframes k17-box{0%,49%{opacity:0}50%,100%{opacity:.85}}
+.slide.active .k17-b1{animation:k17-b1 1.6s steps(1) infinite}
+.slide.active .k17-b2{animation:k17-b2 1.6s steps(1) infinite}
+@keyframes k17-b1{0%,49%{opacity:.85}50%,100%{opacity:0}}
+@keyframes k17-b2{0%,49%{opacity:0}50%,100%{opacity:.85}}
+@media print{.slide.active [data-anim]{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.slide.active [data-anim]{animation:none!important}}
+
 /* ===== 平铺模式（连续显示全部页面，用于导出 PDF） ===== */
 html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 .flat-mode .container{height:auto;overflow:visible}
@@ -778,18 +794,22 @@ public class AnimalFollow : MonoBehaviour
 <text x="44" y="36" font-size="12.5" class="sv-t2">抽搐是这么来的：两个脚本，一个代理</text>
 
 <rect x="60" y="58" width="250" height="64" rx="10" class="sv-box"/>
+<rect class="k17-b1" data-anim x="60" y="58" width="250" height="64" rx="10" fill="none" stroke="#4FC3F7" stroke-width="2" opacity="0"/>
 <text x="80" y="84" font-size="13.5" font-weight="700" class="sv-t">AnimalRoam</text>
 <text x="80" y="106" font-size="12" class="sv-t2">在巡逻：去巡逻点</text>
 
 <rect x="450" y="58" width="250" height="64" rx="10" class="sv-box"/>
+<rect class="k17-b2" data-anim x="450" y="58" width="250" height="64" rx="10" fill="none" stroke="#4FC3F7" stroke-width="2" opacity="0"/>
 <text x="470" y="84" font-size="13.5" font-weight="700" class="sv-t">AnimalFollow</text>
 <text x="470" y="106" font-size="12" class="sv-t2">在跟随：去玩家那儿</text>
 
-<line x1="200" y1="124" x2="322" y2="174" class="sv-line" stroke-width="1.8" marker-end="url(#ar17)"/>
-<line x1="560" y1="124" x2="438" y2="174" class="sv-line" stroke-width="1.8" marker-end="url(#ar17)"/>
+<line class="k17-l1 sv-line" data-anim x1="200" y1="124" x2="322" y2="174" stroke-width="1.8" marker-end="url(#ar17)"/>
+<line class="k17-l2 sv-line" data-anim x1="560" y1="124" x2="438" y2="174" stroke-width="1.8" marker-end="url(#ar17)"/>
 <text x="380" y="158" font-size="11.5" text-anchor="middle" class="sv-t2">两边都在写目标点</text>
 
 <rect x="295" y="178" width="170" height="58" rx="10" class="sv-box2"/>
+<rect class="k17-box" data-anim x="295" y="178" width="170" height="58" rx="10" fill="none" stroke="#4FC3F7" stroke-width="2" opacity="0"/>
+<circle class="k17-shake" data-anim cx="252" cy="207" r="7" fill="#4FC3F7" opacity="0.9"/>
 <text x="380" y="204" font-size="13" font-weight="700" text-anchor="middle" class="sv-t">代理 NavMeshAgent</text>
 <text x="380" y="224" font-size="11.5" text-anchor="middle" class="sv-t2">一只动物只有一个</text>
 

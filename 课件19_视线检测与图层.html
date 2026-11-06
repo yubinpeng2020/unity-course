@@ -315,6 +315,23 @@ html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microso
 .mobile-more-menu .mm-item{display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--text);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .2s}
 .mobile-more-menu .mm-item:hover{background:var(--accent-dim);color:var(--accent)}
 @media(max-width:768px){.sidebar{display:none}.slide-inner{padding:18px 18px 80px}.cover{padding-left:40px;padding-right:40px}.cover h1{font-size:32px}.nav-buttons{right:12px;bottom:12px}.header-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap}.header-btn[onclick="toggleTheme()"]{padding:6px 6px}.progress-wrap{display:none}.header-dropdown{display:none}.header-btn[onclick^="changeFont"]{display:none}.header-btn[onclick="openSearch()"]{display:none}.header-btn[onclick="toggleHelp()"]{display:none}.mobile-info{display:flex;align-items:center;gap:2px}.mi-page{display:none}.mobile-more{display:inline-block}.slides-container{min-height:calc(100vh - 54px)}}
+/* ===== 图示动效：仅本页可见时播放，打印/弱动效静止 ===== */
+.slide.active .k19a-ray,.slide.active .k19b-ray{stroke-dasharray:100;stroke-dashoffset:100}
+.slide.active .k19a-ray{animation:k19a-ray 3.2s linear infinite}
+.slide.active .k19a-wall{animation:k19a-wall 3.2s linear infinite}
+.slide.active .k19b-ray{animation:k19b-ray 4s linear infinite}
+.slide.active .k19b-tree{animation:k19b-tree 4s linear infinite}
+.slide.active .k19b-animal{animation:k19b-animal 4s linear infinite}
+.slide.active .k19b-house{animation:k19b-house 4s linear infinite}
+@keyframes k19a-ray{0%,4%{stroke-dashoffset:100;opacity:0}9%{opacity:1}52%,80%{stroke-dashoffset:0;opacity:1}92%,100%{stroke-dashoffset:0;opacity:0}}
+@keyframes k19a-wall{0%,48%{opacity:0}54%,70%{opacity:1}78%,100%{opacity:0}}
+@keyframes k19b-ray{0%,4%{stroke-dashoffset:100;opacity:0}9%{opacity:1}62%,84%{stroke-dashoffset:0;opacity:1}94%,100%{stroke-dashoffset:0;opacity:0}}
+@keyframes k19b-tree{0%,21%{opacity:.16}26%,32%{opacity:.62}38%,100%{opacity:.16}}
+@keyframes k19b-animal{0%,42%{opacity:.16}46%,52%{opacity:.58}58%,100%{opacity:.16}}
+@keyframes k19b-house{0%,58%{opacity:0}62%,74%{opacity:1}82%,100%{opacity:0}}
+@media print{.slide.active [data-anim]{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.slide.active [data-anim]{animation:none!important}}
+
 /* ===== 平铺模式（连续显示全部页面，用于导出 PDF） ===== */
 html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 .flat-mode .container{height:auto;overflow:visible}
@@ -589,7 +606,9 @@ function copyImgName(btn){
 <circle cx="100" cy="120" r="22" fill="var(--accent)" opacity="0.2" stroke="var(--accent)" stroke-width="1.5"/>
 <circle cx="580" cy="120" r="22" fill="var(--accent2)" opacity="0.2" stroke="var(--accent2)" stroke-width="1.5"/>
 <rect x="315" y="70" width="50" height="100" rx="4" fill="var(--bg-card)" stroke="var(--orange)" stroke-width="1.5"/>
+<rect class="k19a-wall" data-anim x="315" y="70" width="50" height="100" rx="4" fill="var(--orange)" fill-opacity="0.16" stroke="var(--orange)" stroke-width="2.6" opacity="0"/>
 <line x1="122" y1="120" x2="315" y2="120" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 5"/>
+<line class="k19a-ray" data-anim pathLength="100" x1="122" y1="120" x2="315" y2="120" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" opacity="0"/>
 <line x1="365" y1="120" x2="558" y2="120" stroke="var(--text-muted)" stroke-width="1.5" stroke-dasharray="4 6" opacity="0.5"/>
 <text x="128" y="106" font-size="11" fill="var(--accent)">Linecast 检查这一段</text>
 <text x="340" y="196" font-size="12" fill="var(--text-muted)" text-anchor="middle">碰到 Wall → Linecast 返回 true → 记录 hit</text>
@@ -604,17 +623,19 @@ bool blocked = Physics.Linecast(origin, target);
 <rect x="1" y="1" width="678" height="208" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
 <text x="26" y="30" font-size="13" font-weight="700" fill="var(--accent2)">同一条线段，名单里只有 Wall：树和动物被直接忽略</text>
 <line x1="100" y1="120" x2="430" y2="120" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 5"/>
+<line class="k19b-ray" data-anim pathLength="100" x1="100" y1="120" x2="430" y2="120" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" opacity="0"/>
 <line x1="474" y1="120" x2="580" y2="120" stroke="var(--text-muted)" stroke-width="1.5" stroke-dasharray="4 6" opacity="0.45"/>
 <circle cx="80" cy="120" r="20" fill="var(--accent)" opacity="0.2" stroke="var(--accent)" stroke-width="1.5"/>
 <circle cx="600" cy="120" r="20" fill="var(--accent2)" opacity="0.2" stroke="var(--accent2)" stroke-width="1.5"/>
 <text x="80" y="124" font-size="12" fill="var(--text)" text-anchor="middle">敌人</text>
 <text x="600" y="124" font-size="12" fill="var(--text)" text-anchor="middle">玩家</text>
-<path d="M204 120 L224 76 L244 120 Z" fill="var(--accent)" opacity="0.16" stroke="var(--accent)" stroke-width="1.2"/>
+<path class="k19b-tree" data-anim d="M204 120 L224 76 L244 120 Z" fill="var(--accent)" opacity="0.16" stroke="var(--accent)" stroke-width="1.2"/>
 <rect x="220" y="120" width="8" height="14" fill="var(--accent)" opacity="0.35"/>
 <text x="224" y="176" font-size="11" fill="var(--text-muted)" text-anchor="middle">树 · 忽略</text>
-<rect x="330" y="104" width="32" height="32" rx="5" fill="var(--accent2)" opacity="0.16" stroke="var(--accent2)" stroke-width="1.2"/>
+<rect class="k19b-animal" data-anim x="330" y="104" width="32" height="32" rx="5" fill="var(--accent2)" opacity="0.16" stroke="var(--accent2)" stroke-width="1.2"/>
 <text x="346" y="176" font-size="11" fill="var(--text-muted)" text-anchor="middle">动物 · 忽略</text>
 <rect x="430" y="84" width="44" height="76" rx="4" fill="var(--bg-card)" stroke="var(--orange)" stroke-width="1.6"/>
+<rect class="k19b-house" data-anim x="430" y="84" width="44" height="76" rx="4" fill="var(--orange)" fill-opacity="0.18" stroke="var(--orange)" stroke-width="2.8" opacity="0"/>
 <text x="452" y="74" font-size="11" font-weight="700" fill="var(--orange)" text-anchor="middle">房屋 · Wall</text>
 <text x="452" y="176" font-size="11" font-weight="700" fill="var(--orange)" text-anchor="middle">挡住 → true</text>
 </svg></div>
