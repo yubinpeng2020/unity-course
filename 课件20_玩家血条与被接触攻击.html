@@ -312,6 +312,24 @@ html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microso
 .mobile-more-menu .mm-item{display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--text);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .2s}
 .mobile-more-menu .mm-item:hover{background:var(--accent-dim);color:var(--accent)}
 @media(max-width:768px){.sidebar{display:none}.slide-inner{padding:18px 18px 80px}.cover{padding-left:40px;padding-right:40px}.cover h1{font-size:32px}.nav-buttons{right:12px;bottom:12px}.header-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap}.header-btn[onclick="toggleTheme()"]{padding:6px 6px}.progress-wrap{display:none}.header-dropdown{display:none}.header-btn[onclick^="changeFont"]{display:none}.header-btn[onclick="openSearch()"]{display:none}.header-btn[onclick="toggleHelp()"]{display:none}.mobile-info{display:flex;align-items:center;gap:2px}.mi-page{display:none}.mobile-more{display:inline-block}.slides-container{min-height:calc(100vh - 54px)}}
+/* ===== 图示动画：仅在本页可见时播放，切走即复位，打印/弱动效静止 ===== */
+.slide.active .a-walk{animation:p13-walk 3.6s ease-in-out infinite}
+.slide.active .a-g1{animation:p13-g1 3.6s linear infinite}
+.slide.active .a-g2{animation:p13-g2 3.6s linear infinite}
+.slide.active .a-g3{animation:p13-g3 3.6s linear infinite}
+.slide.active .a-g4{animation:p13-g4 3.6s linear infinite}
+.slide.active .a-flash{animation:p13-flash 3.6s linear infinite}
+.slide.active .a-dmg{animation:p13-dmg 3.6s linear infinite}
+@keyframes p13-walk{0%{transform:translate(62px,96px);opacity:.45}26%{transform:translate(0,0);opacity:1}92%{transform:translate(0,0);opacity:1}100%{transform:translate(62px,96px);opacity:.45}}
+@keyframes p13-g1{0%,26%{opacity:0}30%,36%{opacity:1}44%,100%{opacity:0}}
+@keyframes p13-g2{0%,38%{opacity:0}42%,48%{opacity:1}56%,100%{opacity:0}}
+@keyframes p13-g3{0%,50%{opacity:0}54%,60%{opacity:1}68%,100%{opacity:0}}
+@keyframes p13-g4{0%,62%{opacity:0}66%,84%{opacity:1}92%,100%{opacity:0}}
+@keyframes p13-flash{0%,50%{opacity:0}54%{opacity:.95}58%{opacity:.2}62%{opacity:.9}70%,100%{opacity:0}}
+@keyframes p13-dmg{0%,50%{opacity:0;transform:translate(0,4px)}56%{opacity:1;transform:translate(0,-2px)}72%,100%{opacity:0;transform:translate(0,-24px)}}
+@media print{.slide.active [data-anim]{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.slide.active [data-anim]{animation:none!important}}
+
 /* ===== 平铺模式（连续显示全部页面，用于导出 PDF） ===== */
 html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 .flat-mode .container{height:auto;overflow:visible}
@@ -624,26 +642,32 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <text x="168" y="186" font-size="9.5" fill="var(--red)">2.2 米</text>
 <circle cx="146" cy="192" r="17" fill="var(--blue)"/>
 <text x="146" y="196" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">玩家</text>
-<circle cx="190" cy="155" r="13" fill="var(--orange)" opacity="0.9"/>
-<text x="207" y="159" font-size="10" fill="var(--orange)">敌人</text>
+<circle class="a-flash" data-anim cx="146" cy="192" r="17" fill="none" stroke="var(--red)" stroke-width="3" opacity="0"/>
+<text class="a-dmg" data-anim x="146" y="170" font-size="12" font-weight="700" fill="var(--red)" text-anchor="middle" opacity="0">−10</text>
+<g class="a-walk" data-anim><circle cx="190" cy="155" r="13" fill="var(--orange)" opacity="0.9"/>
+<text x="207" y="159" font-size="10" fill="var(--orange)">敌人</text></g>
 <text x="24" y="282" font-size="10.5" fill="var(--text-muted)">动物追到 2 米就停下（课件17 的跟随距离）</text>
 <text x="24" y="300" font-size="10.5" fill="var(--text-muted)">停在那个位置，已经落在判定圈里 —— 算咬到</text>
 <text x="300" y="80" font-size="12" font-weight="700" fill="var(--text)">每帧都在跑的四步</text>
 <rect x="300" y="92" width="356" height="42" rx="8" fill="var(--bg-card)" stroke="var(--border)"/>
 <text x="316" y="112" font-size="11.5" font-weight="700" fill="var(--text)">敌人脚本 —— 每帧量一次距离</text>
 <text x="316" y="128" font-size="10" fill="var(--text-muted)">只算水平距离，站在坡上也不误判</text>
+<rect class="a-g1" data-anim x="300" y="92" width="356" height="42" rx="8" fill="none" stroke="var(--accent2)" stroke-width="2" opacity="0"/>
 <text x="478" y="148" font-size="13" fill="var(--text-muted)" text-anchor="middle">↓</text>
 <rect x="300" y="150" width="356" height="48" rx="8" fill="var(--orange)" fill-opacity="0.08" stroke="var(--orange)" stroke-opacity="0.5"/>
 <text x="316" y="172" font-size="11.5" font-weight="700" fill="var(--text)">够近（≤ 2.2 米）？并且距上次咬 ≥ 1 秒？</text>
 <text x="316" y="189" font-size="10" fill="var(--text-muted)">两个都成立才往下走，否则这一帧什么都不做</text>
+<rect class="a-g2" data-anim x="300" y="150" width="356" height="48" rx="8" fill="none" stroke="var(--orange)" stroke-width="2" opacity="0"/>
 <text x="478" y="212" font-size="13" fill="var(--text-muted)" text-anchor="middle">↓</text>
 <rect x="300" y="214" width="356" height="40" rx="8" fill="var(--bg-card)" stroke="var(--border)"/>
 <text x="316" y="232" font-size="11.5" font-weight="700" fill="var(--text)">player.TakeDamage(10)</text>
 <text x="316" y="247" font-size="10" fill="var(--text-muted)">把这一下的伤害交给玩家</text>
+<rect class="a-g3" data-anim x="300" y="214" width="356" height="40" rx="8" fill="none" stroke="var(--accent2)" stroke-width="2" opacity="0"/>
 <text x="478" y="270" font-size="13" fill="var(--text-muted)" text-anchor="middle">↓</text>
 <rect x="300" y="272" width="356" height="48" rx="8" fill="var(--green)" fill-opacity="0.1" stroke="var(--green)" stroke-opacity="0.45"/>
 <text x="316" y="294" font-size="11.5" font-weight="700" fill="var(--text)">玩家脚本 —— 血减 10，fillAmount 变小</text>
 <text x="316" y="311" font-size="10" fill="var(--text-muted)">血条跟着短一截，屏幕上才看得见</text>
+<rect class="a-g4" data-anim x="300" y="272" width="356" height="48" rx="8" fill="none" stroke="var(--green)" stroke-width="2" opacity="0"/>
 </svg>
 <div class="card"><h3>① 新建 EnemyData.cs，挂到敌人身上</h3><p>项目（Project）窗口右键 → <strong>创建（Create）→ C# 脚本</strong>，命名 <code>EnemyData</code>（大小写要和类名一致）。写完拖到动物身上，检查器里 <strong>攻击力（Attack Power）</strong> 设 <code>10</code>、<strong>攻击间隔（Attack Interval）</strong> 设 <code>1</code>。</p><div class="step-img"><img src="images/课件20/敌人3-EnemyData组件.png" alt="敌人身上挂 EnemyData，攻击力 10、攻击间隔 1" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="prompt-box">
