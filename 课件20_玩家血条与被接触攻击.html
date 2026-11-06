@@ -423,7 +423,7 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <h1>本节学习目标</h1>
 <img src="images/课件20/血条效果.gif" alt="敌人扑上来咬一口，血条跟着缩短" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>本课要做出来的效果</h3><p>前面十几课做的全是<strong>场景里的 3D 物体</strong>：有位置、有大小，相机看得见才看得见。这一课第一次碰<strong>游戏 UI</strong>——贴在屏幕上的东西。</p><p>做完的样子：屏幕左下角一条血条，玩家跑遍地图它都待在原地；敌人扑上来咬一口，红条就短一截，冷却期间不会再掉。</p></div>
-<div class="goal-grid"><div class="goal-card"><span class="goal-icon">➕</span><span class="goal-text">会建画布：右键 <strong>UI → 画布</strong>，认得出一起冒出来的<strong>事件系统</strong></span></div><div class="goal-card"><span class="goal-icon">🖼️</span><span class="goal-text">搞懂<strong>画布（Canvas）</strong>是什么，为什么 UI 不能直接摆在场景里</span></div><div class="goal-card"><span class="goal-icon">📐</span><span class="goal-text">设好<strong>画布缩放</strong>，换分辨率血条不变形、不跑出屏幕</span></div><div class="goal-card"><span class="goal-icon">🧭</span><span class="goal-text">看懂<strong>矩形变换</strong>与<strong>锚点</strong>，知道血条为什么贴左下角</span></div><div class="goal-card"><span class="goal-icon">🩸</span><span class="goal-text">搭出血条三段：<strong>半透明底板 + 红色填充 + 生命图标</strong></span></div><div class="goal-card"><span class="goal-icon">🎚️</span><span class="goal-text">明白血条长短只看一个数：<code>fillAmount</code>（0～1）</span></div><div class="goal-card"><span class="goal-icon">💥</span><span class="goal-text">给敌人写<strong>攻击脚本</strong>：够近 + 冷却好了，就按<strong>攻击力</strong>咬掉玩家血量</span></div><div class="goal-card"><span class="goal-icon">📝</span><span class="goal-text">作业：血量数字 + 低血时整条血条闪烁</span></div></div>
+<div class="goal-grid"><div class="goal-card"><span class="goal-icon">➕</span><span class="goal-text">会建画布：右键 <strong>UI → 画布</strong>，认得出一起冒出来的<strong>事件系统</strong></span></div><div class="goal-card"><span class="goal-icon">🖼️</span><span class="goal-text">搞懂<strong>画布（Canvas）</strong>是什么，为什么 UI 不能直接摆在场景里</span></div><div class="goal-card"><span class="goal-icon">📐</span><span class="goal-text">设好<strong>画布缩放</strong>，换分辨率血条不变形、不跑出屏幕</span></div><div class="goal-card"><span class="goal-icon">🧭</span><span class="goal-text">看懂<strong>矩形变换</strong>与<strong>锚点</strong>，知道血条为什么贴左下角</span></div><div class="goal-card"><span class="goal-icon">🩸</span><span class="goal-text">搭出血条三段：<strong>半透明底板 + 红色填充 + 生命图标</strong></span></div><div class="goal-card"><span class="goal-icon">🎚️</span><span class="goal-text">明白血条长短只看一个数：<code>fillAmount</code>（0～1）</span></div><div class="goal-card"><span class="goal-icon">💥</span><span class="goal-text">给敌人写<strong>攻击脚本</strong>：够近 + 冷却好了，就<strong>播一下咬的动作</strong>、按<strong>攻击力</strong>咬掉玩家血量</span></div><div class="goal-card"><span class="goal-icon">📝</span><span class="goal-text">作业：血量数字 + 低血时整条血条闪烁</span></div></div>
 </div></div>
 <div class="slide" data-page="3"><div class="slide-inner markable">
 <h1>添加画布 · 右键 UI → 画布</h1>
@@ -658,12 +658,16 @@ public class EnemyData : MonoBehaviour
 
     private float lastAttackTime;        // 上一次攻击的时刻
     private HealthChange player;         // 玩家身上的扣血脚本
+    private AnimalAnim anim;             // 动物身上的动画脚本
 
     void Start()
     {
         // 开局找一次玩家（Find 比较慢，别放到 Update 里每帧找）
-        GameObject find = GameObject.FindGameObjectWithTag(&quot;Player&quot;);
+        GameObject find = GameObject.FindGameObjectWithTag("Player");
         if (find != null) player = find.GetComponent&lt;HealthChange&gt;();
+
+        // 动画脚本就在自己身上（课件18 挂的 AnimalAnim）
+        anim = GetComponent&lt;AnimalAnim&gt;();
     }
 
     void Update()
@@ -679,13 +683,15 @@ public class EnemyData : MonoBehaviour
             &amp;&amp; Time.time - lastAttackTime &gt;= attackInterval)
         {
             lastAttackTime = Time.time;
+            anim.PlayAttack();           // 先动起来，再让玩家掉血
             player.TakeDamage(attackPower);
         }
     }
 }</code></pre>
 </div>
 <div class="card"><h3>② 逐段看</h3><ol><li><strong>三个 public 字段</strong>：<code>public</code> 才能在检查器里看到、也才能被别的脚本读到。攻击力决定一口掉多少血，间隔决定多久能咬第二口，范围决定站多远就算咬到。</li><li><strong><code>lastAttackTime</code> 为什么是 private</strong>：它是内部记账的时间，不需要给人调，所以不写 public。</li><li><strong><code>Time.time</code></strong>：游戏从开始跑到现在的秒数，一直在涨。</li><li><strong>为什么一定要有间隔</strong>：<code>Update</code> 是<strong>每一帧都在跑</strong>的——没有间隔，贴着你的那一秒就是几十次扣血，血条一瞬间就空。</li><li><strong><code>Start()</code> 里找一次玩家</strong>：<code>FindGameObjectWithTag("Player")</code> 要遍历整个场景，比较慢（课件14 说过），开局找一次存进变量就行，别放进 <code>Update</code> 里每帧找；万一没找到，就先空着，<code>Update</code> 开头那句 <code>if (player == null) return;</code> 会兜住，不至于一开局就崩。</li><li><strong>为什么只在水平面量距离</strong>：两边 <code>y</code> 都置 0 再算——上下坡、站在坎上时，高度差不会让它误判成「离得远」。<code>AnimalFollow</code> 用的也是这个做法。</li><li><strong>为什么是敌人去调 <code>player.TakeDamage()</code></strong>：谁攻击谁发起。玩家那边只提供一个「我扣血了」的接口，敌人够近就调一下；以后加陷阱、毒圈、子弹，也是调同一个方法，玩家脚本一个字不用改。</li></ol></div>
-<div class="card"><h3>③ 攻击范围为什么填 2.2</h3><p>课件17 的跟随是「走到离你 2 米就停」，动物根本不会贴到你身上。所以攻击范围要<strong>略大于 2</strong>——填 <code>2.2</code>，动物停在那圈上就已经能咬到你了。</p><p>这也是大多数游戏的做法：判定用「范围」而不是「模型真的碰上」，看着像被咬到就够了。想让动物必须撞上来才掉血，把范围调到 <code>1.5</code> 以下即可——但那样只有你主动凑过去才会掉血。</p></div><div class="ok-box">💡 调难度只改这几个数：攻击力 20 + 间隔 2 秒 = 疼但慢；攻击力 5 + 间隔 0.5 秒 = 不疼但粘人。玩家脚本一个字都不用动。<br>本课玩家<strong>没有防御力</strong>，所以攻击力就是实际掉的血；以后要是加了护甲，扣血公式写在玩家的 <code>TakeDamage</code> 里，不用回头改敌人。</div>
+<div class="card"><h3>③ 咬下去的同时，把动作播出来</h3><p>光看血条往下掉，看不出是哪一只在咬你。动物身上早就有 <code>AnimalAnim</code>——课件18 挂上去、专管动画的那个脚本，里面就写着 <code>PlayAttack()</code>。咬的时候喊一声就行，上面的全码里已经加好了，就两处：</p><ul><li><code>Start()</code> 里补 <code>anim = GetComponent&lt;AnimalAnim&gt;();</code>——动画脚本也在自己身上，跟 <code>AnimalFollow</code> 拿它的方式一样</li><li>咬的那一行前面加 <code>anim.PlayAttack();</code>——先动起来，再让玩家掉血</li></ul><p><code>PlayAttack()</code> 里是 <code>SetTrigger("Attack")</code>，靠 Animator 里的 <strong>Attack 触发器</strong>——课件18 加的。<strong>每只动物的控制器都要加过这个参数</strong>：只给猫配了，牛和马咬你就不带动静，缺的回课件18 补上。</p></div>
+<div class="card"><h3>④ 攻击范围为什么填 2.2</h3><p>课件17 的跟随是「走到离你 2 米就停」，动物根本不会贴到你身上。所以攻击范围要<strong>略大于 2</strong>——填 <code>2.2</code>，动物停在那圈上就已经能咬到你了。</p><p>这也是大多数游戏的做法：判定用「范围」而不是「模型真的碰上」，看着像被咬到就够了。想让动物必须撞上来才掉血，把范围调到 <code>1.5</code> 以下即可——但那样只有你主动凑过去才会掉血。</p></div><div class="ok-box">💡 调难度只改这几个数：攻击力 20 + 间隔 2 秒 = 疼但慢；攻击力 5 + 间隔 0.5 秒 = 不疼但粘人。玩家脚本一个字都不用动。<br>本课玩家<strong>没有防御力</strong>，所以攻击力就是实际掉的血；以后要是加了护甲，扣血公式写在玩家的 <code>TakeDamage</code> 里，不用回头改敌人。</div>
 </div></div>
 <div class="slide" data-page="14"><div class="slide-inner markable">
 <h1>血条原理 · 只改一个 fillAmount</h1>

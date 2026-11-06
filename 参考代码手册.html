@@ -468,10 +468,10 @@ public class EnemyControl : MonoBehaviour
 <div class="code-card" id="code16">
   <div class="code-head">
     <span class="fname">EnemyData.cs</span>
-    <span class="ftitle">敌人攻击参数（距离判定 + 主动攻击）</span>
+    <span class="ftitle">敌人攻击参数（距离判定 + 主动攻击 + 咬的动作）</span>
     <button class="copy-btn" onclick="copyCode(this)">复制</button>
   </div>
-  <p class="fdesc">敌人够近（<code>attackRange</code>）+ 冷却好了（<code>attackInterval</code>）就主动调玩家的 <code>TakeDamage</code>。<code>Start</code> 里用 <code>Player</code> 标签找一次玩家。挂动物预制体的空壳上，攻击力 10 / 间隔 1 / 范围 2.2。<br>⛔ 不要改回 <code>OnControllerColliderHit</code> + <code>CompareTag("Enemy")</code> 的物理接触判定：它只在「玩家自己移动撞到东西」时响，玩家站着不动、动物蹭过来不响；跟随的动物又停在离玩家 2 米处，物理上碰不到，实测扣血极稀疏。</p>
+  <p class="fdesc">敌人够近（<code>attackRange</code>）+ 冷却好了（<code>attackInterval</code>）就主动调玩家的 <code>TakeDamage</code>。<code>Start</code> 里用 <code>Player</code> 标签找一次玩家。挂动物预制体的空壳上，攻击力 10 / 间隔 1 / 范围 2.2。咬的瞬间调 <code>AnimalAnim.PlayAttack()</code> 播一下咬的动作（动画参数 Attack 触发器在课件18 配的，没配的动物不带动静）。<br>⛔ 不要改回 <code>OnControllerColliderHit</code> + <code>CompareTag("Enemy")</code> 的物理接触判定：它只在「玩家自己移动撞到东西」时响，玩家站着不动、动物蹭过来不响；跟随的动物又停在离玩家 2 米处，物理上碰不到，实测扣血极稀疏。</p>
   <pre><code class="language-csharp">using UnityEngine;
 
 public class EnemyData : MonoBehaviour
@@ -482,12 +482,16 @@ public class EnemyData : MonoBehaviour
 
     private float lastAttackTime;        // 上一次攻击的时刻
     private HealthChange player;         // 玩家身上的扣血脚本
+    private AnimalAnim anim;             // 动物身上的动画脚本
 
     void Start()
     {
         // 开局找一次玩家（Find 比较慢，别放到 Update 里每帧找）
         GameObject find = GameObject.FindGameObjectWithTag(&quot;Player&quot;);
         if (find != null) player = find.GetComponent&lt;HealthChange&gt;();
+
+        // 动画脚本就在自己身上（课件18 挂的 AnimalAnim）
+        anim = GetComponent&lt;AnimalAnim&gt;();
     }
 
     void Update()
@@ -503,6 +507,7 @@ public class EnemyData : MonoBehaviour
             &amp;&amp; Time.time - lastAttackTime &gt;= attackInterval)
         {
             lastAttackTime = Time.time;
+            anim.PlayAttack();           // 先动起来，再让玩家掉血
             player.TakeDamage(attackPower);
         }
     }
