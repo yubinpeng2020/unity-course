@@ -612,8 +612,40 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 </div></div>
 <div class="slide" data-page="13"><div class="slide-inner markable">
 <h1>敌人攻击力 · EnemyData</h1>
-<div class="card"><p>每个敌人咬一口有多疼、多久咬一次，写在敌人自己的数据脚本里，方便随时调，不用改玩家那边。</p></div>
-<div class="card"><h3>① 新建 EnemyData.cs，挂到敌人身上</h3><p>项目（Project）窗口右键 → <strong>创建（Create）→ C# 脚本</strong>，命名 <code>EnemyData</code>（大小写要和类名一致）。写完拖到动物身上，检查器里 <strong>攻击力（Attack Power）</strong> 设 <code>10</code>、<strong>攻击间隔（Contact Attack Interval）</strong> 设 <code>1</code>。</p><div class="step-img"><img src="images/课件20/敌人3-EnemyData组件.png" alt="敌人身上挂 EnemyData，攻击力 10、攻击间隔 1" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><p>血条搭好了、碰撞体也确认过了，先看清<strong>一次咬血到底是怎么发生的</strong>：<strong>判断</strong>是敌人自己做的，<strong>结算</strong>落在玩家身上。每一口多疼、多久咬一次，写在敌人自己的数据脚本里——调难度只改这几个数，玩家那边一个字都不用动。</p></div>
+<svg viewBox="0 0 680 340" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:14px auto 8px;font-family:inherit" role="img" aria-label="左边俯视图：玩家在中心，虚线圆半径 2.2 米是判定圈，动物追到 2 米处停下、已经在圈内；右边四步流程：敌人每帧量一次水平距离，距离不超过 2.2 米且距上次咬超过 1 秒才继续，然后调用玩家的 TakeDamage，玩家扣血并让 fillAmount 变小、血条短一截">
+<rect x="1" y="1" width="678" height="338" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
+<text x="24" y="30" font-size="14" font-weight="700" fill="var(--accent2)">一次咬血：判断在敌人身上，结算在玩家身上</text>
+<text x="24" y="51" font-size="11.5" fill="var(--text-muted)">敌人每帧自己算一遍，够近就喊一声；玩家只管把血条改短</text>
+<line x1="284" y1="66" x2="284" y2="326" stroke="var(--text-muted)" stroke-width="1" stroke-opacity="0.25"/>
+<text x="24" y="80" font-size="12" font-weight="700" fill="var(--text)">俯视：玩家周围的判定圈</text>
+<circle cx="146" cy="192" r="66" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="6 5" opacity="0.7"/>
+<line x1="163" y1="192" x2="208" y2="192" stroke="var(--red)" stroke-width="1" stroke-dasharray="3 3" opacity="0.55"/>
+<text x="168" y="186" font-size="9.5" fill="var(--red)">2.2 米</text>
+<circle cx="146" cy="192" r="17" fill="var(--blue)"/>
+<text x="146" y="196" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">玩家</text>
+<circle cx="190" cy="155" r="13" fill="var(--orange)" opacity="0.9"/>
+<text x="207" y="159" font-size="10" fill="var(--orange)">敌人</text>
+<text x="24" y="282" font-size="10.5" fill="var(--text-muted)">动物追到 2 米就停下（课件17 的跟随距离）</text>
+<text x="24" y="300" font-size="10.5" fill="var(--text-muted)">停在那个位置，已经落在判定圈里 —— 算咬到</text>
+<text x="300" y="80" font-size="12" font-weight="700" fill="var(--text)">每帧都在跑的四步</text>
+<rect x="300" y="92" width="356" height="42" rx="8" fill="var(--bg-card)" stroke="var(--border)"/>
+<text x="316" y="112" font-size="11.5" font-weight="700" fill="var(--text)">敌人脚本 —— 每帧量一次距离</text>
+<text x="316" y="128" font-size="10" fill="var(--text-muted)">只算水平距离，站在坡上也不误判</text>
+<text x="478" y="148" font-size="13" fill="var(--text-muted)" text-anchor="middle">↓</text>
+<rect x="300" y="150" width="356" height="48" rx="8" fill="var(--orange)" fill-opacity="0.08" stroke="var(--orange)" stroke-opacity="0.5"/>
+<text x="316" y="172" font-size="11.5" font-weight="700" fill="var(--text)">够近（≤ 2.2 米）？并且距上次咬 ≥ 1 秒？</text>
+<text x="316" y="189" font-size="10" fill="var(--text-muted)">两个都成立才往下走，否则这一帧什么都不做</text>
+<text x="478" y="212" font-size="13" fill="var(--text-muted)" text-anchor="middle">↓</text>
+<rect x="300" y="214" width="356" height="40" rx="8" fill="var(--bg-card)" stroke="var(--border)"/>
+<text x="316" y="232" font-size="11.5" font-weight="700" fill="var(--text)">player.TakeDamage(10)</text>
+<text x="316" y="247" font-size="10" fill="var(--text-muted)">把这一下的伤害交给玩家</text>
+<text x="478" y="270" font-size="13" fill="var(--text-muted)" text-anchor="middle">↓</text>
+<rect x="300" y="272" width="356" height="48" rx="8" fill="var(--green)" fill-opacity="0.1" stroke="var(--green)" stroke-opacity="0.45"/>
+<text x="316" y="294" font-size="11.5" font-weight="700" fill="var(--text)">玩家脚本 —— 血减 10，fillAmount 变小</text>
+<text x="316" y="311" font-size="10" fill="var(--text-muted)">血条跟着短一截，屏幕上才看得见</text>
+</svg>
+<div class="card"><h3>① 新建 EnemyData.cs，挂到敌人身上</h3><p>项目（Project）窗口右键 → <strong>创建（Create）→ C# 脚本</strong>，命名 <code>EnemyData</code>（大小写要和类名一致）。写完拖到动物身上，检查器里 <strong>攻击力（Attack Power）</strong> 设 <code>10</code>、<strong>攻击间隔（Attack Interval）</strong> 设 <code>1</code>。</p><div class="step-img"><img src="images/课件20/敌人3-EnemyData组件.png" alt="敌人身上挂 EnemyData，攻击力 10、攻击间隔 1" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_enemydata',this)">复制</button></div>
 <pre id="c20_enemydata"><code class="language-csharp">using UnityEngine;
