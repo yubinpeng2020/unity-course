@@ -312,14 +312,16 @@ html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microso
 .slide.active .k12-float{animation:k12-float 4s ease-in-out infinite}
 .slide.active .k12-land{transform-box:fill-box;transform-origin:50% 100%;animation:k12-land 4s ease-in-out infinite}
 .slide.active .k12-grav{animation:k12-grav 4s linear infinite}
+.slide.active .k12-up{animation:k12-up 4s linear infinite}
 .slide.active .k12-t1{animation:k12-t1 4s linear infinite}
 .slide.active .k12-t2{animation:k12-t2 4s linear infinite}
 .slide.active .k12-t3{animation:k12-t3 4s linear infinite}
 @keyframes k12-line{0%,6%{stroke-dashoffset:100;opacity:0}12%{opacity:1}80%,88%{stroke-dashoffset:0;opacity:1}96%,100%{stroke-dashoffset:0;opacity:0}}
-@keyframes k12-jump{0%,2%{transform:translateY(0)}10%{transform:translateY(-70px)}20%,100%{transform:translateY(0)}}
+@keyframes k12-jump{0%,4%{transform:translateY(0)}14%,36%{transform:translateY(-70px)}62%,100%{transform:translateY(0)}}
 @keyframes k12-float{0%,40%{transform:translateY(0)}50%{transform:translateY(-7px)}60%,100%{transform:translateY(0)}}
 @keyframes k12-land{0%,80%{transform:scaleY(1)}86%{transform:scaleY(.8)}92%{transform:scaleY(1.05)}100%{transform:scaleY(1)}}
 @keyframes k12-grav{0%,32%{opacity:.25}44%,70%{opacity:1}82%,100%{opacity:.25}}
+@keyframes k12-up{0%,6%{opacity:1}16%,90%{opacity:0}100%{opacity:1}}
 @keyframes k12-t1{0%{opacity:.42}8%,20%{opacity:1}28%,100%{opacity:.42}}
 @keyframes k12-t2{0%,38%{opacity:.42}46%,60%{opacity:1}68%,100%{opacity:.42}}
 @keyframes k12-t3{0%,80%{opacity:.42}88%,96%{opacity:1}100%{opacity:.42}}
@@ -586,7 +588,7 @@ public class CollisionLogger : MonoBehaviour
 <rect class="k12-jump" data-anim x="97" y="290" width="26" height="40" rx="13" fill="#4FC3F7"/>
 <rect class="k12-float" data-anim x="337" y="160" width="26" height="40" rx="13" fill="#4FC3F7"/>
 <rect class="k12-land" data-anim x="577" y="290" width="26" height="40" rx="13" fill="#4FC3F7"/>
-<line x1="110" y1="284" x2="110" y2="238" stroke="#34D399" stroke-width="3" marker-end="url(#k12JumpUp)"/>
+<line class="k12-up" data-anim x1="110" y1="284" x2="110" y2="238" stroke="#34D399" stroke-width="3" marker-end="url(#k12JumpUp)"/>
 <line class="k12-grav" data-anim x1="440" y1="240" x2="440" y2="276" stroke="#F5A623" stroke-width="3" marker-end="url(#k12JumpDown)"/>
 <line class="k12-grav" data-anim x1="500" y1="276" x2="500" y2="312" stroke="#F5A623" stroke-width="3" marker-end="url(#k12JumpDown)"/>
 <text x="428" y="262" font-size="13" fill="#F5A623" text-anchor="end">重力</text>
