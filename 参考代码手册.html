@@ -515,7 +515,7 @@ public class EnemyData : MonoBehaviour
     <span class="ftitle">玩家血量与血条</span>
     <button class="copy-btn" onclick="copyCode(this)">复制</button>
   </div>
-  <p class="fdesc">玩家只负责三件事：开局满血、被咬扣血、把血量换算成 <code>fillAmount</code>。<strong>不自己检测碰撞</strong>——攻击由 <code>EnemyData</code> 发起，所以 <code>TakeDamage</code> 是 <code>public</code>。挂载在 Player 上，<code>FillImageHealth</code> 拖入生命条填充图。</p>
+  <p class="fdesc">玩家只负责三件事：开局满血、被咬扣血、把血量换算成 <code>fillAmount</code>。<strong>不自己检测碰撞</strong>——攻击由 <code>EnemyData</code> 发起，所以 <code>TakeDamage</code> 是 <code>public</code>。挂载在 Player 上，<code>FillImageHealth</code> 拖入生命条填充图。<br>受击带 <code>hitInvincible</code>（0.2 秒）无敌帧：多只敌人同帧命中只结算一次；血量归零后不再吃伤害。</p>
   <pre><code class="language-csharp">using UnityEngine;
 using UnityEngine.UI;   // 要用 Image，必须带上这一行
 
@@ -524,6 +524,9 @@ public class HealthChange : MonoBehaviour
     public float MaxHealth = 100f;          // 满血
     public float CurrentHealth;             // 当前血量
     public Image healthFillImage;           // 血条上那条红条，检查器里拖进来
+    public float hitInvincible = 0.2f;      // 挨咬之后的无敌时间（秒）
+
+    private float lastHitTime;              // 上一次挨咬的时刻
 
     void Start()
     {
@@ -534,6 +537,13 @@ public class HealthChange : MonoBehaviour
     // 扣血：敌人咬到时会调这个方法，扣完立刻刷新血条
     public void TakeDamage(float damage)
     {
+        // 血已经空了，就不再吃伤害（动物还在咬也没用）
+        if (CurrentHealth &lt;= 0) return;
+
+        // 无敌时间内的伤害直接作废：多只一起扑上来，不会一瞬间清空
+        if (Time.time - lastHitTime &lt; hitInvincible) return;
+        lastHitTime = Time.time;
+
         CurrentHealth = CurrentHealth - damage;
         if (CurrentHealth &lt; 0) CurrentHealth = 0;
         UpdateHealth();
