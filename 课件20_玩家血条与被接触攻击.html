@@ -696,7 +696,7 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <rect class="a-g4" data-anim x="300" y="272" width="356" height="48" rx="8" fill="none" stroke="var(--green)" stroke-width="2" opacity="0"/>
 </svg>
 <div class="anim-replay-bar"><button type="button" class="anim-replay" onclick="replayAnim(this)" aria-label="重播这张图的动效">↻ 重播动效</button></div>
-<div class="card"><h3>① 新建 EnemyData.cs，挂到敌人身上</h3><p>项目（Project）窗口右键 → <strong>创建（Create）→ C# 脚本</strong>，命名 <code>EnemyData</code>（大小写要和类名一致）。写完拖到动物身上，检查器里 <strong>攻击力（Attack Power）</strong> 设 <code>10</code>、<strong>攻击间隔（Attack Interval）</strong> 设 <code>1</code>。</p><div class="step-img"><img src="images/课件20/敌人3-EnemyData组件.png" alt="敌人身上挂 EnemyData，攻击力 10、攻击间隔 1" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>① 新建 EnemyData.cs，挂到敌人身上</h3><p>项目（Project）窗口右键 → <strong>创建（Create）→ C# 脚本</strong>，命名 <code>EnemyData</code>（大小写要和类名一致）。写完把 <strong>6 个动物预制体</strong>一起选中，<strong>添加组件（Add Component）</strong> 搜 <code>Enemy Data</code>（组件列表里中间会多一个空格），一次给六个都挂上。检查器里核对三个数：<strong>攻击力（Attack Power）</strong> <code>10</code>、<strong>攻击间隔（Attack Interval）</strong> <code>1</code>、<strong>攻击范围（Attack Range）</strong> <code>2.2</code>——代码里就是这几个默认值，照着核一遍就行。</p><div class="step-img"><img src="images/课件20/敌人3-EnemyData组件.png" alt="6 个动物预制体一起选中后添加 Enemy Data 组件，检查器里攻击力 10、攻击间隔 1、攻击范围 2.2" onclick="zoomQR(this)" style="cursor:pointer;background:#fff" onerror="imgMissing(this)"></div></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_enemydata',this)">复制</button></div>
 <pre id="c20_enemydata"><code class="language-csharp">using UnityEngine;
