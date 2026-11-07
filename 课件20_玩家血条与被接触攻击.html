@@ -660,9 +660,6 @@ public class HealthChange : MonoBehaviour
     public float MaxHealth = 100f;          // 满血
     public float CurrentHealth;             // 当前血量
     public Image healthFillImage;           // 血条上那条红条，检查器里拖进来
-    public float hitInvincible = 0.2f;      // 挨咬之后的无敌时间（秒）
-
-    private float lastHitTime;              // 上一次挨咬的时刻
 
     void Start()
     {
@@ -675,10 +672,6 @@ public class HealthChange : MonoBehaviour
     {
         // 血已经空了，就不再吃伤害（动物还在咬也没用）
         if (CurrentHealth &lt;= 0) return;
-
-        // 无敌时间内的伤害直接作废：多只一起扑上来，不会一瞬间清空
-        if (Time.time - lastHitTime &lt; hitInvincible) return;
-        lastHitTime = Time.time;
 
         CurrentHealth = CurrentHealth - damage;
         if (CurrentHealth &lt; 0) CurrentHealth = 0;
@@ -694,7 +687,7 @@ public class HealthChange : MonoBehaviour
         }
     }
 }</code></pre>
-</div><p>血条相关的变量只有三个，先记住它们各自是什么、谁给它值（脚本里另外还有两个跟<strong>受击</strong>有关的字段，后面逐段看再讲）：</p><table><thead><tr><th>变量</th><th>是什么</th><th>值从哪来</th></tr></thead><tbody><tr><td><code>MaxHealth</code></td><td>满血是多少</td><td>脚本里默认 <code>100</code>，检查器里也能改</td></tr><tr><td><code>CurrentHealth</code></td><td>现在还剩多少血</td><td><code>Start()</code> 里先设成满血，被撞时减</td></tr><tr><td><code>healthFillImage</code></td><td>红条那个 <code>Image</code> 组件</td><td>检查器里把 <code>FillImageHealth</code> 拖进槽位</td></tr></tbody></table></div>
+</div><p>血条相关的变量只有三个，先记住它们各自是什么、谁给它值：</p><table><thead><tr><th>变量</th><th>是什么</th><th>值从哪来</th></tr></thead><tbody><tr><td><code>MaxHealth</code></td><td>满血是多少</td><td>脚本里默认 <code>100</code>，检查器里也能改</td></tr><tr><td><code>CurrentHealth</code></td><td>现在还剩多少血</td><td><code>Start()</code> 里先设成满血，被撞时减</td></tr><tr><td><code>healthFillImage</code></td><td>红条那个 <code>Image</code> 组件</td><td>检查器里把 <code>FillImageHealth</code> 拖进槽位</td></tr></tbody></table></div>
 <div class="card"><p>整段脚本不到三十行，跟血条长短真正有关的只有<strong>一句</strong>。血条变短这件事 Unity 已经替我们算好了：只要给<strong>填充总数（fillAmount）</strong> 一个 0～1 的数，它自己把红条画到相应长度。所以要写的只有：</p><div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_fill',this)">复制</button></div>
 <pre id="c20_fill"><code class="language-csharp">healthFillImage.fillAmount = CurrentHealth / MaxHealth;</code></pre>
@@ -824,7 +817,7 @@ public class EnemyData : MonoBehaviour
 <div class="card"><p>脚本在原理页已经建好、挂到 Player 上了（<strong>完整代码在「血条原理」那一页</strong>）。这一页把它接上血条、再逐段看清它在干什么——玩家这边只做三件事：<strong>开局满血、被咬时扣血、把血量画成血条</strong>。</p></div>
 
 <div class="card"><h3>① 把红条拖进「生命条填充图」槽位</h3><p>脚本挂上之后，检查器里多出一个 <strong>生命条填充图（Health Fill Image）</strong> 槽位。把层级里的 <code>FillImageHealth</code> <strong>拖到这个槽位</strong>——脚本就是靠这个引用找到红条的。</p><p>不拖会怎样：代码里有 <code>if (healthFillImage != null)</code> 挡着，所以不会报错，但<strong>血条一动不动</strong>——血在扣，只是没画出来。</p><div class="step-img"><img src="images/课件20/玩家2-拖入填充图.png" alt="把 FillImageHealth 拖到 HealthChange 的生命条填充图槽位" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
-<div class="card"><h3>② 逐段看</h3><ol><li><strong><code>using UnityEngine.UI;</code></strong>：<code>Image</code> 这个类型在 <code>UnityEngine.UI</code> 里，不写这一行，字段那一行就报「找不到类型 Image」。</li><li><strong><code>public void TakeDamage(float damage)</code></strong>：这是<strong>给敌人调</strong>的接口。敌人那边一句 <code>player.TakeDamage(attackPower)</code>，就相当于「咬你一口」。写成 <code>public</code>，别的脚本才调得到。</li><li><strong>为什么玩家不自己去检测「谁撞我」</strong>：角色控制器的 <code>OnControllerColliderHit</code> 只在<strong>玩家自己移动撞到东西</strong>时才响——你站着不动、动物蹭过来，它一声都不响；跟随的动物又停在离你 2 米的地方，物理上压根没碰上。所以判定放到敌人那边（上一页的攻击范围），玩家这边只管「掉血」。</li><li><strong><code>hitInvincible</code> 无敌帧</strong>：挨咬之后 <code>0.2</code> 秒内的后续伤害<strong>直接作废</strong>。没有它，五只动物同一瞬间扑上来就是「一巴掌掉 50 血」；有了它，五口会排队结算，血条一小截一小截地掉。<strong>把这个数调大＝更难死</strong>，检查器里能改。</li><li><strong>两条血量保护</strong>：开头 <code>if (CurrentHealth &lt;= 0) return;</code>——血空了就不再吃伤害，动物还在咬也没用（死亡怎么处理是课件21 的事）；扣完 <code>if (CurrentHealth &lt; 0) CurrentHealth = 0;</code>——防一次大伤害扣成负数，<code>fillAmount</code> 拿到负值会反向填充，看着像在回血。</li><li><strong><code>Start()</code> 里先满血</strong>：<code>CurrentHealth</code> 默认为 0，不初始化的话开局血条就是空的。</li><li><strong><code>UpdateHealth()</code></strong>：把当前血量换算成 0～1 填给 <code>fillAmount</code>。扣血、以后回血，都调这一个方法。</li></ol></div>
+<div class="card"><h3>② 逐段看</h3><ol><li><strong><code>using UnityEngine.UI;</code></strong>：<code>Image</code> 这个类型在 <code>UnityEngine.UI</code> 里，不写这一行，字段那一行就报「找不到类型 Image」。</li><li><strong><code>public void TakeDamage(float damage)</code></strong>：这是<strong>给敌人调</strong>的接口。敌人那边一句 <code>player.TakeDamage(attackPower)</code>，就相当于「咬你一口」。写成 <code>public</code>，别的脚本才调得到。</li><li><strong>为什么玩家不自己去检测「谁撞我」</strong>：角色控制器的 <code>OnControllerColliderHit</code> 只在<strong>玩家自己移动撞到东西</strong>时才响——你站着不动、动物蹭过来，它一声都不响；跟随的动物又停在离你 2 米的地方，物理上压根没碰上。所以判定放到敌人那边（上一页的攻击范围），玩家这边只管「掉血」。</li><li><strong>为什么不加无敌时间</strong>：<code>TakeDamage</code> 只做「减血 + 刷新」，<strong>谁咬就扣谁那一口</strong>——三只同时扑上来就是一次 <code>−30</code>，血条当场掉三截，围上来的怪越多掉得越快。频率已经由敌人那边管住了（每只各自隔 1 秒才咬一次），玩家这边不用再拦。</li><li><strong>六只全围上来≈每秒 60 血</strong>：不到两秒就空。<strong>想扛久一点改敌人的攻击力或攻击间隔</strong>（比如 5 / 1.5 秒），这个脚本一个字都不用动。</li><li><strong>两条血量保护</strong>：开头 <code>if (CurrentHealth &lt;= 0) return;</code>——血空了就不再吃伤害，动物还在咬也没用（死亡怎么处理是课件21 的事）；扣完 <code>if (CurrentHealth &lt; 0) CurrentHealth = 0;</code>——防一次大伤害扣成负数，<code>fillAmount</code> 拿到负值会反向填充，看着像在回血。</li><li><strong><code>Start()</code> 里先满血</strong>：<code>CurrentHealth</code> 默认为 0，不初始化的话开局血条就是空的。</li><li><strong><code>UpdateHealth()</code></strong>：把当前血量换算成 0～1 填给 <code>fillAmount</code>。扣血、以后回血，都调这一个方法。</li></ol></div>
 <div class="step-img"><img src="images/课件20/玩家掉血.gif" alt="敌人扑上来咬一口，血条短一截" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
 <div class="ok-box">⚠️ 血一直不掉，按这个顺序查：① 敌人身上挂没挂 <code>EnemyData</code> ② <strong>攻击范围</strong>够不够——动物跟随时停在离你 2 米的地方，范围要大于 2 ③ 玩家身上的标签是不是 <code>Player</code>（代码靠它找你） ④「生命条填充图」槽位有没有拖东西 ⑤ 红条的图像类型是不是<strong>已填充</strong>。</div>
 </div></div>
