@@ -537,6 +537,7 @@ public class HealthChange : MonoBehaviour
     }
 
     // 扣血：敌人咬到时会调这个方法，扣完立刻刷新血条
+    // damage：这一口掉多少血，由敌人把它自己的攻击力传进来
     public void TakeDamage(float damage)
     {
         // 血已经空了，就不再吃伤害（动物还在咬也没用）

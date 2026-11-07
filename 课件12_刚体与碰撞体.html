@@ -547,6 +547,7 @@ function copyImgName(btn){
 public class CollisionLogger : MonoBehaviour
 {
     // 碰撞发生的瞬间，Unity 会自动调用这个函数
+    // other：撞上来的那个物体（下面用它的名字打印）
     void OnCollisionEnter(Collision other)
     {
         // 打印出被撞到的那个物体的名字
@@ -656,6 +657,7 @@ public class Move2D_Jump : MonoBehaviour
     }
 
     // ③ 落地判定：碰到地面（碰撞体）就重新允许起跳
+    // other：撞上来的那个东西，这里用不到，但 Unity 按这个签名调用，不能删
     void OnCollisionEnter(Collision other)
     {
         isGrounded = true;

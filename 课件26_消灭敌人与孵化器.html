@@ -437,6 +437,7 @@ function copyImgName(btn){
 <div class="card"><ol><li>子弹预制体加标签 <code>Bullet</code>、加 <code>Box Collider</code>（大小别太大，避免误伤玩家）</li><li>敌人加球形碰撞体（中心Y 0.5、半径0.4，方便射击）</li><li><code>EnemyAttacked.cs</code> 挂在 Enemy 上（基于 EnemySwitch 新增 <code>OnCollisionEnter</code>，碰撞即杀），移除旧脚本</li></ol></div><div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4304725120',this)">复制</button></div>
 <pre id="c_4304725120"><code class="language-csharp">// EnemyAttacked：子弹与敌人碰撞即杀死敌人（最简单击杀模式）
+// other：撞上来的那个物体（下面只认 Bullet 标签）
 void OnCollisionEnter(Collision other) {
     if (other.gameObject.CompareTag(&quot;Bullet&quot;)) { /* 杀敌 */ }
 }</code></pre>

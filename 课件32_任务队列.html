@@ -461,6 +461,7 @@ public class TaskOp {
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4347310208',this)">复制</button></div>
 <pre id="c_4347310208"><code class="language-csharp">public class TaskUpdateEvent : GameEvent { public TaskId id; public int subId; }
 // TaskManager
+// evt：事件带来的数据——evt.id 是哪个任务，evt.subId 是走到第几步
 void OnTaskUpdate(TaskUpdateEvent evt) {
     if (executingTaskOps.TryGetValue(evt.id, out var task)) {
         task.Update(evt.subId);
@@ -495,7 +496,8 @@ void OnTaskUpdate(TaskUpdateEvent evt) {
 }
 public class CountingTaskOp : TaskOp {
     private CountedInfo[] infos; private bool[] isOks;
-    public override void Update(int subId) {
+    // subId：这个任务走到第几个子步骤了
+public override void Update(int subId) {
         if (isCompleted) return;
         isOks[subId] = infos[subId].Update();
         isCompleted = isOks.All(x =&gt; x); // 全部达标才完成

@@ -452,6 +452,7 @@ function copyImgName(btn){
     public TextMeshProUGUI content;
     public GameObject FPrompt;
     bool isTrigger, isF, isTalk;
+    // c：走进对话范围的物体（下面只认玩家）
     void OnTriggerEnter(Collider c) {
         if (c.tag != &quot;Player&quot;) return;
         isTrigger = true;

@@ -469,11 +469,13 @@ function copyImgName(btn){
         var col = GetComponent&lt;Collider&gt;(); col.isTrigger = true;
         if (pickupPrompt) pickupPrompt.SetActive(false);
     }
+    // c：走进拾取范围的物体（下面只认玩家）
     void OnTriggerEnter(Collider c) {
         if (c.tag != &quot;Player&quot;) return;
         isTrigger = true;
         if (pickupPrompt) { pickupPrompt.SetActive(true); text.text = &quot;按F键拾取&quot;; }
     }
+    // c：离开拾取范围的物体（下面用它清掉提示）
     void OnTriggerExit(Collider c) {
         if (c.tag != &quot;Player&quot;) return;
         isTrigger = false;

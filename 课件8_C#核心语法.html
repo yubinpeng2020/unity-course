@@ -907,6 +907,7 @@ foreach (int s in scores)   // 自动取每个元素
 <pre id="c_80391001"><code class="language-csharp">public class NewBehaviourScript : MonoBehaviour
 {
     // 方法 = 一段可复用的功能：输入参数 → 处理 → 输出结果
+    // a、b：要相加的两个数
     public int Add(int a, int b)
     {
         return a + b;
@@ -934,11 +935,13 @@ foreach (int s in scores)   // 自动取每个元素
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_80391002',this)">复制</button></div>
 <pre id="c_80391002"><code class="language-csharp">public class NewBehaviourScript : MonoBehaviour
 {
+    // a、b：要相加的两个数
     public int Add(int a, int b)
     {
         return a + b;
     }
 
+    // a、b：要相加的两个数（这个只打印，不返回）
     void PrintSum(int a, int b)
     {
         Debug.Log(a + b);
@@ -1248,6 +1251,7 @@ class Program {
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4346043712',this)">复制</button></div>
 <pre id="c_4346043712"><code class="language-csharp">using System;
 class Program {
+    // a、b：要求最大公约数的两个整数
     static int GCD(int a, int b) {
         while (b != 0) {
             int t = b;

@@ -456,6 +456,7 @@ public class ExitLevel : MonoBehaviour
 {
     public string startSceneName = "StartScene";   // 启动场景名
 
+    // other：走进撤离范围的那个物体（下面只认玩家）
     void OnTriggerEnter(Collider other)
     {
         // 只有玩家进来才算通关（Player 标签在课件19 已配好）
@@ -517,6 +518,7 @@ public class ExitLevel : MonoBehaviour
     public string startSceneName = "StartScene";
     public GameObject clearEffectPrefab;          // 通关特效预制体
 
+    // other：走进撤离范围的那个物体（下面只认玩家）
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))

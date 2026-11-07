@@ -468,6 +468,7 @@ function copyImgName(btn){
 public class WeaponchangeEvent : GameEvent { public GameItem w; }
 // WeaponController
 void Awake() { EventManager.AddListener&lt;WeaponchangeEvent&gt;(equipWeapon); }
+// evt：换枪事件带来的数据，evt.w 就是新武器
 void equipWeapon(WeaponchangeEvent evt) {
     GameObject w = evt.w.gameObject;
     bulletStartPoint = w.transform.Find(&quot;BulletStartPoint&quot;);
@@ -485,6 +486,7 @@ void equipWeapon(WeaponchangeEvent evt) {
 <div class="card"><p>再次按同一数字键收起枪；不持枪时隐藏准心：</p></div><div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4373899776',this)">复制</button></div>
 <pre id="c_4373899776"><code class="language-csharp">public GameObject CenterPoint;
+// evt：换枪事件带来的数据，evt.w 就是新武器
 void equipWeapon(WeaponchangeEvent evt) {
     WeaponData newData = evt.w.GetComponent&lt;WeaponData&gt;();
     Destroy(weapon);
