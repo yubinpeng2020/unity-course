@@ -407,9 +407,9 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <a href="#" class="nav-link" data-page="9"><span class="nav-status"></span>7. 血条填充 · FillImageHealth</a>
 <a href="#" class="nav-link" data-page="10"><span class="nav-status"></span>8. 生命图标 · HealthIcon</a>
 <a href="#" class="nav-link" data-page="11"><span class="nav-status"></span>9. 摆放验收 · 让血条待在左下角</a>
-<a href="#" class="nav-link" data-page="12"><span class="nav-status"></span>10. 敌人准备 · 碰撞体与 Player 标签</a>
-<a href="#" class="nav-link" data-page="13"><span class="nav-status"></span>11. 敌人攻击力 · EnemyData</a>
-<a href="#" class="nav-link" data-page="14"><span class="nav-status"></span>12. 血条原理 · 只改一个 fillAmount</a>
+<a href="#" class="nav-link" data-page="12"><span class="nav-status"></span>10. 血条原理 · 只改一个 fillAmount</a>
+<a href="#" class="nav-link" data-page="13"><span class="nav-status"></span>11. 敌人准备 · 碰撞体与 Player 标签</a>
+<a href="#" class="nav-link" data-page="14"><span class="nav-status"></span>12. 敌人攻击力 · EnemyData</a>
 <a href="#" class="nav-link" data-page="15"><span class="nav-status"></span>13. 玩家扣血 · HealthChange</a>
 <a href="#" class="nav-link" data-page="16"><span class="nav-status"></span>14. 作业 · 血量数字与低血闪烁 <span class="nav-badge homework">作业</span></a>
 <a href="#" class="nav-link nav-special" data-page="17"><span class="nav-status"></span>结束页</a>
@@ -647,14 +647,89 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <div class="ok-box">💡 血条大小不合适、位置偏了，<strong>不要改三个子对象</strong>，改 <code>PlayerHealth</code> 一个的宽度和位置就行——底板和红条是拉伸的，会跟着一起变。这就是套一层父对象的好处。</div>
 </div></div>
 <div class="slide" data-page="12"><div class="slide-inner markable">
+<h1>血条原理 · 只改一个 fillAmount</h1>
+<div class="card"><p>血条摆好了，可它一直是满的——因为还没有东西能让它变短。这一页把玩家这一侧的管血脚本建起来：<strong>血量存在哪、血条又怎么跟着变</strong>，全在这一个文件里。先建好挂上，再回头看它整段长什么样。</p></div>
+<div class="card"><h3>① 先建脚本，挂到 Player 身上</h3><p>在项目窗口右键 → <strong>创建（Create）→ C# 脚本</strong>，命名 <code>HealthChange</code>（大小写要和类名一致），再把它<strong>拖到层级里的 Player 上</strong>。挂好之后，检查器里就会出现这个脚本的组件和它那几个字段——下面要讲的代码就装在这个文件里。</p><div class="step-img"><img src="images/课件20/玩家1-挂HealthChange.png" alt="HealthChange 脚本挂在 Player 对象上" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>先看全貌：整段脚本长这样</h3><p>这一课的脚本只有一个文件 <code>HealthChange.cs</code>，全部内容就是下面这段。不用逐行读懂，先认个脸熟——后面几页都是围着它转的。</p><div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_healthchange_peek',this)">复制</button></div>
+<pre id="c20_healthchange_peek"><code class="language-csharp">using UnityEngine;
+using UnityEngine.UI;   // 要用 Image，必须带上这一行
+
+public class HealthChange : MonoBehaviour
+{
+    public float MaxHealth = 100f;          // 满血
+    public float CurrentHealth;             // 当前血量
+    public Image healthFillImage;           // 血条上那条红条，检查器里拖进来
+    public float hitInvincible = 0.2f;      // 挨咬之后的无敌时间（秒）
+
+    private float lastHitTime;              // 上一次挨咬的时刻
+
+    void Start()
+    {
+        CurrentHealth = MaxHealth;          // 开局满血
+        UpdateHealth();
+    }
+
+    // 扣血：敌人咬到时会调这个方法，扣完立刻刷新血条
+    public void TakeDamage(float damage)
+    {
+        // 血已经空了，就不再吃伤害（动物还在咬也没用）
+        if (CurrentHealth &lt;= 0) return;
+
+        // 无敌时间内的伤害直接作废：多只一起扑上来，不会一瞬间清空
+        if (Time.time - lastHitTime &lt; hitInvincible) return;
+        lastHitTime = Time.time;
+
+        CurrentHealth = CurrentHealth - damage;
+        if (CurrentHealth &lt; 0) CurrentHealth = 0;
+        UpdateHealth();
+    }
+
+    // 把血量换算成 0~1，交给红条
+    void UpdateHealth()
+    {
+        if (healthFillImage != null)
+        {
+            healthFillImage.fillAmount = CurrentHealth / MaxHealth;
+        }
+    }
+}</code></pre>
+</div><p>血条相关的变量只有三个，先记住它们各自是什么、谁给它值（脚本里另外还有两个跟<strong>受击</strong>有关的字段，后面逐段看再讲）：</p><table><thead><tr><th>变量</th><th>是什么</th><th>值从哪来</th></tr></thead><tbody><tr><td><code>MaxHealth</code></td><td>满血是多少</td><td>脚本里默认 <code>100</code>，检查器里也能改</td></tr><tr><td><code>CurrentHealth</code></td><td>现在还剩多少血</td><td><code>Start()</code> 里先设成满血，被撞时减</td></tr><tr><td><code>healthFillImage</code></td><td>红条那个 <code>Image</code> 组件</td><td>检查器里把 <code>FillImageHealth</code> 拖进槽位</td></tr></tbody></table></div>
+<div class="card"><p>整段脚本不到三十行，跟血条长短真正有关的只有<strong>一句</strong>。血条变短这件事 Unity 已经替我们算好了：只要给<strong>填充总数（fillAmount）</strong> 一个 0～1 的数，它自己把红条画到相应长度。所以要写的只有：</p><div class="prompt-box">
+<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_fill',this)">复制</button></div>
+<pre id="c20_fill"><code class="language-csharp">healthFillImage.fillAmount = CurrentHealth / MaxHealth;</code></pre>
+</div><p>血量 100、满血 100，除出来是 <code>1</code>，满格；50 / 100 是 <code>0.5</code>，一半；0 就是空的。</p></div>
+<svg viewBox="0 0 680 264" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:14px auto 8px;font-family:inherit" role="img" aria-label="fillAmount 为1、0.5、0.15时血条分别显示满格、一半和一小截">
+<rect x="1" y="1" width="678" height="262" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
+<text x="24" y="30" font-size="14" font-weight="700" fill="var(--accent2)">fillAmount 一个数，决定血条多长</text>
+<rect x="40" y="52" width="360" height="26" rx="4" fill="var(--text)" opacity="0.15"/>
+<rect class="s14-b1" data-anim x="40" y="52" width="360" height="26" rx="4" fill="var(--red)" opacity="0.9"/>
+<text class="s14-t1" data-anim x="416" y="70" font-size="12" font-weight="700" fill="var(--text)">fillAmount = 1</text>
+<text x="540" y="70" font-size="12" fill="var(--text-muted)">血量 100 / 100</text>
+<rect x="40" y="110" width="360" height="26" rx="4" fill="var(--text)" opacity="0.15"/>
+<rect class="s14-b2" data-anim x="40" y="110" width="180" height="26" rx="4" fill="var(--red)" opacity="0.9"/>
+<text class="s14-t2" data-anim x="416" y="128" font-size="12" font-weight="700" fill="var(--text)">fillAmount = 0.5</text>
+<text x="540" y="128" font-size="12" fill="var(--text-muted)">血量 50 / 100</text>
+<rect x="40" y="168" width="360" height="26" rx="4" fill="var(--text)" opacity="0.15"/>
+<rect class="s14-b3" data-anim x="40" y="168" width="54" height="26" rx="4" fill="var(--red)" opacity="0.9"/>
+<text class="s14-t3" data-anim x="416" y="186" font-size="12" font-weight="700" fill="var(--text)">fillAmount = 0.15</text>
+<text x="540" y="186" font-size="12" fill="var(--text-muted)">血量 15 / 100</text>
+<text x="40" y="222" font-size="11" fill="var(--text-muted)">灰底是底板 BackgroundImage，红条是 FillImageHealth</text>
+<text x="40" y="242" font-size="11" fill="var(--accent)">红条从左往右缩，是因为填充方法选了「水平」、填充原点选了「左」</text>
+</svg>
+<div class="anim-replay-bar"><button type="button" class="anim-replay" onclick="replayAnim(this)" aria-label="重播这张图的动效">↻ 重播动效</button></div>
+<div class="card"><h3>这就是游戏 UI 的分工</h3><table><thead><tr><th>谁</th><th>负责</th><th>本课对应</th></tr></thead><tbody><tr><td><strong>数据</strong></td><td>血量还剩多少</td><td><code>HealthChange</code> 里的 <code>CurrentHealth</code></td></tr><tr><td><strong>显示</strong></td><td>把数字画成一根条</td><td><code>FillImageHealth</code> 的 <code>fillAmount</code></td></tr><tr><td><strong>联系</strong></td><td>一句赋值</td><td><code>fillAmount = CurrentHealth / MaxHealth</code></td></tr></tbody></table><p>把「数据」和「显示」分开，好处是改显示不用动数据：想把血条换成圆环、换成数字百分比，只改 UI 就行，脚本那行公式一个字都不用改。</p></div>
+<div class="ok-box">⚠️ 分母一定是<strong>满血 <code>MaxHealth</code></strong>，不是当前血量。写成 <code>CurrentHealth / CurrentHealth</code> 永远是 1，血条永远满格——这个错很难一眼看出来，因为画面「看起来很正常」。</div>
+</div></div>
+<div class="slide" data-page="13"><div class="slide-inner markable">
 <h1>敌人准备 · 碰撞体与 Player 标签</h1>
-<div class="card"><p>血条搭好了，可它一直是满的——因为还没人扣血。这一课让动物<strong>扑到你身边咬一口</strong>。动手之前先确认两样东西：</p><ul><li><strong>碰撞体（Collider）</strong>：动物的身子是「实心」的，玩家撞不进动物里，也不会和它叠在一起</li><li><strong>Player 标签（Tag）</strong>：下一节的代码要让动物<strong>自己找到玩家</strong>，靠的就是玩家身上这个标签</li></ul></div>
+<div class="card"><p>血条和扣血的脚本都齐了，可它还是满的——因为<strong>还没人真去扣</strong>。这一课让动物<strong>扑到你身边咬一口</strong>。动手之前先确认两样东西：</p><ul><li><strong>碰撞体（Collider）</strong>：动物的身子是「实心」的，玩家撞不进动物里，也不会和它叠在一起</li><li><strong>Player 标签（Tag）</strong>：下一节的代码要让动物<strong>自己找到玩家</strong>，靠的就是玩家身上这个标签</li></ul></div>
 <div class="card"><h3>① 六个动物的碰撞体早就有了</h3><p>不用新加——<strong>课件16</strong> 给动物建「空壳」的时候，就把 <strong>盒型碰撞体（Box Collider）</strong> 一起加上去了，六种动物（<code>NewCat</code>、<code>NewChiken</code>、<code>NewCow</code>、<code>NewElephent</code>、<code>NewLLama</code>、<code>NewPig</code>）全都有，边框也照着身子拖过。这一课只做<strong>确认</strong>。</p><ul><li><strong>确认</strong>：双击预制体进去，选中<strong>最外层那个空壳</strong>（跟 <code>AnimalRoam</code> 这些脚本同一层，不是它里面的模型），检查器里能看到<strong>盒型碰撞体</strong>，场景里那圈绿框裹着动物</li><li><strong>万一被删了</strong>：添加组件 → 盒型碰撞体（Box Collider），点「编辑碰撞体（Edit Collider）」把绿框拖到贴合——课件16 做过的动作</li></ul><div class="step-img"><img src="images/课件20/敌人1-盒型碰撞体.png" alt="六个动物预制体的空壳上都有盒型碰撞体，绿框裹住动物" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>② 千万别勾 Is Trigger</h3><p>盒型碰撞体上有一个 <strong>是触发器（Is Trigger）</strong> 勾选框，<strong>不要勾</strong>。</p><p>勾上之后这个碰撞体就不再「挡人」了：玩家会直接从动物身子里穿过去，两只叠在一起，看起来像动物根本没有实体。</p></div>
 <div class="card"><h3>③ 确认玩家身上有 Player 标签</h3><ol><li>在层级（Hierarchy）里选中 <code>Player</code></li><li>看检查器最上方的 <strong>标签（Tag）</strong> 下拉，是不是 <code>Player</code>；不是就选成 <code>Player</code></li></ol><p><code>Player</code> 是 Unity <strong>自带</strong>的标签，不用新建，下拉里直接有。<strong>名字和标签是两回事</strong>：对象可以叫 Player 而标签仍是 <code>Untagged</code>，代码只认标签、不认名字。</p><p>为什么现在要确认它：下一节 <code>EnemyData</code> 里那句 <code>FindGameObjectWithTag("Player")</code> 就是靠它找到你——标签不对，动物找不到玩家，血永远不会掉。课件14 让动物找玩家，用的也是同一个标签。</p><div class="step-img"><img src="images/课件20/玩家0-Player标签.png" alt="选中 Player，检查器顶部的标签下拉选为 Player" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="ok-box">⚠️ <strong>预制体</strong>和<strong>场景</strong>是两个地方，改哪边结果不一样：<br>· <strong>双击预制体进去改</strong>（上面两步就是这么做的）：六个各改一次，场景里那几只、以及以后生成中心刷出来的，<strong>全都跟着变</strong>，不用管覆盖。<br>· <strong>在场景里点中某只动物改</strong>：那只是这一只的「覆盖（Overrides）」，预制体本身没动——要在检查器顶部点 <strong>覆盖（Overrides）→ 应用全部（Apply All）</strong> 才写回预制体。<br>· ③ 改的是场景里的 <code>Player</code>，它不是预制体，直接改就生效。</div>
 </div></div>
-<div class="slide" data-page="13"><div class="slide-inner markable">
+<div class="slide" data-page="14"><div class="slide-inner markable">
 <h1>敌人攻击力 · EnemyData</h1>
 <div class="card"><p>血条搭好了、碰撞体也确认过了，先看清<strong>一次咬血到底是怎么发生的</strong>：<strong>判断</strong>是敌人自己做的，<strong>结算</strong>落在玩家身上。每一口多疼、多久咬一次，写在敌人自己的数据脚本里——调难度只改这几个数，玩家那边一个字都不用动。</p></div>
 <svg viewBox="0 0 680 340" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:14px auto 8px;font-family:inherit" role="img" aria-label="左边俯视图：玩家在中心，虚线圆半径 2.2 米是判定圈，动物追到 2 米处停下、已经在圈内；右边四步流程：敌人每帧量一次水平距离，距离不超过 2.2 米且距上次咬超过 1 秒才继续，然后调用玩家的 TakeDamage，玩家扣血并让 fillAmount 变小、血条短一截">
@@ -696,7 +771,7 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <rect class="a-g4" data-anim x="300" y="272" width="356" height="48" rx="8" fill="none" stroke="var(--green)" stroke-width="2" opacity="0"/>
 </svg>
 <div class="anim-replay-bar"><button type="button" class="anim-replay" onclick="replayAnim(this)" aria-label="重播这张图的动效">↻ 重播动效</button></div>
-<div class="card"><h3>① 新建 EnemyData.cs，挂到敌人身上</h3><p>项目（Project）窗口右键 → <strong>创建（Create）→ C# 脚本</strong>，命名 <code>EnemyData</code>（大小写要和类名一致）。写完把 <strong>6 个动物预制体</strong>一起选中，<strong>添加组件（Add Component）</strong> 搜 <code>Enemy Data</code>（组件列表里中间会多一个空格），一次给六个都挂上。检查器里核对三个数：<strong>攻击力（Attack Power）</strong> <code>10</code>、<strong>攻击间隔（Attack Interval）</strong> <code>1</code>、<strong>攻击范围（Attack Range）</strong> <code>2.2</code>——代码里就是这几个默认值，照着核一遍就行。</p><div class="step-img"><img src="images/课件20/敌人3-EnemyData组件.png" alt="6 个动物预制体一起选中后添加 Enemy Data 组件，检查器里攻击力 10、攻击间隔 1、攻击范围 2.2" onclick="zoomQR(this)" style="cursor:pointer;background:#fff" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>① 新建 EnemyData.cs，挂到敌人身上</h3><p>项目（Project）窗口右键 → <strong>创建（Create）→ C# 脚本</strong>，命名 <code>EnemyData</code>（大小写要和类名一致）。写完把 <strong>6 个动物预制体</strong>一起选中，<strong>添加组件（Add Component）</strong> 搜 <code>Enemy Data</code>（组件列表里中间会多一个空格），一次给六个都挂上。检查器里核对三个数：<strong>攻击力（Attack Power）</strong> <code>10</code>、<strong>攻击间隔（Attack Interval）</strong> <code>1</code>、<strong>攻击范围（Attack Range）</strong> <code>2.2</code>——代码里就是这几个默认值，照着核一遍就行。</p><div class="step-img"><img src="images/课件20/敌人3-EnemyData组件.png" alt="6 个动物预制体一起选中后添加 Enemy Data 组件，检查器里攻击力 10、攻击间隔 1、攻击范围 2.2" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_enemydata',this)">复制</button></div>
 <pre id="c20_enemydata"><code class="language-csharp">using UnityEngine;
@@ -744,84 +819,9 @@ public class EnemyData : MonoBehaviour
 <div class="card"><h3>③ 咬下去的同时，把动作播出来</h3><p>光看血条往下掉，看不出是哪一只在咬你。动物身上早就有 <code>AnimalAnim</code>——课件18 挂上去、专管动画的那个脚本，里面就写着 <code>PlayAttack()</code>。咬的时候喊一声就行，上面的全码里已经加好了，就两处：</p><ul><li><code>Start()</code> 里补 <code>anim = GetComponent&lt;AnimalAnim&gt;();</code>——动画脚本也在自己身上，跟 <code>AnimalFollow</code> 拿它的方式一样</li><li>咬的那一行前面加 <code>anim.PlayAttack();</code>——先动起来，再让玩家掉血</li></ul><p><code>PlayAttack()</code> 里是 <code>SetTrigger("Attack")</code>，靠 Animator 里的 <strong>Attack 触发器</strong>——课件18 加的。<strong>每只动物的控制器都要加过这个参数</strong>：只给猫配了，牛和马咬你就不带动静，缺的回课件18 补上。</p></div>
 <div class="card"><h3>④ 攻击范围为什么填 2.2</h3><p>课件17 的跟随是「走到离你 2 米就停」，动物根本不会贴到你身上。所以攻击范围要<strong>略大于 2</strong>——填 <code>2.2</code>，动物停在那圈上就已经能咬到你了。</p><p>这也是大多数游戏的做法：判定用「范围」而不是「模型真的碰上」，看着像被咬到就够了。想让动物必须撞上来才掉血，把范围调到 <code>1.5</code> 以下即可——但那样只有你主动凑过去才会掉血。</p></div><div class="ok-box">💡 调难度只改这几个数：攻击力 20 + 间隔 2 秒 = 疼但慢；攻击力 5 + 间隔 0.5 秒 = 不疼但粘人。玩家脚本一个字都不用动。<br>本课玩家<strong>没有防御力</strong>，所以攻击力就是实际掉的血；以后要是加了护甲，扣血公式写在玩家的 <code>TakeDamage</code> 里，不用回头改敌人。</div>
 </div></div>
-<div class="slide" data-page="14"><div class="slide-inner markable">
-<h1>血条原理 · 只改一个 fillAmount</h1>
-<div class="card"><p>敌人已经会咬人了，回到玩家这一侧：<strong>血量存在哪、血条又怎么跟着变</strong>。先把脚本建起来挂上，再回头看它整段长什么样。</p></div>
-<div class="card"><h3>① 先建脚本，挂到 Player 身上</h3><p>在项目窗口右键 → <strong>创建（Create）→ C# 脚本</strong>，命名 <code>HealthChange</code>（大小写要和类名一致），再把它<strong>拖到层级里的 Player 上</strong>。挂好之后，检查器里就会出现这个脚本的组件和它那几个字段——下面要讲的代码就装在这个文件里。</p><div class="step-img"><img src="images/课件20/玩家1-挂HealthChange.png" alt="HealthChange 脚本挂在 Player 对象上" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
-<div class="card"><h3>先看全貌：整段脚本长这样</h3><p>这一课的脚本只有一个文件 <code>HealthChange.cs</code>，全部内容就是下面这段。不用逐行读懂，先认个脸熟——后面几页都是围着它转的。</p><div class="prompt-box">
-<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_healthchange_peek',this)">复制</button></div>
-<pre id="c20_healthchange_peek"><code class="language-csharp">using UnityEngine;
-using UnityEngine.UI;   // 要用 Image，必须带上这一行
-
-public class HealthChange : MonoBehaviour
-{
-    public float MaxHealth = 100f;          // 满血
-    public float CurrentHealth;             // 当前血量
-    public Image healthFillImage;           // 血条上那条红条，检查器里拖进来
-    public float hitInvincible = 0.2f;      // 挨咬之后的无敌时间（秒）
-
-    private float lastHitTime;              // 上一次挨咬的时刻
-
-    void Start()
-    {
-        CurrentHealth = MaxHealth;          // 开局满血
-        UpdateHealth();
-    }
-
-    // 扣血：敌人咬到时会调这个方法，扣完立刻刷新血条
-    public void TakeDamage(float damage)
-    {
-        // 血已经空了，就不再吃伤害（动物还在咬也没用）
-        if (CurrentHealth &lt;= 0) return;
-
-        // 无敌时间内的伤害直接作废：多只一起扑上来，不会一瞬间清空
-        if (Time.time - lastHitTime &lt; hitInvincible) return;
-        lastHitTime = Time.time;
-
-        CurrentHealth = CurrentHealth - damage;
-        if (CurrentHealth &lt; 0) CurrentHealth = 0;
-        UpdateHealth();
-    }
-
-    // 把血量换算成 0~1，交给红条
-    void UpdateHealth()
-    {
-        if (healthFillImage != null)
-        {
-            healthFillImage.fillAmount = CurrentHealth / MaxHealth;
-        }
-    }
-}</code></pre>
-</div><p>血条相关的变量只有三个，先记住它们各自是什么、谁给它值（脚本里另外还有两个跟<strong>受击</strong>有关的字段，下一页逐段看再讲）：</p><table><thead><tr><th>变量</th><th>是什么</th><th>值从哪来</th></tr></thead><tbody><tr><td><code>MaxHealth</code></td><td>满血是多少</td><td>脚本里默认 <code>100</code>，检查器里也能改</td></tr><tr><td><code>CurrentHealth</code></td><td>现在还剩多少血</td><td><code>Start()</code> 里先设成满血，被撞时减</td></tr><tr><td><code>healthFillImage</code></td><td>红条那个 <code>Image</code> 组件</td><td>检查器里把 <code>FillImageHealth</code> 拖进槽位</td></tr></tbody></table></div>
-<div class="card"><p>整段脚本不到三十行，跟血条长短真正有关的只有<strong>一句</strong>。血条变短这件事 Unity 已经替我们算好了：只要给<strong>填充总数（fillAmount）</strong> 一个 0～1 的数，它自己把红条画到相应长度。所以要写的只有：</p><div class="prompt-box">
-<div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_fill',this)">复制</button></div>
-<pre id="c20_fill"><code class="language-csharp">healthFillImage.fillAmount = CurrentHealth / MaxHealth;</code></pre>
-</div><p>血量 100、满血 100，除出来是 <code>1</code>，满格；50 / 100 是 <code>0.5</code>，一半；0 就是空的。</p></div>
-<svg viewBox="0 0 680 264" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:14px auto 8px;font-family:inherit" role="img" aria-label="fillAmount 为1、0.5、0.15时血条分别显示满格、一半和一小截">
-<rect x="1" y="1" width="678" height="262" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
-<text x="24" y="30" font-size="14" font-weight="700" fill="var(--accent2)">fillAmount 一个数，决定血条多长</text>
-<rect x="40" y="52" width="360" height="26" rx="4" fill="var(--text)" opacity="0.15"/>
-<rect class="s14-b1" data-anim x="40" y="52" width="360" height="26" rx="4" fill="var(--red)" opacity="0.9"/>
-<text class="s14-t1" data-anim x="416" y="70" font-size="12" font-weight="700" fill="var(--text)">fillAmount = 1</text>
-<text x="540" y="70" font-size="12" fill="var(--text-muted)">血量 100 / 100</text>
-<rect x="40" y="110" width="360" height="26" rx="4" fill="var(--text)" opacity="0.15"/>
-<rect class="s14-b2" data-anim x="40" y="110" width="180" height="26" rx="4" fill="var(--red)" opacity="0.9"/>
-<text class="s14-t2" data-anim x="416" y="128" font-size="12" font-weight="700" fill="var(--text)">fillAmount = 0.5</text>
-<text x="540" y="128" font-size="12" fill="var(--text-muted)">血量 50 / 100</text>
-<rect x="40" y="168" width="360" height="26" rx="4" fill="var(--text)" opacity="0.15"/>
-<rect class="s14-b3" data-anim x="40" y="168" width="54" height="26" rx="4" fill="var(--red)" opacity="0.9"/>
-<text class="s14-t3" data-anim x="416" y="186" font-size="12" font-weight="700" fill="var(--text)">fillAmount = 0.15</text>
-<text x="540" y="186" font-size="12" fill="var(--text-muted)">血量 15 / 100</text>
-<text x="40" y="222" font-size="11" fill="var(--text-muted)">灰底是底板 BackgroundImage，红条是 FillImageHealth</text>
-<text x="40" y="242" font-size="11" fill="var(--accent)">红条从左往右缩，是因为填充方法选了「水平」、填充原点选了「左」</text>
-</svg>
-<div class="anim-replay-bar"><button type="button" class="anim-replay" onclick="replayAnim(this)" aria-label="重播这张图的动效">↻ 重播动效</button></div>
-<div class="card"><h3>这就是游戏 UI 的分工</h3><table><thead><tr><th>谁</th><th>负责</th><th>本课对应</th></tr></thead><tbody><tr><td><strong>数据</strong></td><td>血量还剩多少</td><td><code>HealthChange</code> 里的 <code>CurrentHealth</code></td></tr><tr><td><strong>显示</strong></td><td>把数字画成一根条</td><td><code>FillImageHealth</code> 的 <code>fillAmount</code></td></tr><tr><td><strong>联系</strong></td><td>一句赋值</td><td><code>fillAmount = CurrentHealth / MaxHealth</code></td></tr></tbody></table><p>把「数据」和「显示」分开，好处是改显示不用动数据：想把血条换成圆环、换成数字百分比，只改 UI 就行，脚本那行公式一个字都不用改。</p></div>
-<div class="ok-box">⚠️ 分母一定是<strong>满血 <code>MaxHealth</code></strong>，不是当前血量。写成 <code>CurrentHealth / CurrentHealth</code> 永远是 1，血条永远满格——这个错很难一眼看出来，因为画面「看起来很正常」。</div>
-</div></div>
 <div class="slide" data-page="15"><div class="slide-inner markable">
 <h1>玩家扣血 · HealthChange</h1>
-<div class="card"><p>脚本在原理页已经建好、挂到 Player 上了（<strong>完整代码见上一页</strong>）。这一页把它接上血条、再逐段看清它在干什么——玩家这边只做三件事：<strong>开局满血、被咬时扣血、把血量画成血条</strong>。</p></div>
+<div class="card"><p>脚本在原理页已经建好、挂到 Player 上了（<strong>完整代码在「血条原理」那一页</strong>）。这一页把它接上血条、再逐段看清它在干什么——玩家这边只做三件事：<strong>开局满血、被咬时扣血、把血量画成血条</strong>。</p></div>
 
 <div class="card"><h3>① 把红条拖进「生命条填充图」槽位</h3><p>脚本挂上之后，检查器里多出一个 <strong>生命条填充图（Health Fill Image）</strong> 槽位。把层级里的 <code>FillImageHealth</code> <strong>拖到这个槽位</strong>——脚本就是靠这个引用找到红条的。</p><p>不拖会怎样：代码里有 <code>if (healthFillImage != null)</code> 挡着，所以不会报错，但<strong>血条一动不动</strong>——血在扣，只是没画出来。</p><div class="step-img"><img src="images/课件20/玩家2-拖入填充图.png" alt="把 FillImageHealth 拖到 HealthChange 的生命条填充图槽位" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>② 逐段看</h3><ol><li><strong><code>using UnityEngine.UI;</code></strong>：<code>Image</code> 这个类型在 <code>UnityEngine.UI</code> 里，不写这一行，字段那一行就报「找不到类型 Image」。</li><li><strong><code>public void TakeDamage(float damage)</code></strong>：这是<strong>给敌人调</strong>的接口。敌人那边一句 <code>player.TakeDamage(attackPower)</code>，就相当于「咬你一口」。写成 <code>public</code>，别的脚本才调得到。</li><li><strong>为什么玩家不自己去检测「谁撞我」</strong>：角色控制器的 <code>OnControllerColliderHit</code> 只在<strong>玩家自己移动撞到东西</strong>时才响——你站着不动、动物蹭过来，它一声都不响；跟随的动物又停在离你 2 米的地方，物理上压根没碰上。所以判定放到敌人那边（上一页的攻击范围），玩家这边只管「掉血」。</li><li><strong><code>hitInvincible</code> 无敌帧</strong>：挨咬之后 <code>0.2</code> 秒内的后续伤害<strong>直接作废</strong>。没有它，五只动物同一瞬间扑上来就是「一巴掌掉 50 血」；有了它，五口会排队结算，血条一小截一小截地掉。<strong>把这个数调大＝更难死</strong>，检查器里能改。</li><li><strong>两条血量保护</strong>：开头 <code>if (CurrentHealth &lt;= 0) return;</code>——血空了就不再吃伤害，动物还在咬也没用（死亡怎么处理是课件21 的事）；扣完 <code>if (CurrentHealth &lt; 0) CurrentHealth = 0;</code>——防一次大伤害扣成负数，<code>fillAmount</code> 拿到负值会反向填充，看着像在回血。</li><li><strong><code>Start()</code> 里先满血</strong>：<code>CurrentHealth</code> 默认为 0，不初始化的话开局血条就是空的。</li><li><strong><code>UpdateHealth()</code></strong>：把当前血量换算成 0～1 填给 <code>fillAmount</code>。扣血、以后回血，都调这一个方法。</li></ol></div>
