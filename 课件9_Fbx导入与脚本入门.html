@@ -379,26 +379,34 @@ function copyImgName(btn){
 <div class="container">
 <nav class="sidebar">
     <div class="sidebar-title">📘 课件9_Fbx导入与脚本入门</div>
-    <a href="#" class="nav-link nav-special" data-page="1"><span class="nav-status"></span>封面</a>
-<a href="#" class="nav-link" data-page="2"><span class="nav-status"></span>1. 本节学习目标 </a>
-<a href="#" class="nav-link" data-page="3"><span class="nav-status"></span>2. Fbx 三要素 </a>
-<a href="#" class="nav-link" data-page="4"><span class="nav-status"></span>3. 导入 Fbx 流程 </a>
-<a href="#" class="nav-link" data-page="5"><span class="nav-status"></span>4. 预览与缩放模型 </a>
-<a href="#" class="nav-link" data-page="6"><span class="nav-status"></span>5. 替换导入模型的材质与贴图 </a>
-<a href="#" class="nav-link" data-page="7"><span class="nav-status"></span>6. 从 Poly Haven 下载免费模型 </a>
-<a href="#" class="nav-link" data-page="8"><span class="nav-status"></span>7. 给游戏对象挂载脚本组件 </a>
-<a href="#" class="nav-link" data-page="10"><span class="nav-status"></span>8. 脚本组件的生命周期与日志输出 </a>
-<a href="#" class="nav-link" data-page="11"><span class="nav-status"></span>9. 游戏对象、组件与常用 API </a>
-<a href="#" class="nav-link" data-page="13"><span class="nav-status"></span>10. 让游戏对象匀速运动：向量 · Transform · Time </a>
-<a href="#" class="nav-link" data-page="18"><span class="nav-status"></span>11. 作业 · 自选模型，搭一个会绕圈的场景 <span class="nav-badge homework">作业</span></a>
-<a href="#" class="nav-link nav-special" data-page="19"><span class="nav-status"></span>结束页</a>
+<a href="#" class="nav-link nav-special" data-page="1"><span class="nav-status"></span>封面</a>
+<a href="#" class="nav-link" data-page="2"><span class="nav-status"></span>1. 本节学习目标</a>
+<a href="#" class="nav-link" data-page="3"><span class="nav-status"></span>2. Fbx 三要素</a>
+<a href="#" class="nav-link" data-page="4"><span class="nav-status"></span>3. 导入 Fbx 流程</a>
+<a href="#" class="nav-link" data-page="5"><span class="nav-status"></span>4. 预览与缩放模型</a>
+<a href="#" class="nav-link" data-page="6"><span class="nav-status"></span>5. 替换导入模型的材质与贴图</a>
+<a href="#" class="nav-link" data-page="7"><span class="nav-status"></span>6. Poly Haven · 去哪找免费模型</a>
+<a href="#" class="nav-link" data-page="8"><span class="nav-status"></span>7. 找模型 · 中文界面与筛选</a>
+<a href="#" class="nav-link" data-page="9"><span class="nav-status"></span>9. 下载、解压、导入工程</a>
+<a href="#" class="nav-link" data-page="10"><span class="nav-status"></span>9. 写第一个 C# 脚本 · 从建文件夹到类名一致</a>
+<a href="#" class="nav-link" data-page="11"><span class="nav-status"></span>10. 把脚本挂到游戏对象上</a>
+<a href="#" class="nav-link" data-page="12"><span class="nav-status"></span>11. 脚本的生命周期 · 谁在调用 Start 与 Update</a>
+<a href="#" class="nav-link" data-page="13"><span class="nav-status"></span>12. 用日志看清脚本在干什么 · Debug.Log</a>
+<a href="#" class="nav-link" data-page="14"><span class="nav-status"></span>13. 游戏对象、组件与常用 API</a>
+<a href="#" class="nav-link" data-page="15"><span class="nav-status"></span>14. 让船动起来 · 移动的本质与向量</a>
+<a href="#" class="nav-link" data-page="16"><span class="nav-status"></span>15. transform · 改位置与旋转</a>
+<a href="#" class="nav-link" data-page="17"><span class="nav-status"></span>16. Time.time 与 Time.deltaTime</a>
+<a href="#" class="nav-link" data-page="18"><span class="nav-status"></span>17. 匀速移动 · 每帧走 速度 × deltaTime</a>
+<a href="#" class="nav-link" data-page="19"><span class="nav-status"></span>18. 绕圈运动 · 一边前进一边转向</a>
+<a href="#" class="nav-link" data-page="20"><span class="nav-status"></span>19. 作业 · 自选模型，搭一个会绕圈的场景 <span class="nav-badge homework">作业</span></a>
+<a href="#" class="nav-link nav-special" data-page="21"><span class="nav-status"></span>结束页</a>
 
 </nav>
 <div class="main-area" id="mainArea">
     <div class="header-bar">
         <div class="progress-wrap">
             <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-            <span class="progress-text" id="progressText">0 / 11</span>
+            <span class="progress-text" id="progressText">0 / 19</span>
         </div>
         <div class="mobile-info" id="mobileInfo" onclick="mobileInfoTap()" style="cursor:pointer"><span class="mi-lesson"></span><span class="mi-sep">·</span><span class="mi-page"></span></div>
                 <button class="header-btn" id="flatBtn" onclick="toggleFlat()" title="切换分页 / 平铺（平铺便于打印导出 PDF）">📄 平铺</button>
@@ -476,18 +484,19 @@ function copyImgName(btn){
 <div class="ok-box">💡 带 Alpha 的贴图拖进 <strong>反射率（Albedo）</strong>，立刻出现透明镂空，无需手动抠图；想整体换色，改材质颜色比改贴图更快。</div>
 <div class="card"><h3>回看课件7：殊途同归</h3><p><strong>课件7 的做法</strong>：先建一个材质，再把各类贴图分别拖进对应槽位——颜色图进反射率（Albedo）、法线图进法线槽、高度图进高度槽……</p><p><strong>本课的做法</strong>：直接把贴图拖到物体上，Unity 自动建好材质并填进反射率。</p><p>两条路<strong>起点不同、终点一样</strong>：贴图最终都进材质的属性槽，靠「材质」这个中间层贴到模型上。</p></div>
 </div></div>
-<div class="slide" data-page="7"><div class="slide-inner markable">
-<h1>6. 从 Poly Haven 下载免费模型</h1>
+<div class="slide" data-page="7"><div class="slide-inner markable"><h1>Poly Haven · 去哪找免费模型</h1>
 <div class="ok-box">💡 自己建模很费时间。<strong>Poly Haven</strong> 提供大量<strong>免费（CC0）</strong>的 3D 模型，下载后直接导入 Unity 就能用。</div>
 <div class="card"><h3>Poly Haven 免费资源网站</h3><p>打开浏览器访问 <a href="https://polyhaven.com/zh" target="_blank" rel="noopener">https://polyhaven.com/zh</a>，这是一个完全免费、可商用的 3D 资源网站，可下载<strong>贴图</strong>、<strong>HDRI</strong> 和<strong>模型</strong>。</p></div>
 <img src="images/课件9/polyhaven访问网站.png" alt="访问 Poly Haven 网站" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="card"><h3>下载模型并导入 Unity</h3><p>按下面 6 步把免费模型下载并导入 Unity：</p></div>
+<div class="card"><h3>下载模型并导入 Unity</h3><p>按下面 6 步把免费模型下载并导入 Unity：</p></div></div></div>
+<div class="slide" data-page="8"><div class="slide-inner markable"><h1>找模型 · 中文界面与筛选</h1>
 <div class="card"><ul><li><strong>步骤一</strong>：在网站顶部点击右上角<strong>「国旗」按钮</strong>，选择<strong>「中文」</strong>，网页切换为中文显示</li></ul></div>
 <img src="images/课件9/polyhaven切换中文.png" alt="切换网页为中文" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><ul><li><strong>步骤二</strong>：在网站顶部选择<strong>「模型」</strong></li></ul></div>
 <img src="images/课件9/polyhaven选择模型.png" alt="选择模型" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><ul><li><strong>步骤三</strong>：在模型列表里选一个目标模型，可按<strong>类别</strong>筛选，比如「交通工具与运输」→「水上交通工具」→「帆船」</li></ul></div>
-<img src="images/课件9/polyhaven筛选模型.png" alt="按类别筛选模型" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<img src="images/课件9/polyhaven筛选模型.png" alt="按类别筛选模型" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="slide" data-page="9"><div class="slide-inner markable"><h1>下载、解压、导入工程</h1>
 <div class="card"><ul><li><strong>步骤四</strong>：进入详情页，点 <strong>Download（下载）</strong>，<strong>格式选 fbx</strong>，分辨率任选（如 1K / 2K）</li></ul></div>
 <img src="images/课件9/polyhaven下载选fbx.png" alt="下载模型并选 fbx 格式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><ul><li><strong>步骤五</strong>：解压下载包，把 fbx 与配套贴图放进项目 <code>Assets</code> 或 <code>Models</code> 文件夹；若弹出<strong>「NormalMap 设置」</strong>窗口，点击 <strong>Fix now</strong></li></ul></div>
@@ -495,12 +504,8 @@ function copyImgName(btn){
 <div class="card"><ul><li><strong>步骤六</strong>：把 fbx 从 Project 拖到 Scene / Hierarchy 即可使用</li></ul></div>
 <img src="images/课件9/polyhaven拖入场景.png" alt="把 fbx 拖入场景" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="ok-box">✅ 模型自带材质与贴图，导入后可直接用；想换皮肤，按「替换导入模型的材质与贴图」操作。</div>
-<img src="images/课件9/polyhaven模型自带贴图.png" alt="模型自带的材质与贴图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-</div></div>
-<div class="slide" data-page="8"><div class="slide-inner markable">
-<h1>给游戏对象挂载脚本组件</h1>
+<img src="images/课件9/polyhaven模型自带贴图.png" alt="模型自带的材质与贴图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div><div class="slide" data-page="10"><div class="slide-inner markable"><h1>写第一个 C# 脚本 · 从建文件夹到类名一致</h1>
 <div class="card"><p>前面讲完模型与贴图，接下来让模型<strong>动起来、有逻辑</strong>。做法是：写一段 <strong>C# 脚本</strong>，<strong>挂载（Mount）</strong>到游戏对象上，脚本就成了它的「<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">行为组件</mark>」——每一帧告诉引擎这个对象该往哪走、该做什么。</p></div>
-<div class="card"><h3>创建脚本的标准流程</h3></div>
 <div class="card"><h3>① 新建 Scripts 文件夹</h3><p>在 Project 窗口 <code>Assets</code> 下，右键 → <code>Create（创建）</code> → <code>Folder（文件夹）</code>，命名为 <code>Scripts</code>。</p></div>
 <img src="images/课件9/新建Scripts文件夹.png" alt="新建 Scripts 文件夹" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
 <div class="card"><h3>② 创建 C# 脚本</h3><p>在 <code>Scripts</code> 文件夹里右键 → <code>Create（创建）</code> → <code>C# Script（C# 脚本）</code>，<strong>命名为 <code>MoveObject</code></strong>。</p></div>
@@ -517,17 +522,17 @@ public class MoveObject : MonoBehaviour {
     void Start() { }
     void Update() { }
 }</code></pre>
-</div><div class="ok-box">💡 双击脚本会自动启动 Visual Studio（或 VS Code）编写代码。脚本文件名 = 类名，是 Unity 的硬规矩，从一开始就要养成习惯。</div>
-<div class="card"><h3>把脚本挂到游戏对象上（两种方式）</h3><p>脚本写好后，必须<strong>挂载</strong>到游戏对象上才会生效。常用两种方式，任选其一即可：</p></div>
+</div>
+<div class="ok-box">💡 双击脚本会自动启动 Visual Studio（或 VS Code）编写代码。脚本文件名 = 类名，是 Unity 的硬规矩，从一开始就要养成习惯。</div></div></div>
+<div class="slide" data-page="11"><div class="slide-inner markable"><h1>把脚本挂到游戏对象上</h1>
+<div class="card"><p>脚本写好后，必须<strong>挂载</strong>到游戏对象上才会生效。常用两种方式，任选其一即可：</p></div>
 <div class="card"><h3>方式一：选中对象后拖到检视器</h3><p>先在 Hierarchy / Scene 里<strong>选中游戏对象</strong>，再把 Project 里的脚本<strong>拖到右侧 Inspector（检视器）窗口</strong>中，松开即挂载。</p></div>
 <img src="images/课件9/挂载脚本_拖到检视器.gif" alt="拖拽脚本到检视器窗口" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
 <div class="card"><h3>方式二：用"添加组件"搜索添加</h3><p>选中游戏对象，在 Inspector 点 <strong>Add Component（添加组件）</strong>，搜索脚本名（如 <code>MoveObject</code>），从结果里<strong>点选目标脚本</strong>即可添加。</p></div>
 <img src="images/课件9/挂载脚本_添加组件.gif" alt="添加组件搜索脚本并添加" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
-<div class="ok-box">✅ 两种方式效果相同：挂载成功后，脚本名会出现在该游戏对象的 Inspector 底部。之后运行游戏，<code>Update()</code> 每帧执行，对象就会动起来。</div>
-</div></div>
-<div class="slide" data-page="10"><div class="slide-inner markable">
-<h1>脚本组件的生命周期与日志输出</h1>
-<div class="card"><p><strong>本页要做什么：</strong>前面已经把脚本挂载到了船模型上。这一页我们<strong>运行游戏</strong>，让脚本在 <strong>Console（控制台）</strong> 里打印日志，亲眼验证脚本在<strong>什么时候</strong>被引擎调用。</p></div>
+<div class="ok-box">✅ 两种方式效果相同：挂载成功后，脚本名会出现在该游戏对象的 Inspector 底部。之后运行游戏，<code>Update()</code> 每帧执行，对象就会动起来。</div></div></div>
+<div class="slide" data-page="12"><div class="slide-inner markable"><h1>脚本的生命周期 · 谁在调用 Start 与 Update</h1>
+<div class="card"><p><strong>本页要做什么：</strong>上一页把脚本挂到了船模型上。这一页先弄清一件事：我们写的 <code>Start()</code>、<code>Update()</code>，<strong>是谁、在什么时候喊它们跑的</strong>——这就是「生命周期」。</p></div>
 <div class="card">
 <h3>① 先回看脚本：Start / Update 在哪被调用？</h3>
 <p>前面挂在船模型上的脚本 <code>MoveObject</code>，只定义了下面两个方法：</p>
@@ -571,8 +576,10 @@ public class MoveObject : MonoBehaviour {
 </div>
 <div class="ok-box">💡 绿色两个（<code>Start</code> / <code>Update</code>）不是你新发明的方法，而是<strong>脚本默认就有的生命周期回调</strong>——你只往里填"要做什么"，引擎到对应时刻就自动调用；其余是引擎在更细时刻点也会调用的回调。</div>
 </div>
-<h3>④ 生命周期各阶段与对应代码</h3>
-<div class="card"><p>最常用两个：</p></div><div class="card"><ul><li><code>Start()</code>：场景加载后、第一次 <code>Update</code> 之前调用一次，写初始化代码</li><li><code>Update()</code>：每一帧渲染前调用，大部分游戏逻辑写在这里</li></ul></div><div class="prompt-box">
+<h3>生命周期各阶段与对应代码</h3>
+<div class="card"><p>最常用两个：</p></div>
+<div class="card"><ul><li><code>Start()</code>：场景加载后、第一次 <code>Update</code> 之前调用一次，写初始化代码</li><li><code>Update()</code>：每一帧渲染前调用，大部分游戏逻辑写在这里</li></ul></div>
+<div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4344032512',this)">复制</button></div>
 <pre id="c_4344032512"><code class="language-csharp">// MoveObject.cs —— 只写上 Start / Update 两个最常用的回调（完整脚本）
 // 整段可以直接复制、覆盖原文件；标 ① 的是这一页新加的
@@ -587,7 +594,9 @@ public class MoveObject : MonoBehaviour {
     }
 }</code></pre>
 </div>
-<div class="card"><p>其它几个回调：</p></div><div class="card"><table><tr><th>回调</th><th>调用时机</th><th>时机示意（截图）</th></tr><tr><td><code>Awake()</code></td><td>脚本实例被加载时调用一次，早于所有 Start</td><td>—</td></tr><tr><td><code>FixedUpdate()</code></td><td>固定时间间隔调用，物理代码写这里</td><td>—</td></tr><tr><td><code>OnEnable()</code></td><td>对象变为激活状态时</td><td><img src="images/课件9/OnEnable时机.png" alt="OnEnable 触发时机：对象被激活" onclick="zoomQR(this)" style="cursor:pointer;max-width:150px;width:100%;display:block;margin:0 auto" onerror="imgMissing(this)"></td></tr><tr><td><code>OnDisable()</code></td><td>对象变为非激活状态时</td><td><img src="images/课件9/OnDisable时机.png" alt="OnDisable 触发时机：对象被停用" onclick="zoomQR(this)" style="cursor:pointer;max-width:150px;width:100%;display:block;margin:0 auto" onerror="imgMissing(this)"></td></tr></table></div><div class="prompt-box">
+<div class="card"><p>其它几个回调：</p></div>
+<div class="card"><table><tr><th>回调</th><th>调用时机</th><th>时机示意（截图）</th></tr><tr><td><code>Awake()</code></td><td>脚本实例被加载时调用一次，早于所有 Start</td><td>—</td></tr><tr><td><code>FixedUpdate()</code></td><td>固定时间间隔调用，物理代码写这里</td><td>—</td></tr><tr><td><code>OnEnable()</code></td><td>对象变为激活状态时</td><td><img src="images/课件9/OnEnable时机.png" alt="OnEnable 触发时机：对象被激活" onclick="zoomQR(this)" style="cursor:pointer;max-width:150px;width:100%;display:block;margin:0 auto" onerror="imgMissing(this)"></td></tr><tr><td><code>OnDisable()</code></td><td>对象变为非激活状态时</td><td><img src="images/课件9/OnDisable时机.png" alt="OnDisable 触发时机：对象被停用" onclick="zoomQR(this)" style="cursor:pointer;max-width:150px;width:100%;display:block;margin:0 auto" onerror="imgMissing(this)"></td></tr></table></div>
+<div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4344031936',this)">复制</button></div>
 <pre id="c_4344031936"><code class="language-csharp">// MoveObject.cs —— 六个生命周期回调全写上（完整脚本）
 // 整段可以直接复制、覆盖原文件；标 ①②③④ 的是这一页新加的
@@ -615,7 +624,6 @@ public class MoveObject : MonoBehaviour {
     }
 }</code></pre>
 </div>
-
 <div class="card">
 <h3>⑤ 游戏对象有生命周期吗？</h3>
 <p>严格说，<strong>游戏对象本身没有"生命周期"</strong>——它只是个装组件的容器（下面这张图看得更清楚）。但挂在它上面的<strong>脚本组件有</strong>，原因就一句话：你写的脚本 <code>MoveObject</code> 继承自 <code>MonoBehaviour</code>（回看①里的 <code>public class MoveObject : MonoBehaviour</code>）。</p>
@@ -632,9 +640,8 @@ public class MoveObject : MonoBehaviour {
 <p>那这套回调<strong>什么时候、被谁触发</strong>？<strong>机制写在 MonoBehaviour 的内部实现里</strong>——你只需重写 <code>Start()</code> / <code>Update()</code> 等钩子，Unity 引擎运行时就会按固定顺序，向每个<strong>激活的游戏对象</strong>上的每个 MonoBehaviour 组件发送这些消息；对象被<strong>激活 / 停用</strong>，就触发组件的 <code>OnEnable</code> / <code>OnDisable</code>。</p>
 <p>用④刚讲的这几个回调，套回我们的船模型再理解一遍：</p>
 <div class="ok-box">💡 船喻🚢：把游戏对象想成<strong>一艘船</strong>，组件是船上的各种设备。脚本组件就像个<strong>继承了 MonoBehaviour 的"自动船员"</strong>——不用你盯着，引擎（船长）一拉响起航汽笛，就按"航行时刻表"自己干活：<br>⚓ <strong>船起航（激活）</strong> → 被 <code>OnEnable</code> 叫醒、就位待命；<br>🌅 <strong>第一次出港（Start）</strong> → 跑一次"开工点名"；<br>🔁 <strong>之后每一帧（Update）</strong> → 不停巡逻、干活；<br>🛏️ <strong>船停泊（停用）</strong> → 被 <code>OnDisable</code> 叫去休眠。<br>所以通俗地说：<strong>船上的脚本，运行时有一套生命周期</strong>；根子则在 MonoBehaviour。</div>
-</div>
-
-<h3>在脚本里打印日志（Debug.Log）</h3>
+</div></div></div>
+<div class="slide" data-page="13"><div class="slide-inner markable"><h1>用日志看清脚本在干什么 · Debug.Log</h1>
 <div class="card"><p><code>Debug.Log()</code> 把信息实时打到 <strong>Console（控制台）</strong>。调试脚本时，常用它打印：模型名（<code>this.name</code>）、坐标（<code>transform.position</code>）、时间（<code>Time.time</code> / <code>Time.deltaTime</code>）。下面在 <code>Start()</code> 里打印船模型名和初始坐标，在 <code>Update()</code> 里打印每帧的时间差：</p></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4344037726',this)">复制</button></div>
@@ -655,12 +662,11 @@ public class MoveObject : MonoBehaviour {
 }</code></pre>
 </div>
 <div class="ok-box">💡 坐标想只保留三位小数，用 <code>transform.position.ToString("F3")</code>。运行后 Console 会刷屏——调试完记得删掉或注释掉 <code>Update()</code> 里的日志。</div>
-
 <h3>运行游戏，看控制台打印日志</h3>
-<div class="card"><p>Unity 顶部<strong>播放工具条</strong>有三个按钮：<strong>运行（▶）</strong>、<strong>暂停（⏸）</strong>、<strong>单帧（⏭）</strong>。点击"运行"后，引擎按上面的生命周期调用脚本——先 <code>Awake</code> → <code>Start</code>，再每帧 <code>Update</code>，<code>Debug.Log()</code> 的内容实时出现在 Console 窗口；再次点击"运行"按钮即<strong>停止</strong>。写完代码记得先 <strong>Ctrl + S</strong> 保存再切回 Unity。</p></div><img src="images/课件9/脚本 --- 运行 --- update.gif" alt="运行游戏并在控制台打印日志" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box">⚠️ <strong>播放模式是临时的</strong>：运行中改的属性、加的物体，退出播放后都会重置；想保留改动要在停止播放后再改。</div>
-
-</div></div>
-<div class="slide" data-page="11"><div class="slide-inner markable">
+<div class="card"><p>Unity 顶部<strong>播放工具条</strong>有三个按钮：<strong>运行（▶）</strong>、<strong>暂停（⏸）</strong>、<strong>单帧（⏭）</strong>。点击"运行"后，引擎按上面的生命周期调用脚本——先 <code>Awake</code> → <code>Start</code>，再每帧 <code>Update</code>，<code>Debug.Log()</code> 的内容实时出现在 Console 窗口；再次点击"运行"按钮即<strong>停止</strong>。写完代码记得先 <strong>Ctrl + S</strong> 保存再切回 Unity。</p></div>
+<img src="images/课件9/脚本 --- 运行 --- update.gif" alt="运行游戏并在控制台打印日志" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="ok-box">⚠️ <strong>播放模式是临时的</strong>：运行中改的属性、加的物体，退出播放后都会重置；想保留改动要在停止播放后再改。</div></div></div>
+<div class="slide" data-page="14"><div class="slide-inner markable">
 <h1>游戏对象、组件与常用 API</h1>
 <div class="card"><p><strong>本页要做什么：</strong>上一页知道脚本靠生命周期自动运行；要让船模型动起来，得先搞清楚"对象身上有什么、怎么从脚本访问它"。改它的 API——Transform 怎么改位姿、Time 怎么控节奏——留到下一页，正好接上本章的匀速移动。</p>
 <p>本页讲两块：<br>① 游戏对象由<strong>组件</strong>拼成<br>② 从脚本访问<strong>模型对象信息</strong></p></div>
@@ -731,9 +737,8 @@ public class MoveObject : MonoBehaviour {
 <div class="ok-box">💡 记法：<code>transform</code> = 不用写 GetComponent 的"常驻快捷方式"；其它组件 = <code>GetComponent&lt;组件类型&gt;()</code> 现取现用。</div>
 
 </div></div>
-<div class="slide" data-page="13"><div class="slide-inner markable">
-<h1>让游戏对象匀速运动：向量 · Transform · Time</h1>
-<div class="card"><p><strong>本页要做什么：</strong>上一页认识了"对象由组件拼成、能从脚本读取它的信息"；这一页先学<strong>改位姿的 Transform 组件方法</strong>和<strong>控节奏的 Time 方法</strong>，再用它们让船模型真正<strong>动起来</strong>——匀速地移动或旋转，最后再拓展绕圈。先看效果：</p></div>
+<div class="slide" data-page="15"><div class="slide-inner markable"><h1>让船动起来 · 移动的本质与向量</h1>
+<div class="card"><p><strong>本页要做什么：</strong>上一页认识了「对象由组件拼成、能从脚本读取它的信息」。这一页先弄清「让船动起来」到底在改什么，再认识改它要用的 <strong>向量 Vector3</strong>——位置、方向、速度在脚本里都是它。先看效果：</p></div>
 <img src="images/课件9/脚本 --- 运行 --- 绕圈移动.gif" alt="船绕圈移动效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card">
 <p><strong>移动的本质（看着简单，其实有坑）：</strong>让船动起来，就是<strong>每一帧</strong>偷偷改一点点它的位置（或转一点角度）。</p>
@@ -744,11 +749,12 @@ public class MoveObject : MonoBehaviour {
 <li>② <strong>Transform</strong>：再找对"改位置"的扳手（就是它）</li>
 <li>③ <strong>Time.deltaTime</strong>：把"每帧"换算成"每秒"，跟帧率脱钩</li>
 </ul>
-<p>三步齐活，<strong>第④步</strong>才能写出稳稳的匀速运动 ✅</p>
+<p>三步齐活，才能写出稳稳的匀速运动 ✅</p>
 </div>
-
-<h3>① 向量：位置、方向、速度都是向量</h3>
-<div class="card"><p>Unity 里三维空间的位置、方向、速度都是<strong>向量</strong>。常用类型：</p></div><div class="card"><ul><li><code>Vector2</code>（x, y）：平面坐标</li><li><code>Vector3</code>（x, y, z）：三维空间坐标，最常用</li></ul></div><div class="prompt-box">
+<h3>向量：位置、方向、速度都是向量</h3>
+<div class="card"><p>Unity 里三维空间的位置、方向、速度都是<strong>向量</strong>。常用类型：</p></div>
+<div class="card"><ul><li><code>Vector2</code>（x, y）：平面坐标</li><li><code>Vector3</code>（x, y, z）：三维空间坐标，最常用</li></ul></div>
+<div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4343311808',this)">复制</button></div>
 <pre id="c_4343311808"><code class="language-csharp">// MoveObject.cs —— 向量字段的两种赋值方式（完整脚本）
 // 整段可以直接复制、覆盖原文件；标 ①②③ 的是这一页新加的
@@ -783,11 +789,11 @@ public class MoveObject : MonoBehaviour {
 <li><code>Vector3.Angle(a, b)</code>：两向量的夹角（度）</li>
 <li><code>vector.normalized</code>：把向量长度归一化成 1（只留方向）</li>
 <li><code>Vector3.ClampMagnitude(v, max)</code>：限制向量长度不超过 max</li>
-</ul></div>
+</ul></div></div></div>
+<div class="slide" data-page="16"><div class="slide-inner markable"><h1>transform · 改位置与旋转</h1>
 <div class="card"><p>回到 Unity 看一眼就明白了：每个对象都挂着 <strong>Transform 组件</strong>，里面的 <strong>Position（位置）、Rotation（旋转）、Scale（缩放）</strong>，每个都是 (x, y, z) 三个数——它们正是三个<strong>向量</strong>。</p></div>
 <img src="images/课件9/Transform组件.png" alt="Inspector 中的 Transform 组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-
-<h3>② Transform 组件方法（改位置 / 旋转）</h3>
+<h3>Transform 组件方法（改位置 / 旋转）</h3>
 <div class="card"><p><strong>所有位移、旋转都通过修改 Transform 实现，且按帧计算</strong>。脚本里用 <code>transform</code> 就能拿到它；常用写法：</p></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_trans_methods',this)">复制</button></div>
@@ -810,7 +816,7 @@ public class MoveObject : MonoBehaviour {
 </div>
 <div class="card"><ul><li><code>transform.position</code>：对象的位置（世界坐标）</li><li><code>transform.Translate(x, y, z)</code>：在当前基础上增量移动</li><li><code>transform.Rotate(x, y, z)</code>：在当前基础上增量旋转</li></ul></div>
 <div class="ok-box">💡 <code>transform.position</code> 本身就是一个 <code>Vector3</code>，所以它既能被<strong>读取</strong>（拿去计算）、也能被<strong>修改</strong>（让对象移动）——下面各看一个例子。</div>
-<div class="card"><p>用法一「<strong>读取计算</strong>」：既然是向量，就能用第①步学过的向量方法。比如算"自己离目标对象还有多远"：</p></div>
+<div class="card"><p>用法一「<strong>读取计算</strong>」：既然是向量，就能用上一页学过的向量方法。比如算"自己离目标对象还有多远"：</p></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4343311680',this)">复制</button></div>
 <pre id="c_4343311680"><code class="language-csharp">// MoveObject.cs —— 用向量算「自己离目标还有多远」（完整脚本）
@@ -828,7 +834,7 @@ public class MoveObject : MonoBehaviour {
 }</code></pre>
 </div>
 <div class="card"><p>这句在算什么：<code>Vector3.Distance(a, b)</code> 返回两点 a、b 之间的<strong>直线距离</strong>（一个 <code>float</code> 数）；<code>transform.position</code> 是"自己"的位置，<code>target.position</code> 是目标对象的位置。合起来 <code>d</code> = 自己离目标还有多远——常用来判断"够不够近、该不该触发某事"。</p></div>
-<div class="card"><p>用法二「<strong>修改移动</strong>」：把上面刚学的 <code>transform.Translate</code> 用起来——它除了能传三个数，也能直接吃一个<strong>位移向量</strong>。而这个向量怎么来？记住一句：<strong>速度 = 方向 × 大小</strong>——算出这一帧该位移多少，交给它去挪对象（真正的匀速写法见<strong>第④步</strong>，要乘 <code>Time.deltaTime</code>）：</p></div>
+<div class="card"><p>用法二「<strong>修改移动</strong>」：把上面刚学的 <code>transform.Translate</code> 用起来——它除了能传三个数，也能直接吃一个<strong>位移向量</strong>。而这个向量怎么来？记住一句：<strong>速度 = 方向 × 大小</strong>——算出这一帧该位移多少，交给它去挪对象（真正的匀速写法要乘 <code>Time.deltaTime</code>，后面单独讲）：</p></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_vec_move',this)">复制</button></div>
 <pre id="c_vec_move"><code class="language-csharp">// MoveObject.cs —— 把「方向 × 大小」交给 Translate（完整脚本）
@@ -853,9 +859,9 @@ public class MoveObject : MonoBehaviour {
 <li>② 顶部菜单栏 <strong>游戏对象（GameObject）→ 对齐到视图（Align With View）</strong>。</li>
 </ul>
 <p>执行后，摄像头的位姿会<strong>瞬间跳到场景视图当前的视角</strong>——也就是<strong>游戏视图</strong>对齐到了<strong>场景视图</strong>：你场景里怎么看，运行时就怎么看（快捷键 Ctrl / Cmd + Shift + F）。</p></div>
-<img src="images/课件9/对齐到视图_操作步骤.png" alt="对齐到视图操作步骤" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:66.67%" onerror="imgMissing(this)">
-
-<h3>③ Time 方法（控制每帧节奏）</h3>
+<img src="images/课件9/对齐到视图_操作步骤.png" alt="对齐到视图操作步骤" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:66.67%" onerror="imgMissing(this)"></div></div>
+<div class="slide" data-page="17"><div class="slide-inner markable"><h1>Time.time 与 Time.deltaTime</h1>
+<h3>Time 方法（控制每帧节奏）</h3>
 <div class="card"><p><strong>为什么需要 Time？</strong><code>Update()</code> 每帧执行一次，但<strong>每帧之间隔多久并不固定</strong>——帧率越高，每帧间隔越短。所以要用 <strong>Time</strong> 类把"帧"换算成"真实时间"，运动才不会忽快忽慢。</p></div>
 <div class="card"><h3>Time.time —— 游戏已经进行了多少秒</h3><p>从<strong>游戏开始到现在</strong>累计经过的秒数，<strong>只增不减</strong>。适合：计时、倒计时、判断"过了几秒"、按时间做周期运动等。</p></div>
 <div class="card"><h3>Time.deltaTime —— 这一帧花了多少秒</h3><p><strong>上一帧到这一帧</strong>的时间差（秒），<strong>每帧都在变</strong>：帧率越高它越小、帧率越低它越大。乘上它，就把"每帧做多少"换算成"每秒做多少"，让结果<strong>与帧率无关</strong>。</p></div>
@@ -882,11 +888,11 @@ public class MoveObject : MonoBehaviour {
     }
 }</code></pre>
 </div>
-<div class="ok-box">⏱️ 关键点：<strong>凡是"按每秒"控制的东西（移动、旋转、计时），都要乘 <code>Time.deltaTime</code></strong>，这样不管电脑快慢，速度都一样。下面第④步就用它让船匀速动起来。</div>
-<img src="images/课件9/Time_运行日志.png" alt="Time.time 与 Time.deltaTime 的日志输出" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-
-<h3>④ 实现匀速移动（关键：Time.deltaTime）</h3>
-<div class="card"><p>先看<strong>平移</strong>。还是第②步用法二那段 <code>direction * speed</code>，只改一处：把 speed 从"每帧移动大小"换成"<strong>每秒</strong>移动的距离"，再乘上第③步的 <code>Time.deltaTime</code>——<strong>每帧位移 = 每秒速度 × 这一帧的秒数</strong>，其实就是物理里的 <strong>s = v · t</strong>（路程 = 速度 × 时间），这里的"时间 t"正好是 <code>Time.deltaTime</code>：</p></div>
+<div class="ok-box">⏱️ 关键点：<strong>凡是"按每秒"控制的东西（移动、旋转、计时），都要乘 <code>Time.deltaTime</code></strong>，这样不管电脑快慢，速度都一样。下一页就用它让船匀速动起来。</div>
+<img src="images/课件9/Time_运行日志.png" alt="Time.time 与 Time.deltaTime 的日志输出" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="slide" data-page="18"><div class="slide-inner markable"><h1>匀速移动 · 每帧走 速度 × deltaTime</h1>
+<h3>实现匀速移动（关键：Time.deltaTime）</h3>
+<div class="card"><p>先看<strong>平移</strong>。还是「transform 用法二」那段 <code>direction * speed</code>，只改一处：把 speed 从"每帧移动大小"换成"<strong>每秒</strong>移动的距离"，再乘上上一页刚讲的 <code>Time.deltaTime</code>——<strong>每帧位移 = 每秒速度 × 这一帧的秒数</strong>，其实就是物理里的 <strong>s = v · t</strong>（路程 = 速度 × 时间），这里的"时间 t"正好是 <code>Time.deltaTime</code>：</p></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_uniform_move',this)">复制</button></div>
 <pre id="c_uniform_move"><code class="language-csharp">// MoveObject.cs —— 乘上 Time.deltaTime，变成真正的匀速（完整脚本）
@@ -922,9 +928,10 @@ public class MoveObject : MonoBehaviour {
     }
 }</code></pre>
 </div>
-<img src="images/课件9/脚本 --- 运行 --- 匀速旋转.gif" alt="船模型匀速旋转效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box">⚠️ 移动 / 旋转代码要写在 <code>Update()</code> 里（每帧执行）。<code>Time.deltaTime</code>（就是第③步讲的）让"每秒走多远"与帧率无关，是做匀速运动的标配写法。</div>
-
-<h3>5. 拓展：让船在 xz 平面绕圈</h3>
+<img src="images/课件9/脚本 --- 运行 --- 匀速旋转.gif" alt="船模型匀速旋转效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="ok-box">⚠️ 移动 / 旋转代码要写在 <code>Update()</code> 里（每帧执行）。<code>Time.deltaTime</code>（上一页刚讲的）让"每秒走多远"与帧率无关，是做匀速运动的标配写法。</div></div></div>
+<div class="slide" data-page="19"><div class="slide-inner markable"><h1>绕圈运动 · 一边前进一边转向</h1>
+<h3>拓展：让船在 xz 平面绕圈</h3>
 <div class="card"><p>匀速运动不只有"直线前进"。想让船在地面上<strong>绕圈</strong>，思路是：<strong>一边前进、一边绕 y 轴慢慢转向</strong>——前进方向持续改变，路径就弯成了圆（y 高度保持不变，所以是在 xz 平面上）。</p></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_circle_move',this)">复制</button></div>
@@ -982,9 +989,8 @@ public class MoveObject : MonoBehaviour {
 }</code></pre>
 </div>
 <img src="images/课件9/脚本 --- 运行 --- 角度绕圈.gif" alt="角度算坐标绕圈效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="ok-box">🔄 两种方式都是<strong>匀速</strong>运动：第一种"转向 + 前进"最直观，只用了已学的 <code>Translate</code> / <code>Rotate</code>；第二种"角度算坐标"能精确给定圆心和半径，作业进阶挑战用它做圆周运动最稳。</div>
-
-</div></div><div class="slide" data-page="18"><div class="slide-inner markable">
+<div class="ok-box">🔄 两种方式都是<strong>匀速</strong>运动：第一种"转向 + 前进"最直观，只用了已学的 <code>Translate</code> / <code>Rotate</code>；第二种"角度算坐标"能精确给定圆心和半径，作业进阶挑战用它做圆周运动最稳。</div></div></div>
+<div class="slide" data-page="20"><div class="slide-inner markable">
 <h1>作业 · 自选模型，搭一个会绕圈的场景</h1>
 <div class="card"><h3>基本要求</h3><ul><li><strong>自选模型</strong>：从 <strong>Poly Haven</strong> 下载，或用自己的模型（做法见<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">第 6 页</mark>）</li><li><strong>导入并摆好</strong>：模型放进场景，位置、旋转、缩放都调好，比例自然、不悬空</li><li><strong>添加其他模型</strong>：再放一两个丰富场景，别让模型孤零零（做法见<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">第 6 页</mark>）</li><li><strong>换上天空盒背景</strong>：用 HDRI 给场景换片真实天空（做法见<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">课件7</mark>）</li><li><strong>对齐到视图</strong>（Align With View）：确定运行时看到的游戏视角（做法见<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">第 10 页</mark>）</li><li><strong>让它绕圈移动</strong>：用「5. 拓展」的两种写法之一（转向 + 前进 / 角度算坐标），匀速绕圈</li></ul></div>
 <img src="images/课件9/作业_基础效果.gif" alt="作业基础效果：自选模型绕圈移动" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
@@ -1073,7 +1079,7 @@ void Update() {
 <div class="card"><h3>还能怎么变</h3><ul><li><strong>螺旋上升 / 下潜</strong>：把 ① 的"碰到上下限就掉头"换成"每转一圈抬高一点"，轨迹就是螺旋线</li><li><strong>绕圈 + 自转</strong>：绕圈的同时再多 <code>Rotate</code> 一个角度，船边绕圈边自己打转</li><li><strong>忽快忽慢</strong>：让 <code>turn</code> 按 <code>Mathf.Sin</code> 变化，转弯时快时慢</li><li><strong>巡逻航道</strong>：给 <code>angle</code> 数圈数，跑够 3 圈就换一个圆心（换一片水域再绕）</li></ul></div>
 <div class="ok-box">💬 验收标准：场景里有自选模型（材质 / 贴图正确、比例与摆放合理），并另放一两个模型丰富场景；天空盒已换成 HDRI；运行前用<strong>对齐到视图</strong>定好视角，运行时看到的画面正确；模型能<strong>匀速绕圈移动</strong>，速度不随电脑快慢变化（乘 <code>Time.deltaTime</code>），<code>speed</code> / <code>turn</code> 暴露在 Inspector 里能现场调快慢。进阶：在 <strong>① 绕圈 + 上下浮沉</strong>、<strong>② 8 字航道</strong> 中任选一种完成。</div>
 </div></div>
-<div class="slide" data-page="19"><div class="slide-inner end-page">
+<div class="slide" data-page="21"><div class="slide-inner end-page">
 
 <div class="end-thanks">
     <div class="end-left">
@@ -1242,7 +1248,7 @@ function changeFont(d){
 // ========== 幻灯片 ==========
 let slides=document.querySelectorAll('.slide,.cover'),
     navLinks=document.querySelectorAll('.nav-link'),
-    curr=0,total=13,contentTotal=11;
+    curr=0,total=21,contentTotal=19;
 
 // 进度圆点
 // 侧边栏点击
