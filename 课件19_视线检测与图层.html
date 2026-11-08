@@ -532,7 +532,7 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="8"><div class="slide-inner markable">
 <h1>透视眼 · 敌人只看距离</h1>
-<div class="card"><h3>先调大发现距离</h3><p>选中动物预制体，在<strong>检查器（Inspector）</strong>的 <code>AnimalGuard</code> 组件里修改两项：</p><ul><li><strong>发现距离（Sight Range）</strong>改为 <code>15</code>：玩家进入 15 米范围，动物就会发现</li><li><strong>放弃距离（Lose Range）</strong>改为 <code>20</code>：玩家跑出 20 米，动物才放弃，给发现和放弃之间留出缓冲</li></ul><p><strong>攻击距离（Attack Distance）</strong>保持 <code>1.5</code>，<strong>攻击间隔（Attack Interval）</strong>保持 <code>2</code>。</p><div class="step-img"><img src="images/课件19/设置发现与放弃距离.png" alt="在动物警戒脚本组件中把发现距离改为15、放弃距离改为20" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>先调大发现距离</h3><p>选中动物预制体，在<strong>检查器（Inspector）</strong>的 <code>AnimalGuard</code> 组件里修改两项：</p><ul><li><strong>发现距离（Sight Range）</strong>改为 <code>15</code>：玩家进入 15 米范围，动物就会发现</li><li><strong>放弃距离（Lose Range）</strong>改为 <code>20</code>：玩家跑出 20 米，动物才放弃，给发现和放弃之间留出缓冲</li></ul><p><strong>追到多近停下（Chase Distance）</strong>保持 <code>2</code>：动物追到离你 2 米就刹住，不贴到脸上。</p><div class="step-img"><img src="images/课件19/设置发现与放弃距离.png" alt="在动物警戒脚本组件中把发现距离改为15、放弃距离改为20" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <img src="images/课件19/敌人穿墙看见你.gif" alt="隔着房屋也能发现玩家，这就是透视眼" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>这样就是「透视眼」</h3><p>让玩家和动物分别站在房屋两侧。只要两者的水平距离不超过 15 米，动物照样发现玩家，就好像能隔着房屋看见一样。</p><p>因为现在的 <code>AnimalGuard</code> <strong>只判断距离，不检查中间有没有房屋</strong>。玩家躲到房屋后，只要还没跑出 20 米，动物也不会放弃。</p></div>
 <div class="ok-box">💡 要修掉这双「透视眼」，还需要给动物加上<strong>视线检测</strong>：不仅距离够近，还要确认它和玩家之间没有被墙挡住。</div>
@@ -672,7 +672,7 @@ if (blocked)
 <h1>视线检测 · 接入 AnimalGuard</h1>
 <img src="images/课件19/敌人视线检测.gif" alt="接入视线检测后，躲到墙后敌人就放弃追击" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>把「有没有遮挡」变成「能不能看见」</h3><p>射线已经能检测墙，接下来用一个 <code>CanSeePlayer()</code> 方法封装判断：<strong>撞到 Wall 就返回 false，没撞到就返回 true</strong>。再把它接进两处 AI 逻辑：</p><ul><li><strong>第一次发现</strong>：进入 15 米，并且视线通畅，才进入警戒</li><li><strong>追击途中</strong>：跑出 20 米，或者视线被墙挡住，就放弃并恢复巡逻</li></ul></div>
-<div class="card"><h3><span class="tag-edit">修改</span>AnimalGuard.cs · 在上一课脚本上接着写</h3><p>不新建脚本，直接打开已有的 <code>AnimalGuard.cs</code>。下面是可以整份覆盖的完整版本，标了 ①②③④ 的部分是本课相对于课件18 的新增内容；<code>AnimalFollow</code> 继续保持关闭。</p></div>
+<div class="card"><h3><span class="tag-edit">修改</span>AnimalGuard.cs · 在上一课脚本上接着写</h3><p>不新建脚本，直接打开已有的 <code>AnimalGuard.cs</code>。下面是可以整份覆盖的完整版本，标了 ①②③④ 的部分是本课相对于课件18 的新增内容；<code>AnimalFollow</code> 继续保持关闭。</p><p>课件18 作业里那三个和「咬」有关的字段（<code>attackDistance</code>、<code>attackInterval</code>、<code>timer</code>）这次整段删掉：咬得能掉血才算真咬，那一半放到课件20 交给 <code>EnemyData</code> 做。从这一课起，<code>AnimalGuard</code> 只管<strong>发现 → 跳一下 → 追过去 → 停在 2 米</strong>。</p></div>
 <div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c19_vision',this)">复制</button></div><pre id="c19_vision"><code class="language-csharp">// AnimalGuard.cs —— 课件19版：接入距离与视线检测
 // 完整脚本，可覆盖原文件；①②③④是本课新增
 using UnityEngine;
@@ -681,8 +681,7 @@ using UnityEngine.AI;
 public class AnimalGuard : MonoBehaviour
 {
     public float sightRange = 15f;
-    public float attackDistance = 1.5f;
-    public float attackInterval = 2f;
+    public float chaseDistance = 2f;
     public float loseRange = 20f;
 
     // ① 新增：在检查器里只勾 Wall
@@ -693,7 +692,6 @@ public class AnimalGuard : MonoBehaviour
     private AnimalAnim anim;
     private Transform player;
     private bool alerted;
-    private float timer;
 
     void Start()
     {
@@ -706,8 +704,6 @@ public class AnimalGuard : MonoBehaviour
 
     void Update()
     {
-        timer += Time.deltaTime;
-
         Vector3 me = transform.position;
         Vector3 you = player.position;
         me.y = 0f;
@@ -736,21 +732,17 @@ public class AnimalGuard : MonoBehaviour
             return;
         }
 
-        if (d &lt;= attackDistance)
+        if (d &lt;= chaseDistance)
         {
+            // 追到跟前：清路 + 刹住
             agent.ResetPath();
             agent.isStopped = true;
-            if (timer &gt;= attackInterval)
-            {
-                anim.PlayAttack();
-                timer = 0f;
-            }
             return;
         }
 
         agent.isStopped = false;
         Vector3 dir = (me - you).normalized;
-        agent.SetDestination(you + dir * attackDistance);
+        agent.SetDestination(you + dir * chaseDistance);
     }
 
     bool CanSeePlayer()
@@ -766,7 +758,7 @@ public class AnimalGuard : MonoBehaviour
         return true;
     }
 }</code></pre></div>
-<div class="card"><h3>代码讲解</h3><ol><li><strong>整份脚本</strong>：保留课件18 的巡逻、发现、追击、攻击和放弃；新增 <code>obstacleMask</code> 与 <code>CanSeePlayer()</code>，不需要再建一个脚本文件。</li><li><strong>公开槽位</strong>：<code>public LayerMask obstacleMask</code> 会在检查器里出现一个可多选的图层下拉框。这里勾哪几层，射线就检测哪几层。</li><li><strong>三个参数</strong>：<code>Linecast(origin, target, obstacleMask)</code> 依次是起点、终点和图层名单。第三个参数不是距离，而是过滤条件。</li><li><strong>结果取反</strong>：只检测墙以后，返回 <code>true</code> 表示有墙，所以方法返回 <code>false</code>；什么都没撞到才返回 <code>true</code>。</li><li><strong>不再取 hit</strong>：前面用 <code>hit</code> 是为了看清撞到了什么；这里只问「有没有墙」，因此使用不返回 <code>RaycastHit</code> 的重载，代码更直接。</li><li><strong>距离先行</strong>：两处都把 <code>CanSeePlayer()</code> 放在条件最后。没进入发现距离，或者已经超出放弃距离，都不会做射线检测。</li><li><strong>两处判断</strong>：第一次发现仍要求「够近 + 看得见」；追击途中仍然是「跑远或看不见就放弃」。15～20 米之间属于追击保持区，仍会继续检查视线。</li><li><strong>空名单</strong>：如果 <code>obstacleMask</code> 没勾任何层，<code>Linecast</code> 永远返回 <code>false</code>，敌人就会把所有方向都当成视线通畅。</li></ol></div>
+<div class="card"><h3>代码讲解</h3><ol><li><strong>整份脚本</strong>：保留课件18 的巡逻、发现、追击和放弃；新增 <code>obstacleMask</code> 与 <code>CanSeePlayer()</code>，不需要再建一个脚本文件。</li><li><strong>公开槽位</strong>：<code>public LayerMask obstacleMask</code> 会在检查器里出现一个可多选的图层下拉框。这里勾哪几层，射线就检测哪几层。</li><li><strong>三个参数</strong>：<code>Linecast(origin, target, obstacleMask)</code> 依次是起点、终点和图层名单。第三个参数不是距离，而是过滤条件。</li><li><strong>结果取反</strong>：只检测墙以后，返回 <code>true</code> 表示有墙，所以方法返回 <code>false</code>；什么都没撞到才返回 <code>true</code>。</li><li><strong>不再取 hit</strong>：前面用 <code>hit</code> 是为了看清撞到了什么；这里只问「有没有墙」，因此使用不返回 <code>RaycastHit</code> 的重载，代码更直接。</li><li><strong>距离先行</strong>：两处都把 <code>CanSeePlayer()</code> 放在条件最后。没进入发现距离，或者已经超出放弃距离，都不会做射线检测。</li><li><strong>两处判断</strong>：第一次发现仍要求「够近 + 看得见」；追击途中仍然是「跑远或看不见就放弃」。15～20 米之间属于追击保持区，仍会继续检查视线。</li><li><strong>空名单</strong>：如果 <code>obstacleMask</code> 没勾任何层，<code>Linecast</code> 永远返回 <code>false</code>，敌人就会把所有方向都当成视线通畅。</li></ol></div>
 <div class="card"><h3>把 Wall 填进 obstacleMask</h3><ol><li>在<strong>项目（Project）</strong>窗口选中动物预制体；有几个动物预制体，就逐个检查，不能只改场景里的某一只</li><li>在 <code>AnimalGuard</code> 组件里找到 <code>Obstacle Mask</code></li><li>勾选 <code>Wall</code>，不要选「所有（Everything）」；保存预制体，让生成中心刷出的动物也带上这份设置<div class="step-img"><img src="images/课件19/设置obstacleMask.png" alt="动物预制体的 AnimalGuard 组件中勾选 Wall" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li></ol></div>
 <div class="ok-box">💡 验收时分三种情况看：<code>无内容（Nothing）</code> 是什么都检测不到，<code>所有（Everything）</code> 是检测所有层、容易被其他物体误挡，<strong>只勾 <code>Wall</code></strong> 才是「墙能挡视线，其他层不参与」。</div>
 </div></div>
@@ -775,7 +767,7 @@ public class AnimalGuard : MonoBehaviour
 <img src="images/课件19/作业_视野角.gif" alt="敌人只能发现正前方视野角内的玩家" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>基本要求</h3><p>沿用已经完成的 <code>AnimalGuard</code>：<code>Linecast</code> 能挡视线，<code>obstacleMask</code> 已配置，<code>AnimalFollow</code> 保持关闭。现在的敌人虽然会看遮挡，却仍然是<strong>360° 全向发现</strong>——从背后贴近也会被发现。</p><p>给它加上 <strong>120° 视野角</strong>：只有正前方左右各 60° 内的玩家才可能被发现；从背后接近，不应触发警戒。</p></div>
 <div class="card"><h3>核心要求</h3><ul><li>用 <code>Vector3.Angle</code> 计算敌人正前方与「敌人指向玩家」方向的夹角</li><li>120° 是<strong>整个视野角</strong>，判断时要用 <code>fieldOfView * 0.5f</code></li><li>第一次发现必须同时满足：<strong>距离够近 + 在视野角内 + 视线无遮挡</strong></li><li>已经警戒后，玩家跑出视野角也要放弃，并完整恢复巡逻，不能只把 <code>alerted</code> 改回 <code>false</code></li></ul></div>
-<div class="card"><h3>本次作业（必做）：把角度接进警戒判断</h3><p>只修改 <code>AnimalGuard.cs</code>，不用新建脚本。按下面四段补到对应位置；原有巡逻、追击和攻击代码保持不动。</p></div>
+<div class="card"><h3>本次作业（必做）：把角度接进警戒判断</h3><p>只修改 <code>AnimalGuard.cs</code>，不用新建脚本。按下面四段补到对应位置；原有巡逻、发现、追击和放弃的代码保持不动。</p></div>
 <div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c19_hw',this)">复制</button></div><pre id="c19_hw"><code class="language-csharp">// ① 字段区：新增完整视野角，默认 120°
 public float fieldOfView = 120f;
 
