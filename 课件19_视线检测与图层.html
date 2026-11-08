@@ -672,7 +672,7 @@ if (blocked)
 <h1>视线检测 · 接入 AnimalGuard</h1>
 <img src="images/课件19/敌人视线检测.gif" alt="接入视线检测后，躲到墙后敌人就放弃追击" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>把「有没有遮挡」变成「能不能看见」</h3><p>射线已经能检测墙，接下来用一个 <code>CanSeePlayer()</code> 方法封装判断：<strong>撞到 Wall 就返回 false，没撞到就返回 true</strong>。再把它接进两处 AI 逻辑：</p><ul><li><strong>第一次发现</strong>：进入 15 米，并且视线通畅，才进入警戒</li><li><strong>追击途中</strong>：跑出 20 米，或者视线被墙挡住，就放弃并恢复巡逻</li></ul></div>
-<div class="card"><h3><span class="tag-edit">修改</span>AnimalGuard.cs · 在上一课脚本上接着写</h3><p>不新建脚本，直接打开已有的 <code>AnimalGuard.cs</code>。下面是可以整份覆盖的完整版本，标了 ①②③④ 的部分是本课相对于课件18 的新增内容；<code>AnimalFollow</code> 继续保持关闭。</p><p>课件18 作业里那三个和「咬」有关的字段（<code>attackDistance</code>、<code>attackInterval</code>、<code>timer</code>）这次整段删掉：咬得能掉血才算真咬，那一半放到课件20 交给 <code>EnemyData</code> 做。从这一课起，<code>AnimalGuard</code> 只管<strong>发现 → 跳一下 → 追过去 → 停在 2 米</strong>。</p></div>
+<div class="card"><h3><span class="tag-edit">修改</span>AnimalGuard.cs · 在上一课脚本上接着写</h3><p>不新建脚本，直接打开已有的 <code>AnimalGuard.cs</code>。下面是可以整份覆盖的完整版本，标了 ①②③④ 的部分是本课相对于课件18 的新增内容；<code>AnimalFollow</code> 继续保持关闭。</p><p>课件18 作业里那三个和「咬」有关的字段（<code>attackDistance</code>、<code>attackInterval</code>、<code>timer</code>）这次整段删掉：咬下去得掉血才算真咬，那一半放到课件20 交给 <code>EnemyData</code> 做。从这一课起，<code>AnimalGuard</code> 只管<strong>发现 → 跳一下 → 追过去 → 停在 2 米</strong>。</p></div>
 <div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c19_vision',this)">复制</button></div><pre id="c19_vision"><code class="language-csharp">// AnimalGuard.cs —— 课件19版：接入距离与视线检测
 // 完整脚本，可覆盖原文件；①②③④是本课新增
 using UnityEngine;
