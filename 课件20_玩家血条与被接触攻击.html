@@ -728,7 +728,7 @@ public class HealthChange : MonoBehaviour
 </div></div>
 <div class="slide" data-page="15"><div class="slide-inner markable">
 <h1>敌人攻击力 · EnemyData</h1>
-<div class="card"><p>血条搭好了、碰撞体也确认过了。动物现在会自己发现你、追到跟前停下（课件19 的 <code>AnimalGuard</code>），可它只是站着——<strong>既没有「咬」的动作，也不扣你的血</strong>（课件17 那套「按 F 跟随」已经停用）。这一页把「咬」补上，先看清<strong>一次咬血到底是怎么发生的</strong>：<strong>判断</strong>是敌人自己做的，<strong>结算</strong>落在玩家身上。</p></div>
+<div class="card"><p>血条搭好了、碰撞体也确认过了。动物现在会自己发现你、追到跟前停下（课件19 的 <code>AnimalGuard</code>），可它只是站着——<strong>既没有「咬」的动作，也不扣你的血</strong>（课件17 那套按 <code>F</code> 跟随，课件18 作业里已经连组件一起删掉了）。这一页把「咬」补上，先看清<strong>一次咬血到底是怎么发生的</strong>：<strong>判断</strong>是敌人自己做的，<strong>结算</strong>落在玩家身上。</p></div>
 <svg viewBox="0 0 680 340" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:14px auto 8px;font-family:inherit" role="img" aria-label="左边俯视图：玩家在中心，虚线圆半径 2.2 米是判定圈，动物追到 2 米处停下、已经在圈内；右边四步流程：敌人每帧量一次水平距离，距离不超过 2.2 米且距上次咬超过 1 秒才继续，然后调用玩家的 TakeDamage，玩家扣血并让 fillAmount 变小、血条短一截">
 <rect x="1" y="1" width="678" height="338" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
 <text x="24" y="30" font-size="14" font-weight="700" fill="var(--accent2)">一次咬血：判断在敌人身上，结算在玩家身上</text>

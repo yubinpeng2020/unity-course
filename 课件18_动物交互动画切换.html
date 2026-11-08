@@ -693,9 +693,15 @@ public class AnimalFollow : MonoBehaviour
 <li><code>attackDistance = 1.5f</code>　<strong>咬</strong>——贴到 1.5 米内就开始咬</li>
 <li><code>attackInterval = 2f</code>　<strong>节奏</strong>——两次咬至少隔 2 秒</li>
 </ul></div>
-<div class="card"><h3>开工前：先把 AnimalFollow 关掉</h3>
-<p>动物身上现在挂着 <code>AnimalFollow</code>，它的 <code>Update</code> <strong>每帧也在给自己的导航代理下目的地</strong>。再挂一个同样下目的地的脚本，两个抢一个代理——表现就是<strong>原地抽搐、来回甩头</strong>（课件17 那页专门讲过这个坑）。</p>
-<p><strong>做法</strong>：检查器里把 <code>AnimalFollow</code> 组件左上角的勾<strong>取消</strong>（不是删）。想回头验旧的按 <code>F</code> 功能，再勾回来就行。<br><strong>保留</strong>：<code>NavMeshAgent</code>、<code>AnimalRoam</code>（发现之前照常巡逻）、<code>AnimalAnim</code>（播动画）。</p><img src="images/课件18/作业_关掉AnimalFollow勾选.png" alt="检查器里取消勾选 AnimalFollow 组件" class="card-img" onclick="zoomQR(this)" style="float:none;display:block;width:100%;max-width:100%;max-height:none;margin:10px auto 4px;cursor:pointer" onerror="imgMissing(this)"></div>
+<div class="card"><h3>开工前：把 AnimalFollow 和 PlayerCall 删掉</h3>
+<p>动物身上现在挂着 <code>AnimalFollow</code>，它的 <code>Update</code> <strong>每帧也在给自己的导航代理下目的地</strong>。再挂一个同样下目的地的 <code>AnimalGuard</code>，两个抢一个代理——表现就是<strong>原地抽搐、来回甩头</strong>（课件17 那页专门讲过这个坑）。</p>
+<p><strong>这次连组件一起删，别只取消勾选</strong>：勾选框就贴在组件标题左边，很容易顺手又打开，动物当场开始抽搐，还不容易查出来。按 <code>F</code> 跟随这一整套，从这一课起就不用了。</p>
+<ol>
+<li><strong>删 <code>AnimalFollow</code> 组件</strong>：双击动物预制体进去，选中那个<strong>壳</strong>（和 <code>AnimalRoam</code> 同一层），点组件右上角的 <strong>⋮（三个点）→ 移除组件（Remove Component）</strong>。<strong>六个预制体各删一遍</strong><div class="step-img"><img src="images/课件18/作业_删AnimalFollow组件.png" alt="组件右上角三点菜单里选移除组件" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li>
+<li><strong>删 Player 上的 <code>PlayerCall</code> 组件</strong>：层级（Hierarchy）里选中 <code>Player</code>，同样 <strong>⋮ → 移除组件</strong>。<strong>先删组件、再删脚本</strong>——顺序反过来，Player 上会留一条红字的「缺少脚本（Missing）」</li>
+<li><strong>删 <code>PlayerCall.cs</code> 脚本</strong>：在<strong>项目（Project）</strong>窗口里找到 <code>PlayerCall.cs</code> → 右键 <strong>删除（Delete）</strong> → 弹窗点<strong>删除</strong>。从此按 <code>F</code> 不再有任何反应<div class="step-img"><img src="images/课件18/作业_删PlayerCall脚本.png" alt="项目窗口里右键删除 PlayerCall.cs" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li>
+</ol>
+<p><strong>保留</strong>：<code>NavMeshAgent</code>、<code>AnimalRoam</code>（发现之前照常巡逻）、<code>AnimalAnim</code>（播动画）、<code>AnimalFollow.cs</code>（脚本文件先留着，只是不再挂在动物身上）。</p></div>
 <div class="card"><h3>六步做完</h3>
 <p>新建 <code>AnimalGuard.cs</code>，挂在<strong>动物本体</strong>上（和 <code>AnimalRoam</code> 同一个物体），然后按顺序往里填：</p>
 <ol>
@@ -763,7 +769,7 @@ void Update()
 <strong>② 发现后忘了关 <code>roam</code></strong>：<code>AnimalRoam</code> 还在下目的地，两个脚本抢代理，动物边走边抽；<br>
 <strong>③ 追之前忘了 <code>isStopped = false</code></strong>：站住那一下之后它就<strong>再也动不了</strong>，只能原地干瞪眼；<br>
 <strong>④ 咬完忘了 <code>timer = 0</code></strong>：只咬一口，之后再也不咬；<br>
-<strong>⑤ <code>AnimalFollow</code> 没关</strong>：两套「追人」逻辑同时跑，谁后执行听谁的，行为完全不可预期。</div>
+<strong>⑤ <code>AnimalFollow</code> 没删干净</strong>：六个预制体漏删了一只，那一只上两套「追人」逻辑同时跑，谁后执行听谁的，行为完全不可预期。</div>
 <div class="card"><h3>进阶 · 跑远了它会忘掉你</h3>
 <p>上面这只动物有个毛病：<strong>发现你之后就死追到底</strong>，你跑再远它也不放弃。真实的猎物不这样——你逃出它的「耐心圈」，它就该<strong>忘了你、回去巡逻</strong>。做法：再加一个 <code>loseRange</code>，在「发现之后、追之前」插一步判断。</p>
 <p>先给成员补一行（和上面三个距离放一起）：</p>
