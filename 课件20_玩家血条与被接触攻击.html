@@ -413,14 +413,15 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
     <a href="#" class="nav-link" data-page="15"><span class="nav-status"></span>13. 敌人攻击力 · EnemyData</a>
     <a href="#" class="nav-link" data-page="16"><span class="nav-status"></span>14. 玩家扣血 · HealthChange</a>
     <a href="#" class="nav-link" data-page="17"><span class="nav-status"></span>15. 作业 · 血量数字与低血闪烁 <span class="nav-badge homework">作业</span></a>
-    <a href="#" class="nav-link nav-special" data-page="18"><span class="nav-status"></span>结束页</a>
+<a href="#" class="nav-link" data-page="18"><span class="nav-status"></span>16. 作业 · 骨架与三段 <span class="nav-badge homework">作业</span></a>
+    <a href="#" class="nav-link nav-special" data-page="19"><span class="nav-status"></span>结束页</a>
 
 </nav>
 <div class="main-area" id="mainArea">
     <div class="header-bar">
         <div class="progress-wrap">
             <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-            <span class="progress-text" id="progressText">0 / 16</span>
+            <span class="progress-text" id="progressText">0 / 17</span>
         </div>
         <div class="mobile-info" id="mobileInfo" onclick="mobileInfoTap()" style="cursor:pointer"><span class="mi-lesson"></span><span class="mi-sep">·</span><span class="mi-page"></span></div>
                 <button class="header-btn" id="flatBtn" onclick="toggleFlat()" title="切换分页 / 平铺（平铺便于打印导出 PDF）">📄 平铺</button>
@@ -830,6 +831,10 @@ public class EnemyData : MonoBehaviour
 <h1>作业 · 血量数字与低血闪烁</h1>
 <div class="card"><h3>基本要求</h3><p>血条已经会掉了，但屏幕上只有一个「大概」——剩 30 还是 31，看不出来；血量见底也没有任何提醒。这次作业给血条加两样东西：</p><ul><li><strong>血量数字</strong>：血条右端显示「当前 / 满血」，扣血时跟着变</li><li><strong>低血闪烁</strong>：血量低于 30 时，整条血条开始忽明忽暗</li></ul></div>
 <div class="card"><h3>核心要求</h3><ul><li>选中 <code>PlayerHealth</code>，右键 → <strong>UI → 旧版 → 文本（Text）</strong>（新版 TextMeshPro 要先导入资源，本次不用）；建出来就挂在它下面，改名 <code>HealthText</code>——默认只叫 <code>Text</code>，再往后层级里就会攒出 <code>Text(1)</code>、<code>Text(2)</code>，拖槽位时容易拖错<div class="step-img"><img src="images/课件20/作业_新建旧版文本.png" alt="选中 PlayerHealth 右键，UI → 旧版 → 文本，改名 HealthText，它就在 PlayerHealth 下面" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li><li>锚点选 <strong>右中</strong>；宽度 <code>160</code>、高度 <code>36</code>，位置 <code>X = -100</code>、<code>Y = 0</code>；字号 <code>30</code>、颜色改成<strong>白色</strong>、水平对齐选<strong>右（Right）</strong>、垂直对齐选<strong>居中</strong>，文本内容先填 <code>100 / 100</code> 占位——锚点一旦选右中，<code>X</code> 的意思就变成「离血条右边缘多远」，<strong>填负数才是往血条里缩</strong>；这一格要缩 <code>8</code>（红条比血条右沿内缩的四边偏移）<code>+ 12</code>（给数字留一点余量，贴着最边不好看）<code>+ 80</code>（文本宽 160 的一半）<code>= 100</code>，数字就落在红条右端稍往里一点的位置；想更贴边就填 <code>-88</code>，再往里 <code>-110</code> 左右也行，照截图微调。字号取 <code>30</code> 是这 50 高的血条里「塞得下又不发虚」的下限；对齐选右，位数变少（<code>100 / 100</code> 变成 <code>8 / 100</code>）时数字从右边往左缩，不会飘出条外<div class="step-img"><img src="images/课件20/作业_文本锚点右中.png" alt="HealthText 锚点右中，宽160高36，位置X-100 Y0，字号30、白色、右对齐、垂直居中" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li><li>闪烁用 <code>PlayerHealth</code> 上<strong>已经加过的画布组</strong>改 <code>alpha</code>，不要去改每张图的颜色<div class="step-img half"><img src="images/课件20/作业_画布组Alpha.png" alt="PlayerHealth 上的画布组组件，闪烁改的是 Alpha 这一项" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li><li>闪烁要能<strong>自己停下来</strong>：血量回到 30 以上，Alpha 必须恢复成 1</li></ul></div>
+<div class="card"><h3>骨架之外，还要做三件事</h3><ul><li><strong>两个槽位都要拖</strong>：<code>Player</code> 拖进 <code>health</code>，层级里的 <code>HealthText</code> 拖进 <code>healthText</code>——<code>healthText</code> 漏了，<code>Update</code> 里写数字那一行会直接空引用</li><li><strong>取血量不用自己找</strong>：<code>MaxHealth</code> 和 <code>CurrentHealth</code> 都是 <code>public</code>，拖好槽位后 <code>health.CurrentHealth</code> 就能读到</li><li><strong>想让数字待在血条中间</strong>：锚点选<strong>居中</strong>、对齐也选<strong>居中</strong>、位置 <code>X</code> 填 <code>0</code>——比用负的 X 去凑更直观，改宽度也不会偏</li></ul></div>
+</div></div>
+<div class="slide" data-page="18"><div class="slide-inner markable">
+<h1>作业 · 骨架与三段怎么补</h1>
 <div class="card"><h3>本次作业（必做）：补完三段 TODO</h3><p>新建 <code>HealthHUD.cs</code>，挂在 <code>PlayerHealth</code> 上。骨架如下，三处 <code>TODO</code> 自己写。</p></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_hw',this)">复制</button></div>
@@ -862,11 +867,35 @@ public class HealthHUD : MonoBehaviour
     }
 }</code></pre>
 </div>
-<div class="card"><h3>提示</h3><ul><li><strong>两个槽位都要拖</strong>：Player 拖进 <code>health</code>，新建的文本拖进 <code>healthText</code>——<code>healthText</code> 漏了，<code>Update</code> 里写数字那一行会直接空引用</li><li><strong>取血量</strong>：<code>MaxHealth</code> 和 <code>CurrentHealth</code> 都是 <code>public</code>，拖好槽位后 <code>health.CurrentHealth</code> 就能读到</li><li><strong>闪烁</strong>：<code>Mathf.PingPong(Time.time, 1f)</code> 会在 0～1 之间来回走，乘个系数再补个下限就是呼吸灯；不要用 <code>Random</code>，会闪得很难看</li><li><strong>文本</strong>：<code>CurrentHealth.ToString("0")</code> 去掉小数，再拼成 <code>"68 / 100"</code></li><li><strong>恢复</strong>：血量回到 30 以上，把 <code>alpha</code> 写回 <code>1f</code>，否则血条会一直是半透明的</li>
-<li><strong>想让数字待在血条中间</strong>：锚点选<strong>居中</strong>、对齐也选<strong>居中</strong>、位置 <code>X</code> 填 <code>0</code>——比用负的 X 去凑更直观，改宽度也不会偏</li></ul></div>
+
+<div class="card"><h3>三段怎么补</h3><p>骨架里留着三个 <code>TODO</code>，按顺序一段一段填：填完一段就能跑一段，先看数字对不对，再让它闪，最后试「血回上来要停」。每一段都给了写法和为什么，照着改就行——但<strong>先自己写一遍</strong>，卡住了再对。</p></div>
+<div class="card"><h3>① 数字：把两个血量拼成「68 / 100」</h3><p>替换第一处 <code>TODO</code>。两行就能出结果：</p></div>
+<div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_hw1',this)">复制</button></div><pre id="c20_hw1"><code class="language-csharp">// TODO ① 数字：当前 / 满血，取整
+if (healthText != null)
+{
+    healthText.text =
+        health.CurrentHealth.ToString("0") + " / " +
+        health.MaxHealth.ToString("0");
+}</code></pre></div>
+<div class="card"><h3>① 讲解</h3><ol><li><strong>读血量</strong>：<code>health.CurrentHealth</code> 和 <code>health.MaxHealth</code> 都是 <code>public</code> 字段，槽位拖好后直接点出来；不需要 <code>GetComponent</code>，也不要用标签去找。</li><li><strong><code>ToString("0")</code></strong>：只留整数。不写这半句，屏幕上会出现 <code>68.00000 / 100</code>——血量是 <code>float</code>，默认带一串小数。</li><li><strong>用什么拼都可以</strong>：<code>+</code> 拼字符串最简单；想让数字和血条右端贴齐，就是前面把文本对齐设成「右」的那一步在起作用。</li><li><strong><code>healthText != null</code></strong>：漏拖槽位时不至于整条 <code>Update</code> 崩掉；但也不会显示数字——所以槽位该拖还是得拖。</li></ol></div>
+<div class="card"><h3>②③ 闪烁与恢复：一个 if 配一个 else</h3><p>后两个 <code>TODO</code> 是<strong>一对</strong>，一起替换：</p></div>
+<div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c20_hw2',this)">复制</button></div><pre id="c20_hw2"><code class="language-csharp">// TODO ② 低血：alpha 在 0.35 ~ 1 之间来回闪
+if (health.CurrentHealth &lt; lowHealth)
+{
+    float t = Mathf.PingPong(Time.time * 2f, 1f);   // 0→1→0 往复
+    canvasGroup.alpha = Mathf.Lerp(0.35f, 1f, t);
+}
+// TODO ③ 回到 30 以上：立刻恢复，否则一直是半透明
+else
+{
+    canvasGroup.alpha = 1f;
+}</code></pre></div>
+<div class="card"><h3>②③ 讲解</h3><ol><li><strong><code>Mathf.PingPong(Time.time * 2f, 1f)</code></strong>：<code>Time.time</code> 只涨不回，<code>PingPong</code> 把它折成 0→1→0 来回走；乘 <code>2</code> 是闪的快慢，嫌快改 <code>1</code>、嫌慢改 <code>3</code>。</li><li><strong><code>Mathf.Lerp(0.35f, 1f, t)</code></strong>：把 0～1 映射到 0.35～1。留 35% 的底线，是因为 alpha 掉到 0 时血条彻底看不见，像突然消失。</li><li><strong>改的是画布组</strong>：<code>canvasGroup.alpha</code> 管的是整个 <code>PlayerHealth</code>——红条、底板、图标、数字一起暗下去。所以这里不用去改每张图的颜色。</li><li><strong>③ 必须是 <code>else</code></strong>：血回到 30 以上时，如果它单独写成 <code>if</code>，两个分支都不成立，<code>alpha</code> 会停在最后那个暗值，血条永远半透明。写成 <code>else</code>，回血那一刻就恢复成 1。</li><li><strong>边界</strong>：这里是「低于 30 才闪」，正好 30 不闪。想让它 30 就闪，把 <code>&lt;</code> 改成 <code>&lt;=</code>。</li></ol></div>
+<div class="ok-box">⚠️ 三个高频错：① <code>healthText</code> 漏拖，数字一动不动（不崩、也不报错）② ③ 写成 <code>if</code> 而不是 <code>else</code>，血回上来还一直半透明 ③ 脚本没挂在 <code>PlayerHealth</code> 上，<code>Start</code> 里 <code>GetComponent&lt;CanvasGroup&gt;()</code> 取到 <code>null</code>，闪烁整段不生效——挂错对象的话，检查器里那个 <code>CanvasGroup</code> 字段会是空的。</div>
 <div class="card"><h3>挑战（选做）</h3><ul><li>低血时把红条颜色改成更刺眼的亮红，血量回上来再改回 <code>F92137</code></li><li>加一个「受伤闪红」：被咬的瞬间屏幕边缘红一下（提示：在画布上铺一张全屏红色 Image，Alpha 从 0.4 快速降到 0）</li><li>把血条做成「延迟掉血」：前面一条浅色残影慢慢追上来，看起来更有打击感</li></ul></div>
+
 </div></div>
-<div class="slide" data-page="18"><div class="slide-inner end-page">
+<div class="slide" data-page="19"><div class="slide-inner end-page">
 
 <div class="end-thanks">
     <div class="end-left">
@@ -1035,7 +1064,7 @@ function changeFont(d){
 // ========== 幻灯片 ==========
 let slides=document.querySelectorAll('.slide,.cover'),
     navLinks=document.querySelectorAll('.nav-link'),
-    curr=0,total=18,contentTotal=16;
+    curr=0,total=19,contentTotal=17;
 
 // 进度圆点
 // 侧边栏点击
