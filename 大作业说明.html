@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>大作业说明 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -567,18 +568,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

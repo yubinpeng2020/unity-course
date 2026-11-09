@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件17_走近动物跟着走 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -396,6 +397,26 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
   border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
 .img-missing button:hover{border-color:var(--accent);color:var(--accent)}
 .img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -414,15 +435,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -492,7 +516,7 @@ function copyImgName(btn){
 <div class="slide" data-page="2"><div class="slide-inner markable">
 <h1>本节学习目标</h1>
 <img src="images/课件17/按F跟随.gif" alt="按F跟随" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="card"><h3>本课要做出来的效果</h3><p>走到一只动物跟前、按一下 <code>F</code>，它就跟在你身后；再按一下，它停下来、回去自己溜达。旁边更远的动物<strong>完全不理会</strong>。</p></div><div class="ok-box">💡 为什么选 <code>F</code>？因为 <strong>F 是本课程统一的「交互键」</strong>——后面《拾取物品》按 F 捡东西、《NPC 对话》按 F 开始对话，用的都是它。养成「走到跟前按 F」的习惯就好。</div>
+<div class="card"><h3>本课要做出来的效果</h3><p>走到一只动物跟前、按一下 <code>F</code>，它就跟在你身后；再按一下，它停下来、回去自己溜达。旁边更远的动物<strong>完全不理会</strong>。</p></div><div class="ok-box"><span class="eico">💡</span> 为什么选 <code>F</code>？因为 <strong>F 是本课程统一的「交互键」</strong>——后面《拾取物品》按 F 捡东西、《NPC 对话》按 F 开始对话，用的都是它。养成「走到跟前按 F」的习惯就好。</div>
 <div class="goal-grid"><div class="goal-card"><span class="goal-icon">🔎</span><span class="goal-text">用<strong>标签</strong>把玩家找出来：<code>FindGameObjectWithTag("Player")</code></span></div><div class="goal-card"><span class="goal-icon">📏</span><span class="goal-text">用 <code>Vector3.Distance</code> 量出「我和玩家差多远」</span></div><div class="goal-card"><span class="goal-icon">🗂️</span><span class="goal-text">用 <code>FindObjectsOfType</code> <strong>一次收齐</strong>场上所有动物</span></div><div class="goal-card"><span class="goal-icon">🎯</span><span class="goal-text">挨个比距离，只挑<strong>离我最近的那一只</strong></span></div><div class="goal-card"><span class="goal-icon">⌨️</span><span class="goal-text">按 <code>F</code> 切换「跟着走 / 自己溜达」，<strong>两个分支都要写全</strong></span></div><div class="goal-card"><span class="goal-icon">🐾</span><span class="goal-text">跟随时用 <code>SetDestination</code> 停在身后 2 米，散开要把距离还原</span></div></div>
 </div></div>
 
@@ -567,7 +591,7 @@ function copyImgName(btn){
 <text x="380" y="490" font-size="11.5" class="sv-t2" text-anchor="middle"><tspan class="sv-acc-blue" font-weight="700">PlayerCall</tspan> 管按键和点名，<tspan class="sv-acc-blue" font-weight="700">AnimalFollow</tspan> 管开关和目的地，<tspan class="sv-acc-blue" font-weight="700">AnimalRoam</tspan> 管巡逻（课件16 已有）</text>
 </svg></div>
 <div class="card"><h3>为什么按键不能写在动物身上</h3><p>按键检测如果写在动物的脚本里，场上<strong>每一只动物都会各自收到 <code>F</code></strong>——按一下，所有动物一起跟着你走。可我们要的是「<strong>走近谁，谁才理我</strong>」，所以按键和点名只在<strong>玩家</strong>这一侧做，动物只负责执行。</p><p><strong>结论：键盘是全场共用的一份输入，读它的人只该有一个。</strong>统一读、再分发：按一下 <code>F</code> 只触发一次，谁动、谁不动，也全由它说了算。</p></div>
-<div class="ok-box">📌 <strong>动手顺序</strong>：前一块没做通，后一块一定跑不起来——<strong>量距离</strong>有了，<strong>点名</strong>才有得比；点名叫到谁，才谈得上让它<strong>跟到身后</strong>。</div>
+<div class="ok-box"><span class="eico">📌</span> <strong>动手顺序</strong>：前一块没做通，后一块一定跑不起来——<strong>量距离</strong>有了，<strong>点名</strong>才有得比；点名叫到谁，才谈得上让它<strong>跟到身后</strong>。</div>
 </div></div>
 <div class="slide" data-page="4"><div class="slide-inner markable">
 <h1>准备 · 脚本分工：两个新建、一个修改</h1>
@@ -581,7 +605,7 @@ function copyImgName(btn){
 <p><strong>一句话记住</strong>：<strong>两个新脚本，一个挂动物、一个挂玩家</strong>；<code>AnimalRoam</code> 不用新建，后面只给它补一个方法。</p></div>
 <div class="card"><h3><span class="tag-new">新建</span>脚本：Scripts 文件夹 → 创建 → C# 脚本</h3><p>在项目（Project）窗口的 <code>Scripts</code> 文件夹上<strong>右键 → 创建（Create）→ C# 脚本（C# Script）</strong>，再把名字改准：<strong>文件名和类名必须一模一样</strong>（<code>AnimalFollow.cs</code> ↔ <code>public class AnimalFollow</code>），差一个字母就挂不上。</p><img src="images/课件17/新建脚本文件.png" alt="新建脚本文件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:100%;max-height:none;float:none;display:block;margin:14px auto 4px" onerror="imgMissing(this)"></div>
 <div class="card"><h3>挂载：脚本要挂对地方才算数</h3><p><strong><code>AnimalFollow</code> → 动物<em>预制体</em></strong>：双击 <code>PreFabs</code> 里的动物预制体，在检查器里点「添加组件（Add Component）」搜脚本名。挂<strong>预制体</strong>，<strong>每一只</strong>动物都有；只挂场景里某一只，就只有那一只会跟。</p><p><strong><code>PlayerCall</code> → 场景里的 <code>Player</code></strong>：它管按键和点名，跟动物没关系，别挂到动物身上。</p><div class="contest-row"><img src="images/课件17/AnimalFollow挂到动物预制体.png" alt="AnimalFollow 挂到动物预制体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件17/PlayerCall挂到Player.png" alt="PlayerCall 挂到 Player" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
-<div class="ok-box">⚠️ 挂错了会这样：<code>AnimalFollow</code> 只挂给场景里的一只 → <strong>只有它会跟着你</strong>，其余动物不动；<code>PlayerCall</code> 挂到动物身上 → <strong>每只动物各听一次按键</strong>，按一下全跟着你；同一个脚本建出两个同名文件 → 控制台报「<strong>已存在同名类型</strong>」，整个工程都编译不过。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 挂错了会这样：<code>AnimalFollow</code> 只挂给场景里的一只 → <strong>只有它会跟着你</strong>，其余动物不动；<code>PlayerCall</code> 挂到动物身上 → <strong>每只动物各听一次按键</strong>，按一下全跟着你；同一个脚本建出两个同名文件 → 控制台报「<strong>已存在同名类型</strong>」，整个工程都编译不过。</div>
 </div></div>
 <div class="slide" data-page="5"><div class="slide-inner markable">
 <h1>步骤 ① · 动物算出离玩家多远</h1>
@@ -613,7 +637,7 @@ public class AnimalFollow : MonoBehaviour
 }</code></pre></div>
 <div class="card"><h3>代码讲解</h3><ol><li><strong>先跑通「找到玩家」这一步</strong>：脚本挂上、标签贴好，按播放，控制台稳定打出一行距离——没报错就说明玩家找对了。</li><li><strong>为什么拆成两个方法</strong>：只跟开局有关的（找玩家）放 <code>Start</code>，每帧都在变的（距离）放 <code>Update</code>。两样都塞 <code>Start</code>，数字就永远不动；两样都塞 <code>Update</code>，等于每帧满场景查找，白白掉帧。</li><li><strong><code>player</code> 必须写成字段</strong>：<code>Start</code> 里赋值、<code>Update</code> 里使用，跨方法还要活着的东西只能放类里。写成 <code>Start</code> 里的局部变量，<code>Update</code> 根本看不见。</li><li><strong>靠标签找对象</strong>：要跟的玩家和脚本不在同一个物体上，只能满场景找——<code>FindGameObjectWithTag</code>，和课件14 ② 是同一种办法；它认的是<strong>标签</strong>、不是对象名（按名字找是 <code>GameObject.Find</code>）。</li><li><strong>它返回的是 <code>GameObject</code></strong>：要拿位置还得接一句 <code>.transform</code>；字段类型写成 <code>Transform</code>，是因为只需要位置、不必留整个对象。</li><li><strong><code>Vector3.Distance(A, B)</code> 就是两点直线距离</strong>：把两个 <code>position</code> 直接传进去，不用自己算平方和开根号。</li><li><strong><code>Debug.Log</code> 是「打印到控制台」</strong>：调试距离、朝向这类看不见的数字最顺手；正式发布前记得别留着每帧刷屏。</li><li><strong>标签没设对，立刻报错</strong>：<code>p</code> 是 <code>null</code>，<code>player</code> 就没赋上值，<code>Update</code> 里去取 <code>position</code> 就是 <code>NullReferenceException</code>，控制台红一片。先回去检查 <code>Player</code> 的标签。</li></ol></div>
 <img src="images/课件17/距离日志.png" alt="距离日志" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="ok-box">💡 现在你往动物走近，控制台里这个数字会<strong>一路变小</strong>——因为它写在 <code>Update</code> 里，每帧重算一次。这个数字，就是接下来「<strong>多近才理我</strong>」那把尺子。</div>
+<div class="ok-box"><span class="eico">💡</span> 现在你往动物走近，控制台里这个数字会<strong>一路变小</strong>——因为它写在 <code>Update</code> 里，每帧重算一次。这个数字，就是接下来「<strong>多近才理我</strong>」那把尺子。</div>
 </div></div>
 <div class="slide" data-page="6"><div class="slide-inner markable">
 <h1>步骤 ②③ · 按下 F，挑出最近的那只</h1>
@@ -702,7 +726,7 @@ public class PlayerCall : MonoBehaviour
         // —— 只叫最近那一只；一只都没有就不动 ——
         if (nearest != null) nearest.ToggleFollow();
     }
-}</code></pre></div><div class="card"><h3>本页重点：<code>FindObjectsOfType</code> —— 一句话把场上的动物全点出来</h3><p>整段代码真正<strong>没见过</strong>的只有这一句，剩下的全是在围着它做判断：</p><p style="margin:12px 0 14px"><code style="font-size:15px">AnimalFollow[] animals = FindObjectsOfType&lt;AnimalFollow&gt;();</code></p><p><strong>拆开读，一句话四段：</strong></p><ul><li><code>FindObjectsOfType</code>：把当前场景从头到尾扫一遍，找<strong>一类</strong>东西。</li><li><code>&lt;AnimalFollow&gt;</code>：尖括号里填的是<strong>组件类型</strong>——「只要带这个组件的」。这一填就是筛子：没挂这个脚本的对象，一个都进不来。</li><li><code>AnimalFollow[]</code>：返回的是<strong>数组</strong>，不是一只。场上有几只带这个组件的动物，数组里就有几项。</li><li><code>animals</code>：把这一串装进变量，下一步用 <code>foreach</code> 挨个比距离。</li></ul><p><strong>最容易误解的一点：拿到的是组件，不是动物。</strong>数组里每一项都是「某只动物<strong>身上</strong>的那个 <code>AnimalFollow</code>」。组件挂在哪只动物身上，它代表的就是哪只动物——所以能直接 <code>a.transform.position</code> 问出它站在哪，也能直接 <code>a.ToggleFollow()</code> 让它<strong>切换跟随模式</strong>。<strong>要它的位置、要它做事，都顺着这个组件走。</strong></p><p><strong>为什么不一个个拖引用？</strong>课件14 学的拖引用，一个槽只对一个对象：场上有几只动物，就得在检查器里拖几次，多一只、少一只都得回来改。这句反过来了——<strong>不用提前知道场上有谁</strong>，运行时自己去收，场上有几只就收几只。</p><table><tr><th>找法</th><th>认什么</th><th>一次拿到几个</th></tr><tr><td><code>GameObject.Find("Player")</code></td><td>对象<strong>名字</strong></td><td>一个（第一个撞上的）</td></tr><tr><td><code>FindGameObjectWithTag("Player")</code></td><td><strong>标签</strong></td><td>一个（第一个撞上的）</td></tr><tr><td><code>FindObjectsOfType&lt;AnimalFollow&gt;()</code></td><td><strong>组件类型</strong></td><td><strong>全部</strong></td></tr></table><p><strong>代价也要知道：它慢。</strong>它等于把整个场景翻一遍，场上东西越多越费。所以这句绝不能放在 <code>Update</code> 开头每帧跑——那等于每秒把场景翻 60 遍。</p><p style="font-size:13px;opacity:.72">较新的 Unity 版本（2022.2 之后）可能给一条<strong>黄色提示</strong>，说这个方法已经过时。那不是报错，程序照常跑；本课沿用课件14 的写法，先把事情跑通。</p></div><div class="card"><h3>代码讲解</h3><p>那一句之外，其余几行各管一件事：</p><ol><li><strong><code>GetKeyDown</code> 是「按下的那一瞬间」</strong>：<code>GetKey</code> 是按住不放、每帧都算，做「按一下就切换」必须用 <code>GetKeyDown</code>。</li><li><strong><code>if (!…) return;</code> 是提前退出</strong>：没按 F，这一帧立刻结束——那句很费的查找，就靠它保证一帧最多跑一次。</li><li><strong><code>min</code> 一开始等于 <code>callDistance</code></strong>：这就是「太远就不理」的门槛——比 3 米还远的话，<code>nearest</code> 会一直是 <code>null</code>。</li><li><strong>遍历时只留「更近的那一个」</strong>：<code>d &lt; min</code> 成立才更新，一圈走完，手里剩下的就是最近的一只。</li><li><strong><code>nearest != null</code> 不能省</strong>：周围一只动物都没有时，直接调 <code>ToggleFollow()</code> 会空引用报错。</li><li><strong><code>ToggleFollow()</code> 是动物那边的 <code>public</code> 方法</strong>：脚本之间就是这样「喊一声」的——玩家负责点名，动物自己切状态。</li></ol></div><div class="ok-box">💡 <strong>引擎没有「帮我找最近的」这种 API。</strong><code>FindObjectsOfType</code> 只负责把候选全收下来；谁最近，得自己一只只量。课件14「让所有猫一起转圈」收下来就<strong>全叫</strong>——那次本来就要全场一起动；这一次收下来还得挑，最后只有一个会跟着你走。</div></div></div>
+}</code></pre></div><div class="card"><h3>本页重点：<code>FindObjectsOfType</code> —— 一句话把场上的动物全点出来</h3><p>整段代码真正<strong>没见过</strong>的只有这一句，剩下的全是在围着它做判断：</p><p style="margin:12px 0 14px"><code style="font-size:15px">AnimalFollow[] animals = FindObjectsOfType&lt;AnimalFollow&gt;();</code></p><p><strong>拆开读，一句话四段：</strong></p><ul><li><code>FindObjectsOfType</code>：把当前场景从头到尾扫一遍，找<strong>一类</strong>东西。</li><li><code>&lt;AnimalFollow&gt;</code>：尖括号里填的是<strong>组件类型</strong>——「只要带这个组件的」。这一填就是筛子：没挂这个脚本的对象，一个都进不来。</li><li><code>AnimalFollow[]</code>：返回的是<strong>数组</strong>，不是一只。场上有几只带这个组件的动物，数组里就有几项。</li><li><code>animals</code>：把这一串装进变量，下一步用 <code>foreach</code> 挨个比距离。</li></ul><p><strong>最容易误解的一点：拿到的是组件，不是动物。</strong>数组里每一项都是「某只动物<strong>身上</strong>的那个 <code>AnimalFollow</code>」。组件挂在哪只动物身上，它代表的就是哪只动物——所以能直接 <code>a.transform.position</code> 问出它站在哪，也能直接 <code>a.ToggleFollow()</code> 让它<strong>切换跟随模式</strong>。<strong>要它的位置、要它做事，都顺着这个组件走。</strong></p><p><strong>为什么不一个个拖引用？</strong>课件14 学的拖引用，一个槽只对一个对象：场上有几只动物，就得在检查器里拖几次，多一只、少一只都得回来改。这句反过来了——<strong>不用提前知道场上有谁</strong>，运行时自己去收，场上有几只就收几只。</p><table><tr><th>找法</th><th>认什么</th><th>一次拿到几个</th></tr><tr><td><code>GameObject.Find("Player")</code></td><td>对象<strong>名字</strong></td><td>一个（第一个撞上的）</td></tr><tr><td><code>FindGameObjectWithTag("Player")</code></td><td><strong>标签</strong></td><td>一个（第一个撞上的）</td></tr><tr><td><code>FindObjectsOfType&lt;AnimalFollow&gt;()</code></td><td><strong>组件类型</strong></td><td><strong>全部</strong></td></tr></table><p><strong>代价也要知道：它慢。</strong>它等于把整个场景翻一遍，场上东西越多越费。所以这句绝不能放在 <code>Update</code> 开头每帧跑——那等于每秒把场景翻 60 遍。</p><p style="font-size:13px;opacity:.72">较新的 Unity 版本（2022.2 之后）可能给一条<strong>黄色提示</strong>，说这个方法已经过时。那不是报错，程序照常跑；本课沿用课件14 的写法，先把事情跑通。</p></div><div class="card"><h3>代码讲解</h3><p>那一句之外，其余几行各管一件事：</p><ol><li><strong><code>GetKeyDown</code> 是「按下的那一瞬间」</strong>：<code>GetKey</code> 是按住不放、每帧都算，做「按一下就切换」必须用 <code>GetKeyDown</code>。</li><li><strong><code>if (!…) return;</code> 是提前退出</strong>：没按 F，这一帧立刻结束——那句很费的查找，就靠它保证一帧最多跑一次。</li><li><strong><code>min</code> 一开始等于 <code>callDistance</code></strong>：这就是「太远就不理」的门槛——比 3 米还远的话，<code>nearest</code> 会一直是 <code>null</code>。</li><li><strong>遍历时只留「更近的那一个」</strong>：<code>d &lt; min</code> 成立才更新，一圈走完，手里剩下的就是最近的一只。</li><li><strong><code>nearest != null</code> 不能省</strong>：周围一只动物都没有时，直接调 <code>ToggleFollow()</code> 会空引用报错。</li><li><strong><code>ToggleFollow()</code> 是动物那边的 <code>public</code> 方法</strong>：脚本之间就是这样「喊一声」的——玩家负责点名，动物自己切状态。</li></ol></div><div class="ok-box"><span class="eico">💡</span> <strong>引擎没有「帮我找最近的」这种 API。</strong><code>FindObjectsOfType</code> 只负责把候选全收下来；谁最近，得自己一只只量。课件14「让所有猫一起转圈」收下来就<strong>全叫</strong>——那次本来就要全场一起动；这一次收下来还得挑，最后只有一个会跟着你走。</div></div></div>
 
 <div class="slide" data-page="7"><div class="slide-inner markable">
 <h1>步骤 ④ · 让它跟过来</h1>
@@ -789,7 +813,7 @@ public class AnimalFollow : MonoBehaviour
             }
         }
     }
-}</code></pre></div><div class="card"><h3>代码讲解</h3><ol><li><strong>整段盖掉上一页那个脚本</strong>：和上一页比，标了 <strong>①②③④⑤</strong> 的行是这页新加的——上一页只量距离、把数字打出来，这一页才真的走起来。</li><li><strong>三样东西都在 <code>Start</code> 里取一次</strong>：导航代理、<code>AnimalRoam</code>、玩家位置都不会中途换，一次性拿好存起来。</li><li><strong><code>roam</code> 是同一只动物身上的「同事」</strong>：<code>GetComponent&lt;AnimalRoam&gt;()</code> 取的是<strong>自己身上</strong>的另一个脚本（课件14 讲过按组件类型取）。</li><li><strong><code>public void ToggleFollow()</code> 是给 <code>PlayerCall</code> 调用的</strong>：方法写成 <code>public</code>，别的脚本才喊得动；写成 <code>private</code>，对方根本看不见。</li><li><strong><code>isFollowing = !isFollowing</code> 是「开关」写法</strong>：一行完成「真变假、假变真」，按一次切换一次。</li><li><strong><code>roam.enabled = !isFollowing</code> 就是本课的坑</strong>：跟随时把「自由溜达」<strong>关掉</strong>，两个脚本才不会抢同一个目的地。</li><li><strong>目的地不是玩家本人，是「离玩家 2 米、靠我这一侧」的那个点</strong>：直接拿玩家位置当终点，动物就会一路朝你身上走，快到才刹车——代理速度 3.5、加速度 8，光刹车就要滑 <strong>0.77 米</strong>，最后稳稳压在你身上。<code>you + dir * followDistance</code> 把终点挪到圈的边上，它走到那儿就「到站」了。</li><li><strong>两个距离各管一件事，别合成一个数</strong>：<code>followDistance = 2</code> 是「<strong>我</strong>要离你 2 米」，管的是目的地画在哪个圈上；<code>stoppingDistance = 0.2</code> 是「离<strong>目的地</strong>还剩 0.2 米才算到」，管的是差多少就停。要是把 <code>stoppingDistance</code> 也设成 2，代理在离终点 2 米时就刹死——而终点本来就离你 2 米，等于离你 4 米就不走了。</li><li><strong>只量水平距离</strong>：先把两边的 <code>y</code> 都摁成 <code>0</code> 再算——上下坡、跳上台阶都不会影响「离你多远」的判断。不摁的话，动物站在高处会因为高度差被算成「还很远」，一路往你脚下钻。</li><li><strong><code>isStopped</code> 才是真刹车，<code>ResetPath()</code> 不是</strong>：清路只是「把这条路忘了」，速度还在，代理会按加速度再滑一段；<code>isStopped = true</code> 直接把速度归零、当场站住。它也是个开关——下次要它走，必须先 <code>false</code> 再 <code>SetDestination</code>，还是 <code>true</code> 时给新目的地它照样不动。</li><li><strong>为什么用 <code>SetDestination</code> 而不是 <code>transform.Translate</code></strong>：代理会自己绕开墙、贴着导航网格走，V1 那套「一直往前推」做不到。</li></ol></div><div class="ok-box">💡 <strong>这页是实测改出来的</strong>：只写 <code>SetDestination(player.position)</code> 加 <code>stoppingDistance = 2</code>，动物<strong>还是会贴到身上</strong>。两个原因——① 目的地在玩家身上，它一开始就朝着你冲；② <code>ResetPath()</code> 不刹车，速度 3.5、加速度 8，松手还要滑 <strong>0.77 米</strong>。把目的地挪到「离你 2 米的圈上」、停下再 <code>isStopped = true</code> 摁住，才真的停得住。</div>
+}</code></pre></div><div class="card"><h3>代码讲解</h3><ol><li><strong>整段盖掉上一页那个脚本</strong>：和上一页比，标了 <strong>①②③④⑤</strong> 的行是这页新加的——上一页只量距离、把数字打出来，这一页才真的走起来。</li><li><strong>三样东西都在 <code>Start</code> 里取一次</strong>：导航代理、<code>AnimalRoam</code>、玩家位置都不会中途换，一次性拿好存起来。</li><li><strong><code>roam</code> 是同一只动物身上的「同事」</strong>：<code>GetComponent&lt;AnimalRoam&gt;()</code> 取的是<strong>自己身上</strong>的另一个脚本（课件14 讲过按组件类型取）。</li><li><strong><code>public void ToggleFollow()</code> 是给 <code>PlayerCall</code> 调用的</strong>：方法写成 <code>public</code>，别的脚本才喊得动；写成 <code>private</code>，对方根本看不见。</li><li><strong><code>isFollowing = !isFollowing</code> 是「开关」写法</strong>：一行完成「真变假、假变真」，按一次切换一次。</li><li><strong><code>roam.enabled = !isFollowing</code> 就是本课的坑</strong>：跟随时把「自由溜达」<strong>关掉</strong>，两个脚本才不会抢同一个目的地。</li><li><strong>目的地不是玩家本人，是「离玩家 2 米、靠我这一侧」的那个点</strong>：直接拿玩家位置当终点，动物就会一路朝你身上走，快到才刹车——代理速度 3.5、加速度 8，光刹车就要滑 <strong>0.77 米</strong>，最后稳稳压在你身上。<code>you + dir * followDistance</code> 把终点挪到圈的边上，它走到那儿就「到站」了。</li><li><strong>两个距离各管一件事，别合成一个数</strong>：<code>followDistance = 2</code> 是「<strong>我</strong>要离你 2 米」，管的是目的地画在哪个圈上；<code>stoppingDistance = 0.2</code> 是「离<strong>目的地</strong>还剩 0.2 米才算到」，管的是差多少就停。要是把 <code>stoppingDistance</code> 也设成 2，代理在离终点 2 米时就刹死——而终点本来就离你 2 米，等于离你 4 米就不走了。</li><li><strong>只量水平距离</strong>：先把两边的 <code>y</code> 都摁成 <code>0</code> 再算——上下坡、跳上台阶都不会影响「离你多远」的判断。不摁的话，动物站在高处会因为高度差被算成「还很远」，一路往你脚下钻。</li><li><strong><code>isStopped</code> 才是真刹车，<code>ResetPath()</code> 不是</strong>：清路只是「把这条路忘了」，速度还在，代理会按加速度再滑一段；<code>isStopped = true</code> 直接把速度归零、当场站住。它也是个开关——下次要它走，必须先 <code>false</code> 再 <code>SetDestination</code>，还是 <code>true</code> 时给新目的地它照样不动。</li><li><strong>为什么用 <code>SetDestination</code> 而不是 <code>transform.Translate</code></strong>：代理会自己绕开墙、贴着导航网格走，V1 那套「一直往前推」做不到。</li></ol></div><div class="ok-box"><span class="eico">💡</span> <strong>这页是实测改出来的</strong>：只写 <code>SetDestination(player.position)</code> 加 <code>stoppingDistance = 2</code>，动物<strong>还是会贴到身上</strong>。两个原因——① 目的地在玩家身上，它一开始就朝着你冲；② <code>ResetPath()</code> 不刹车，速度 3.5、加速度 8，松手还要滑 <strong>0.77 米</strong>。把目的地挪到「离你 2 米的圈上」、停下再 <code>isStopped = true</code> 摁住，才真的停得住。</div>
 </div></div>
 <div class="slide" data-page="8"><div class="slide-inner markable">
 <h1>步骤 ⑤ · 把 ToggleFollow 写全两种状态</h1>
@@ -896,7 +920,7 @@ public class AnimalFollow : MonoBehaviour
     }
 }</code></pre></div>
 <div class="card"><h3>代码讲解</h3><ol><li><strong>两份都贴整段、直接覆盖原文件</strong>：前面那个 <code>ToggleFollow</code> 只有「关掉」，这里补上「怎么重新打开」。别只把方法粘进去——粘错位置或者和旧代码重名，编译直接报错。</li><li><strong>用 <code>if / else</code> 分两种状态写</strong>：跟随、散开各要改哪几样，一屏看清；原来那行 <code>roam.enabled = !isFollowing</code> 太挤，第二件事没地方放。</li><li><strong><code>roam.enabled = false</code> 是让 <code>AnimalRoam</code> 闭嘴</strong>：它的 <code>Update</code> 不再执行，就不会再跟 <code>AnimalFollow</code> 抢目的地；<code>enabled</code> 不是删脚本，改回 <code>true</code> 立刻复活。</li><li><strong><code>stoppingDistance</code> 跟随时给 <code>0.2</code>、散开还回 <code>0</code></strong>：跟随时目的地是「离你 2 米的那个圈」，代理得走到圈上才算到，所以给个小值；散开是回到 <code>AnimalRoam</code> 的地盘，把参数还成默认——自己改过的东西别留给别人的逻辑。</li><li><strong>⚠️ <code>agent.isStopped = false</code> 这一行千万别漏</strong>：跟到 2 米时把它摁成了 <code>true</code>，散开时不解冻，<code>RestartRoam()</code> 就算给了新目的地，代理也一动不动——表现就是「再按 F 没反应」。<strong>刹车是谁摁的，就得谁松开。</strong></li></ol></div>
-<div class="ok-box">➡️ 这一页只解决了「两个脚本抢目的地」和「<code>stoppingDistance</code> 没还回去」。可动物还是不动——它记着的目的地仍然是<strong>玩家</strong>，而且已经被判定「到了」。下一页解决这最后一步。</div>
+<div class="ok-box"><span class="eico">➡️</span> 这一页只解决了「两个脚本抢目的地」和「<code>stoppingDistance</code> 没还回去」。可动物还是不动——它记着的目的地仍然是<strong>玩家</strong>，而且已经被判定「到了」。下一页解决这最后一步。</div>
 </div></div>
 <div class="slide" data-page="9"><div class="slide-inner markable">
 <h1>步骤 ⑥ · 叫 AnimalRoam 重新起步</h1>
@@ -967,7 +991,7 @@ public class AnimalRoam : MonoBehaviour
     }
 }</code></pre></div>
 <div class="card"><h3>代码讲解</h3><ol><li><strong><code>roam.RestartRoam()</code> 这句不能省</strong>：此刻代理的最后一个目的地还是<strong>玩家</strong>，而且已经被判定「到了」——可 <code>AnimalRoam</code> 只在「到了」时才去挑下一个点，它自己不会重新起步，<strong>必须由切换的这一方主动叫它一声</strong>。</li><li><strong><code>RestartRoam</code> 要写成 <code>public</code></strong>：和 <code>ToggleFollow</code> 一个道理——写成 <code>private</code>，另一个脚本根本看不见、也喊不动（课件14 的「脚本之间喊一声」）。</li><li><strong>回扣课件14</strong>：「多个脚本改同一个属性会打架」——当时的办法是「别改」，这次的办法是「<strong>让其中一个先闭嘴，需要时再叫醒</strong>」。</li><li><strong><code>Start</code> 里那句也跟着改了</strong>：原来是 <code>MoveToRandomPoint()</code>，这里写成 <code>MoveToNextPoint()</code>——有巡逻点就走定点，没拖 <code>Waypoints</code> 就自动退回随机，两种情况都能跑。</li></ol></div>
-<div class="ok-box">⚠️ 如果按了第二次 <code>F</code>，动物却<strong>站在原地不动</strong>，就是这两处漏了：① <code>stoppingDistance</code> 还留在 2 米——永远差一截，「到了没」判定不到；② 没人叫它重新起步。两处都补上，动物才会接着一站一站巡。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 如果按了第二次 <code>F</code>，动物却<strong>站在原地不动</strong>，就是这两处漏了：① <code>stoppingDistance</code> 还留在 2 米——永远差一截，「到了没」判定不到；② 没人叫它重新起步。两处都补上，动物才会接着一站一站巡。</div>
 </div></div>
 <div class="slide" data-page="10"><div class="slide-inner markable">
 <h1>作业 · 走近 + 按 F，动物跟着走</h1>
@@ -981,7 +1005,7 @@ foreach (AnimalFollow a in animals)
         min = d;
         nearest = a;
     }
-}</code></pre></div><div class="card"><h3>挑战（选做）</h3><ul><li><strong>跟成一路纵队</strong>：改一下 <code>PlayerCall</code>，让 <code>callDistance</code> 范围内的<strong>所有</strong>动物一起跟，看看它们会不会自己排队</li><li><strong>隔着墙就不跟</strong>：用 <code>Physics.Linecast</code> 从动物往玩家打一条射线，中间被墙挡住就不响应 F——这是做「敌人 AI」时常用的视线检测</li></ul></div><div class="ok-box">⚠️ 按了 <code>F</code> <strong>没反应</strong>，或者叫过来的<strong>不是最近那只</strong>，先回 <code>foreach</code> 里看这两处：① <code>min</code> 的初值写成了 <code>0</code>——没有哪只动物的距离会小于 0，<code>nearest</code> 一直是 <code>null</code>，按多少次都毫无反应；② 只写了 <code>nearest = a</code>、忘了 <code>min = d</code>——门槛一直停在 3 米，3 米内的动物一只顶掉一只，最后留下的是<strong>最后一只</strong>，不是最近的。</div>
+}</code></pre></div><div class="card"><h3>挑战（选做）</h3><ul><li><strong>跟成一路纵队</strong>：改一下 <code>PlayerCall</code>，让 <code>callDistance</code> 范围内的<strong>所有</strong>动物一起跟，看看它们会不会自己排队</li><li><strong>隔着墙就不跟</strong>：用 <code>Physics.Linecast</code> 从动物往玩家打一条射线，中间被墙挡住就不响应 F——这是做「敌人 AI」时常用的视线检测</li></ul></div><div class="ok-box"><span class="eico">⚠️</span> 按了 <code>F</code> <strong>没反应</strong>，或者叫过来的<strong>不是最近那只</strong>，先回 <code>foreach</code> 里看这两处：① <code>min</code> 的初值写成了 <code>0</code>——没有哪只动物的距离会小于 0，<code>nearest</code> 一直是 <code>null</code>，按多少次都毫无反应；② 只写了 <code>nearest = a</code>、忘了 <code>min = d</code>——门槛一直停在 3 米，3 米内的动物一只顶掉一只，最后留下的是<strong>最后一只</strong>，不是最近的。</div>
 </div></div>
 <div class="slide" data-page="11"><div class="slide-inner end-page">
 
@@ -1248,18 +1272,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

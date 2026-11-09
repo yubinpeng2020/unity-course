@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件24_FPS场景玩家武器 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -339,6 +340,26 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
   border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
 .img-missing button:hover{border-color:var(--accent);color:var(--accent)}
 .img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -357,15 +378,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -443,7 +467,7 @@ function copyImgName(btn){
 <div class="card"><h3>② 勾「免费资源」，挑一把武器</h3><ul><li>右侧筛选栏 → 价格 → 勾「<strong>免费资源</strong>」，列表里就只剩免费的</li><li>本课用这一把：<a href="https://assetstore.u3d.cn/packages/3d/environments/sci-fi/assetstore-package-20003467#content" target="_blank" rel="noopener">免费版：低多边形科幻能量爆能枪 - 贝塔扇区</a>（3 把低多边形爆能枪，自带预制体）</li></ul></div><div class="contest-row"><img src="images/课件24/获取武器2-免费资源.png" alt="勾选免费资源后挑选武器" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件24/获取武器3-资源详情.png" alt="打开武器的资源详情页" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
 <div class="card"><h3>③ 看清信息，点「免费获取」</h3><ul><li><strong>概述</strong>：确认支持的 Unity 版本与渲染管线里有本项目用的那一种</li><li><strong>资源包内容</strong>：看文件大小和目录——这个包里是<strong>3 个模型 + 1 张贴图 + 1 个材质</strong>，还带一个 URP 演示场景</li><li>详情页点「<strong>免费获取（添加至我的资源）</strong>」→ 弹窗点「我已阅读并同意」→ 网页显示「<strong>添加至我的资源</strong>」</li></ul></div><div class="contest-row"><img src="images/课件24/获取武器4-免费获取.png" alt="点免费获取，添加到我的资源" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件24/获取武器5-已添加至我的资源.png" alt="网页显示已添加至我的资源" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
 <div class="card"><h3>二、回到 Unity，下载并导入</h3><ul><li>菜单 <strong>窗口（Window）→ 包管理器（Package Manager）</strong>，左上角下拉框把「包：内置」切成「<strong>我的资产</strong>」</li><li>找到刚获取的武器资源，先点「<strong>下载</strong>」拉到本地，再点「<strong>导入</strong>」，弹窗里再点一次「导入」</li><li>导入完成后，<strong>项目（Project）</strong>窗口的 <code>Assets</code> 下会多出该资源的文件夹，模型、贴图、材质、预制体都在里面</li></ul></div><img src="images/课件24/获取武器6-包管理器我的资产.png" alt="包管理器切到我的资产" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="contest-row"><img src="images/课件24/获取武器7-下载并导入.png" alt="点下载与导入" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件24/获取武器8-导入后的项目资源.png" alt="项目窗口里导入后的资源文件夹" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
-<div class="ok-box">⚠️ 武器拖进场景后如果<strong>材质全是紫色</strong>：资源自带的 Shader 和本项目的渲染管线没对上（这个资源同时提供了 URP / 内置 / HDRP 三套设置文件）。处理和课件10 里「把地形材质修好」是同一件事。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 武器拖进场景后如果<strong>材质全是紫色</strong>：资源自带的 Shader 和本项目的渲染管线没对上（这个资源同时提供了 URP / 内置 / HDRP 三套设置文件）。处理和课件10 里「把地形材质修好」是同一件事。</div>
 </div></div>
 <div class="slide" data-page="4"><div class="slide-inner markable">
 <h1>武器预制体 — 模型与材质</h1>
@@ -747,18 +771,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

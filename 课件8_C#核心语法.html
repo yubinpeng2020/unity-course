@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件8_C#核心语法 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -354,15 +355,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -444,7 +448,7 @@ function copyImgName(btn){
 <div class="card"><h3>编程语言发展简史</h3></div><div class="card"><table><tr><th>时代</th><th>标志</th></tr><tr><td>💾 <strong>1946-1950 机器语言</strong></td><td>穿孔卡片，直接操控硬件</td></tr><tr><td>📝 <strong>1950-1960 汇编语言</strong></td><td>用助记符代替 0 和 1</td></tr><tr><td>🚀 <strong>1957-今 高级语言</strong></td><td>Fortran(1957) → C(1972) → C++(1983) → Java(1995) → <strong>C#(2000)</strong></td></tr></table></div><div class="ok-box">从穿卡片到敲键盘，C# 站在 50 年语言演进之巅。</div><div class="card"><p>C#（读作 C Sharp）是微软在 2000 年发布的面向对象高级编程语言。</p></div><div class="card"><table><tr><th>特点</th><th>一句话说明</th></tr><tr><td>📝 <strong>语法简洁</strong></td><td>易于学习和使用</td></tr><tr><td>🧱 <strong>面向对象</strong></td><td>彻底的面向对象设计</td></tr><tr><td>🛡️ <strong>类型安全</strong></td><td>编译时检查类型，减少错误</td></tr><tr><td>♻️ <strong>自动垃圾回收</strong></td><td>自动管理内存，不用手动释放</td></tr><tr><td>🌍 <strong>跨平台</strong></td><td>桌面、Web、移动端、云——一套语言全搞定</td></tr></table></div><div class="card"><ul><li>应用领域：Windows 桌面应用 · Web 开发 · <strong>游戏开发（Unity）</strong> · 移动应用</li></ul></div><div class="card"><h3>⚙️ C# 怎么跑起来的？</h3><p>C# 不能单独运行，需要 <strong>.NET</strong> 这个运行平台。可以把 .NET 理解成 C# 的&quot;引擎&quot;——代码写完了，.NET 负责帮你编译和执行。</p></div><div class="card"><table><tr><th>✍️ 编写 C# 源码</th><th>→</th><th>🔧 .NET 编译</th><th>→</th><th>⚡ .NET 运行时</th><th>→</th><th>🚀 程序运行</th></tr><tr><td>写 <code>.cs</code> 文件（人能读懂）</td><td></td><td>转成中间代码（IL）</td><td></td><td>实时翻译成机器指令</td><td></td><td>CPU 执行出结果</td></tr></table></div><div class="card"><ul><li>.NET 框架 = CLR（公共语言运行库）+ BCL（基类库）+ 编程工具</li><li>C# 代码 → 编译成 IL 中间码 → 运行时 JIT 实时翻译成机器码 → CPU 执行</li><li>.NET Core：开源、跨平台、基于云，为现代应用场景设计</li></ul></div><img src="images/课件8/csharp-dotnet-arch.png" alt="C#与.NET关系" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 </div></div><div class="slide" data-page="4"><div class="slide-inner markable">
 <h1>在线编译器</h1>
-<div class="ok-box">本课程的 C# 练习都可以直接在下面的在线编译器里完成，无需安装本地开发环境。</div><div class="card"><h3>① 菜鸟教程</h3><p>网址：<a href="https://www.runoob.com/try/runcode.php?filename=helloworld&amp;type=csharp" target="_blank" rel="noopener">https://www.runoob.com/try/runcode.php?filename=helloworld&amp;type=csharp</a></p><ol><li>打开浏览器，访问上述网址</li><li>页面中间找到代码编辑器（已预填示例代码）</li><li>点击编辑器右上角&quot;点击运行&quot;按钮</li><li>右侧窗口显示运行结果</li></ol></div><div class="ok-box">✅ 优点：中文界面，无需安装，打开即用</div><div class="card"><h3>② Tutorialspoint</h3><p>网址：<a href="https://www.tutorialspoint.com/compile_csharp_online.php" target="_blank" rel="noopener">https://www.tutorialspoint.com/compile_csharp_online.php</a></p><ol><li>打开浏览器，访问上述网址</li><li>左上角代码编辑区已预填示例代码</li><li>点击左上角&quot;Execute&quot;按钮</li><li>右侧窗口显示运行结果</li></ol></div><div class="ok-box">⭐ 特点：支持键盘输入（Console.ReadLine 可用），其他在线编译器大多不支持</div><div class="card"><h3>③ DotNetFiddle</h3><p>网址：<a href="https://dotnetfiddle.net/" target="_blank" rel="noopener">https://dotnetfiddle.net/</a></p><ol><li>打开浏览器，访问上述网址</li><li>中间代码编辑区已预填示例代码</li><li>点击顶部&quot;Run&quot;按钮</li><li>底部窗口显示运行结果</li></ol></div><div class="ok-box">💡 特点：界面简洁、支持多种.NET版本切换、可分享代码链接</div><div class="card"><h3>对比总结</h3></div><div class="card"><table><tr><th>编译器</th><th>中文界面</th><th>键盘输入</th><th>分享代码</th><th>适合场景</th></tr><tr><td>菜鸟教程</td><td>✅</td><td>❌</td><td>❌</td><td>新手入门</td></tr><tr><td>Tutorialspoint</td><td>❌</td><td>✅</td><td>❌</td><td>需要交互的程序</td></tr><tr><td>DotNetFiddle</td><td>❌</td><td>❌</td><td>✅</td><td>代码分享、多版本测试</td></tr></table></div><div class="ok-box">💡 课件网页顶部导航栏已内置跳转按钮，上课时直接点击即可打开。<br>建议：课堂统一以 VS Code 为主，在线编译器作为备用方案。</div>
+<div class="ok-box">本课程的 C# 练习都可以直接在下面的在线编译器里完成，无需安装本地开发环境。</div><div class="card"><h3>① 菜鸟教程</h3><p>网址：<a href="https://www.runoob.com/try/runcode.php?filename=helloworld&amp;type=csharp" target="_blank" rel="noopener">https://www.runoob.com/try/runcode.php?filename=helloworld&amp;type=csharp</a></p><ol><li>打开浏览器，访问上述网址</li><li>页面中间找到代码编辑器（已预填示例代码）</li><li>点击编辑器右上角&quot;点击运行&quot;按钮</li><li>右侧窗口显示运行结果</li></ol></div><div class="ok-box"><span class="eico">✅</span> 优点：中文界面，无需安装，打开即用</div><div class="card"><h3>② Tutorialspoint</h3><p>网址：<a href="https://www.tutorialspoint.com/compile_csharp_online.php" target="_blank" rel="noopener">https://www.tutorialspoint.com/compile_csharp_online.php</a></p><ol><li>打开浏览器，访问上述网址</li><li>左上角代码编辑区已预填示例代码</li><li>点击左上角&quot;Execute&quot;按钮</li><li>右侧窗口显示运行结果</li></ol></div><div class="ok-box"><span class="eico">⭐</span> 特点：支持键盘输入（Console.ReadLine 可用），其他在线编译器大多不支持</div><div class="card"><h3>③ DotNetFiddle</h3><p>网址：<a href="https://dotnetfiddle.net/" target="_blank" rel="noopener">https://dotnetfiddle.net/</a></p><ol><li>打开浏览器，访问上述网址</li><li>中间代码编辑区已预填示例代码</li><li>点击顶部&quot;Run&quot;按钮</li><li>底部窗口显示运行结果</li></ol></div><div class="ok-box"><span class="eico">💡</span> 特点：界面简洁、支持多种.NET版本切换、可分享代码链接</div><div class="card"><h3>对比总结</h3></div><div class="card"><table><tr><th>编译器</th><th>中文界面</th><th>键盘输入</th><th>分享代码</th><th>适合场景</th></tr><tr><td>菜鸟教程</td><td>✅</td><td>❌</td><td>❌</td><td>新手入门</td></tr><tr><td>Tutorialspoint</td><td>❌</td><td>✅</td><td>❌</td><td>需要交互的程序</td></tr><tr><td>DotNetFiddle</td><td>❌</td><td>❌</td><td>✅</td><td>代码分享、多版本测试</td></tr></table></div><div class="ok-box"><span class="eico">💡</span> 课件网页顶部导航栏已内置跳转按钮，上课时直接点击即可打开。<br>建议：课堂统一以 VS Code 为主，在线编译器作为备用方案。</div>
 </div></div><div class="slide" data-page="5"><div class="slide-inner markable">
 <h1>变量与数据类型</h1>
 <div class="card"><ul><li>类比：变量就像贴了标签的<strong>盒子</strong></li><li style="margin-left:24px;list-style-type:circle">盒子的<strong>类型</strong>决定能放什么：整数盒、小数盒、文字盒</li><li style="margin-left:24px;list-style-type:circle">盒子上有<strong>标签</strong>（变量名）：age、name、score</li><li style="margin-left:24px;list-style-type:circle">盒子里<strong>装东西</strong>（值）：18、&quot;张三&quot;、95.5</li><li>变量 = 一块有名字的内存空间，程序运行时值可以改变</li><li>必须先<strong>声明</strong>再<strong>使用</strong></li></ul></div>
@@ -453,6 +457,26 @@ function copyImgName(btn){
   <style>.vb-border{transition:stroke .25s,stroke-width .25s}.vb-box:hover .vb-border{stroke-width:1.5}.vb-box text,.vb-box line{pointer-events:none}/* 平铺/PDF导出：并排多图改为单独一行放大显示（保持可点击放大） */
 .flat-mode .contest-row{display:block}
 .flat-mode .contest-row img{display:block;width:100%;max-width:100%;max-height:none;object-fit:contain;margin:16px auto 4px}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
   <g class="vb-box">
     <rect class="vb-border" x="44" y="50" width="180" height="150" rx="12" fill="none" stroke="var(--accent)" stroke-width="0.5"/>
@@ -640,7 +664,7 @@ function copyImgName(btn){
 <div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))"><strong>用括号！</strong>括号内的永远先算，加了括号代码也更清晰。<code>2 + 3 × 4</code> 不如 <code>2 + (3 × 4)</code> 一眼看得懂。考试可能让你背，写代码时用括号就行。</div></div></div></div>
 <div class="slide" data-page="7"><div class="slide-inner markable"><h1>分支结构 — if / switch</h1>
 
-<div class="ok-box">💡 程序不是一条直线走到黑：<strong>分支</strong>让代码根据条件走不同的路。Unity 里"敌人血量归零才销毁""按键才触发"都是分支。</div>
+<div class="ok-box"><span class="eico">💡</span> 程序不是一条直线走到黑：<strong>分支</strong>让代码根据条件走不同的路。Unity 里"敌人血量归零才销毁""按键才触发"都是分支。</div>
 
 <div class="card"><h3>① 单分支 if — 条件成立才执行</h3><div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_80371001',this)">复制</button></div>
@@ -684,7 +708,7 @@ else if (score &gt;= 70) grade = &quot;C&quot;;
 else if (score &gt;= 60) grade = &quot;D&quot;;
 else                  grade = &quot;F&quot;;</code></pre>
 </div>
-<div class="ok-box">⚠️ <strong>顺序很重要</strong>：<code>&gt;= 90</code> 必须放最前面。如果先写 <code>&gt;= 60</code>，90 分也会在第一步被误判为 D——因为一命中就停，后面的不再判断。</div>
+<div class="ok-box"><span class="eico">⚠️</span> <strong>顺序很重要</strong>：<code>&gt;= 90</code> 必须放最前面。如果先写 <code>&gt;= 60</code>，90 分也会在第一步被误判为 D——因为一命中就停，后面的不再判断。</div>
 </div>
 
 <div class="card"><h3>④ 嵌套 if — 分支里再分分支</h3><div class="prompt-box">
@@ -698,7 +722,7 @@ if (target != null)
     }
 }</code></pre>
 </div>
-<div class="ok-box">💡 嵌套<strong>不要超过 3 层</strong>，否则逻辑很难追踪。书写时靠缩进让层次清晰；上面的写法（先判空再访问）是 Unity 防报错的好习惯。</div>
+<div class="ok-box"><span class="eico">💡</span> 嵌套<strong>不要超过 3 层</strong>，否则逻辑很难追踪。书写时靠缩进让层次清晰；上面的写法（先判空再访问）是 Unity 防报错的好习惯。</div>
 </div>
 
 <div class="card"><h3>⚠️ 先讲坑：<code>==</code> 是比较，<code>=</code> 是赋值</h3><div class="prompt-box">
@@ -739,7 +763,7 @@ if (isOpen == true)  // ✅ == 是比较</code></pre>
 </div>
 </div>
 
-<div class="ok-box">💡 <strong>if 还是 switch？一句话记住</strong>：判断"范围"（&gt;、&lt;）或复杂条件 → 用 <code>if-else if</code>；判断"等于某几个固定值" → 用 <code>switch</code> 更清爽。</div>
+<div class="ok-box"><span class="eico">💡</span> <strong>if 还是 switch？一句话记住</strong>：判断"范围"（&gt;、&lt;）或复杂条件 → 用 <code>if-else if</code>；判断"等于某几个固定值" → 用 <code>switch</code> 更清爽。</div>
 
 <button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ if 后面的 { } 能省略吗？</button>
 <div class="fold-content"><p><strong>能，但不建议。</strong>当 <code>if</code> / <code>else</code> 体只有<strong>一条语句</strong>时，可以省略 <code>{ }</code>（前面多分支的 grade 示例就是省略写法）；但一旦后面要加第二句，忘了补括号就会只执行第一句。初学阶段建议<strong>始终带上 <code>{ }</code></strong>，少踩坑。</p></div>
@@ -748,7 +772,7 @@ if (isOpen == true)  // ✅ == 是比较</code></pre>
 <div class="fold-content"><p><strong>C# 直接编译报错。</strong>在 C/C++ 里漏写 break 会"穿透"到下一个 case（常常是 bug 来源）；但 C# 规定每个 case 必须以 <code>break</code>（或 <code>return</code>/<code>throw</code>）结束，<strong>漏写会直接编译不过</strong>。所以 C# 里 switch 比 C/C++ 更安全，但也别把它漏掉。</p></div></div></div>
 <div class="slide" data-page="8"><div class="slide-inner markable"><h1>循环结构 — for / while / foreach</h1>
 
-<div class="ok-box">💡 循环让一段代码<strong>反复执行</strong>：数数、遍历数组、重复生成物体都靠它。🏃 就像操场跑圈，跑满了才停。本门课的脚本里，重复做某件事几乎都离不开循环。</div>
+<div class="ok-box"><span class="eico">💡</span> 循环让一段代码<strong>反复执行</strong>：数数、遍历数组、重复生成物体都靠它。🏃 就像操场跑圈，跑满了才停。本门课的脚本里，重复做某件事几乎都离不开循环。</div>
 
 <div class="card"><h3>① while — 先判断后执行</h3><div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_80381001',this)">复制</button></div>
@@ -780,7 +804,7 @@ while (x &lt;= 5)
     // 忘了 x++ ← x 始终是 1，条件永远成立！
 }</code></pre>
 </div>
-<div class="ok-box">🔑 在 Unity 里，<strong>绝不要在 Update() 里写会卡死的循环</strong>——它会把游戏卡住。需要"每帧做一点"就用 Update 本身，不要用 while 死等。</div>
+<div class="ok-box"><span class="eico">🔑</span> 在 Unity 里，<strong>绝不要在 Update() 里写会卡死的循环</strong>——它会把游戏卡住。需要"每帧做一点"就用 Update 本身，不要用 while 死等。</div>
 </div>
 
 <div class="card"><h3>② do-while — 先做后看（至少执行一次）</h3><div class="prompt-box">
@@ -900,7 +924,7 @@ foreach (int s in scores)   // 自动取每个元素
 }</code>
 </pre>
 </div>
-<div class="ok-box">💡 这页先不深究类是什么（下页专门讲），你只要记住：<strong>方法写在类的大括号里</strong>，脚本才能编译通过。</div>
+<div class="ok-box"><span class="eico">💡</span> 这页先不深究类是什么（下页专门讲），你只要记住：<strong>方法写在类的大括号里</strong>，脚本才能编译通过。</div>
 <div class="card"><p>方法 = 一段<strong>可复用</strong>的功能，把「输入参数 → 处理 → 输出结果」打包在一起。格式：</p></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_80391001',this)">复制</button></div>
@@ -929,7 +953,7 @@ foreach (int s in scores)   // 自动取每个元素
 <li><code>(int a, int b)</code> = <strong>参数列表</strong>——调用时传进来的数据，在方法内当局部变量用</li>
 <li><code>{ return a + b; }</code> = <strong>方法体</strong>——真正干活的代码</li>
 </ul></div>
-<div class="ok-box">💡 方法的公式：<code>访问修饰符 返回类型 方法名(参数列表) { 方法体 }</code></div>
+<div class="ok-box"><span class="eico">💡</span> 方法的公式：<code>访问修饰符 返回类型 方法名(参数列表) { 方法体 }</code></div>
 <div class="card"><h3>void 与有返回值的区别</h3></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_80391002',this)">复制</button></div>
@@ -967,7 +991,7 @@ foreach (int s in scores)   // 自动取每个元素
 <tr><td>无参有返</td><td><code>类型 方法() { return 值; }</code></td><td><code>float GetSpeed()</code></td></tr>
 <tr><td>无参无返</td><td><code>void 方法() { }</code></td><td><code>void Start()</code></td></tr>
 </table></div>
-<div class="ok-box">💡 Unity 里 <code>Start()</code>、<code>Update()</code> 都是 <strong>Unity 帮你调用</strong>的方法（生命周期方法）；你自己写的方法，就在它们里面被调用。把重复逻辑抽成方法，代码更干净、更好改。</div></div></div>
+<div class="ok-box"><span class="eico">💡</span> Unity 里 <code>Start()</code>、<code>Update()</code> 都是 <strong>Unity 帮你调用</strong>的方法（生命周期方法）；你自己写的方法，就在它们里面被调用。把重复逻辑抽成方法，代码更干净、更好改。</div></div></div>
 <div class="slide" data-page="10"><div class="slide-inner markable"><h1>Debug.Log 打印日志 — 你的调试眼睛</h1>
 <div class="card"><p>写 Unity 脚本时，想知道某个变量现在是多少、某段代码到底有没有执行，最常用的方法就是<strong>打印日志</strong>。</p><p>Unity 里用 <code>Debug.Log("内容")</code> 把信息打印到 <strong>控制台（Console）窗口</strong>——打开方式：菜单 <code>Window（窗口）→ 面板 → Console（控制台）</code>。运行游戏后就能看到，它是排查问题最基本的手段。</p><img src="images/课件8/console窗口.png" alt="Unity 控制台窗口" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)"></div>
 <div class="card"><h3>基本写法</h3></div>
@@ -985,7 +1009,7 @@ public class NewBehaviourScript : MonoBehaviour
     }
 }</code></pre>
 </div>
-<div class="ok-box">💡 <code>Debug.Log</code> 只在<strong>运行模式（Play）</strong>下执行：它写在 <code>Start()</code> / <code>Update()</code> 里，点 ▶ 运行游戏后才会输出；编辑器不运行时不会打印，别以为代码没生效。<br>另外，脚本要把 .cs 文件<strong>挂到场景里的游戏对象上</strong>，<code>Start()</code> 才会被 Unity 自动调用——没挂载，日志自然不会出来。</div>
+<div class="ok-box"><span class="eico">💡</span> <code>Debug.Log</code> 只在<strong>运行模式（Play）</strong>下执行：它写在 <code>Start()</code> / <code>Update()</code> 里，点 ▶ 运行游戏后才会输出；编辑器不运行时不会打印，别以为代码没生效。<br>另外，脚本要把 .cs 文件<strong>挂到场景里的游戏对象上</strong>，<code>Start()</code> 才会被 Unity 自动调用——没挂载，日志自然不会出来。</div>
 <div class="card"><h3>输出带变量</h3><p>用<strong>加号拼接</strong>或<strong>字符串插值</strong>把变量塞进日志：</p></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_80396002',this)">复制</button></div>
@@ -1072,7 +1096,7 @@ Player p1 = new Player();  // Player 是你定义的"类型"
 // p1.name = "勇者";          // 每个对象的数据可以不同</code></pre>
 </div>
 <div class="card"><p>普通 C# 里用 <code>new Player()</code> 创建实例；<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">Unity 里不用写 new</mark>——脚本挂到游戏对象上，Unity 自动帮你创建实例（所有脚本都继承 <code>MonoBehaviour</code>）。</p></div>
-<div class="ok-box">⚠️ 坑：<code>MonoBehaviour</code> 脚本<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">不能 new</mark>（编译会报错），必须挂到物体上由 Unity 实例化。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 坑：<code>MonoBehaviour</code> 脚本<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">不能 new</mark>（编译会报错），必须挂到物体上由 Unity 实例化。</div>
 </div></div><div class="slide" data-page="12"><div class="slide-inner markable"><h1>字段可见性 — public / private / SerializeField</h1>
 <div class="card"><p>定义在<strong>方法体外面</strong>的变量叫<strong>成员变量</strong>（也叫字段）。它属于整个脚本，脚本里所有方法都能用。</p></div>
 <div class="card"><h3>为什么要区分可见性？（封装）</h3><p>一句话：<strong>把数据藏起来，只通过你允许的方式访问</strong>。如果字段全是 <code>public</code>，外部代码能随意乱改，很容易写出 <code>s.hp = -5</code> 这种非法状态：</p></div>
@@ -1106,7 +1130,7 @@ public           int   Hp                   // 属性：外部只读，类内可
 // 外部只能读 Hp；要改只能调类内部方法（如受伤）→ 杜绝 hp = -5
 void TakeDamage(int d) { Hp -= d; }</code></pre>
 </div>
-<div class="ok-box">💡 大多数情况用 <code>[SerializeField]</code> 让私有字段在 Inspector 显示就够用了；<strong>属性</strong>适合"读写要带逻辑 / 想限制访问"的场合（如血量、金币）。下节课写第一个脚本，Inspector 里看到的是带 <code>[SerializeField]</code> 的<strong>私有字段</strong>；属性本身不显示，它只是代码里受控访问的"保安"。</div></div></div><div class="slide" data-page="13"><div class="slide-inner markable"><h1>List 集合 — 管理多个对象</h1>
+<div class="ok-box"><span class="eico">💡</span> 大多数情况用 <code>[SerializeField]</code> 让私有字段在 Inspector 显示就够用了；<strong>属性</strong>适合"读写要带逻辑 / 想限制访问"的场合（如血量、金币）。下节课写第一个脚本，Inspector 里看到的是带 <code>[SerializeField]</code> 的<strong>私有字段</strong>；属性本身不显示，它只是代码里受控访问的"保安"。</div></div></div><div class="slide" data-page="13"><div class="slide-inner markable"><h1>List 集合 — 管理多个对象</h1>
 <div class="card"><p>List = <mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">会自动变长的数组</mark>：创建后可以随时增删，长度自动跟着变。先引入：<code>using System.Collections.Generic;</code></p></div>
 <div class="card"><h3>为什么不直接用数组？</h3><p>普通数组长度<strong>固定</strong>（<code>new int[3]</code> 就只能装 3 个，想加第 4 个就得新建）；而 <strong>List 能动态增删</strong>，不知道要存多少个时最方便——比如敌人一波波生成、道具拾取不断变多。</p></div>
 <div class="prompt-box">
@@ -1146,7 +1170,7 @@ for (int i = 0; i < n; i++) {
 }</code></pre>
 </div>
 </div>
-<div class="ok-box">💡 Unity 场景：管理一波波生成的敌人、拾取的道具——后面做 FPS 会频繁用到。</div></div></div><div class="slide" data-page="14"><div class="slide-inner markable"><h1>类型转换与枚举</h1>
+<div class="ok-box"><span class="eico">💡</span> Unity 场景：管理一波波生成的敌人、拾取的道具——后面做 FPS 会频繁用到。</div></div></div><div class="slide" data-page="14"><div class="slide-inner markable"><h1>类型转换与枚举</h1>
 <div class="card"><h3>类型转换 — 隐式（自动）</h3><p><strong>小范围 → 大范围</strong>，编译器自动完成，安全：整数可以自动变小数，反过来不行。</p></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_80395001',this)">复制</button></div>
@@ -1172,7 +1196,7 @@ byte a = (byte)b;
 // b = 298（int 占 4 字节）
 // a = 42  （byte 只取最低 1 字节，高位被丢掉！）</code></pre>
 </div>
-<div class="ok-box">💡 <code>byte</code> 上限是 255，298 超出范围——强转前先确认目标类型装得下，否则结果不可信。</div>
+<div class="ok-box"><span class="eico">💡</span> <code>byte</code> 上限是 255，298 超出范围——强转前先确认目标类型装得下，否则结果不可信。</div>
 <div class="card"><h3>数字 ↔ 文字</h3><p>数字 → 文字用 <code>ToString()</code>（UI 显示分数）；文字 → 数字用 <code>int.Parse()</code> / <code>float.Parse()</code>（解析输入）。</p></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_83000005',this)">复制</button></div>
@@ -1224,12 +1248,12 @@ switch (state)
     case GameState.Over:    /* 游戏结束 */   break;
 }</code></pre>
 </div>
-<div class="ok-box">💡 枚举字段在 Unity 的 <strong>Inspector 里会显示成下拉框</strong>——<code>public GameState state;</code> 或加 <code>[SerializeField]</code> 后，你不用记数字，直接在面板里点选状态。</div>
+<div class="ok-box"><span class="eico">💡</span> 枚举字段在 Unity 的 <strong>Inspector 里会显示成下拉框</strong>——<code>public GameState state;</code> 或加 <code>[SerializeField]</code> 后，你不用记数字，直接在面板里点选状态。</div>
 <img src="images/课件8/inspector枚举下拉框.png" alt="Inspector 中枚举字段显示成下拉框" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
-<div class="ok-box">💡 后面做「游戏管理器」时，会用枚举管游戏状态；解析 UI 输入时优先用 <code>TryParse</code> 防止崩溃。</div></div></div><div class="slide" data-page="15"><div class="slide-inner markable">
+<div class="ok-box"><span class="eico">💡</span> 后面做「游戏管理器」时，会用枚举管游戏状态；解析 UI 输入时优先用 <code>TryParse</code> 防止崩溃。</div></div></div><div class="slide" data-page="15"><div class="slide-inner markable">
 <h1>课堂练习 — 九九乘法表</h1>
 <div class="ok-box">用 for 循环嵌套，输出 9×9 乘法表。先自己写，再对照。</div>
-<div class="ok-box">💡 打开网页顶部导航栏的「在线编辑器」，把代码粘进去即可运行（无需安装任何环境）。</div><div class="prompt-box">
+<div class="ok-box"><span class="eico">💡</span> 打开网页顶部导航栏的「在线编辑器」，把代码粘进去即可运行（无需安装任何环境）。</div><div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4346044480',this)">复制</button></div>
 <pre id="c_4346044480"><code class="language-csharp">using System;
 class Program {
@@ -1242,12 +1266,12 @@ class Program {
         }
     }
 }</code></pre>
-</div><div class="ok-box">💬 验收标准：能正确输出下三角九九乘法表，并说清外层 i、内层 j 各控制什么。</div>
+</div><div class="ok-box"><span class="eico">💬</span> 验收标准：能正确输出下三角九九乘法表，并说清外层 i、内层 j 各控制什么。</div>
 </div></div>
 <div class="slide" data-page="16"><div class="slide-inner markable">
 <h1>课堂练习 — 求最大公约数</h1>
 <div class="ok-box">定义方法 <code>GCD(a, b)</code>，用辗转相除法（while）求两数最大公约数，并在 Main 中调用测试。</div>
-<div class="ok-box">💡 打开网页顶部导航栏的「在线编辑器」，把代码粘进去即可运行（无需安装任何环境）。</div><div class="prompt-box">
+<div class="ok-box"><span class="eico">💡</span> 打开网页顶部导航栏的「在线编辑器」，把代码粘进去即可运行（无需安装任何环境）。</div><div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4346043712',this)">复制</button></div>
 <pre id="c_4346043712"><code class="language-csharp">using System;
 class Program {
@@ -1264,15 +1288,15 @@ class Program {
         Console.WriteLine(GCD(48, 18));   // 输出 6
     }
 }</code></pre>
-</div><div class="ok-box">📝 参考思路：不断用 <code>a % b</code> 替换，直到 b 为 0，此时 a 就是最大公约数。</div>
+</div><div class="ok-box"><span class="eico">📝</span> 参考思路：不断用 <code>a % b</code> 替换，直到 b 为 0，此时 a 就是最大公约数。</div>
 </div></div>
 <div class="slide" data-page="17"><div class="slide-inner markable">
 <h1>作业 — 控制台小程序</h1>
-<div class="card"><ol><li>用 for 和 while 分别计算 1 到 100 的和（对比两种写法）</li><li>输入一个成绩，用 if / else if 输出等级（A/B/C/D/F）</li><li>用 <code>List&lt;int&gt;</code> 存 5 个成绩，用 foreach 求平均值（体会 List 和 foreach）</li><li>选做：定义一个 <code>Player</code> 类（name、hp 字段 + Move 方法），在 Main 里 <code>new</code> 创建并调用</li></ol></div><div class="ok-box">💡 写不出代码时，可参考<a href="https://yubinpeng2020.github.io/csharp-course/" target="_blank" rel="noopener">《程序设计基础（C#）》课程网页</a>，也可以用 <strong>AI 辅助编程</strong> 帮你起步——下面是正确的使用姿势（参考《C# 课程》的 AI 用法）：</div>
+<div class="card"><ol><li>用 for 和 while 分别计算 1 到 100 的和（对比两种写法）</li><li>输入一个成绩，用 if / else if 输出等级（A/B/C/D/F）</li><li>用 <code>List&lt;int&gt;</code> 存 5 个成绩，用 foreach 求平均值（体会 List 和 foreach）</li><li>选做：定义一个 <code>Player</code> 类（name、hp 字段 + Move 方法），在 Main 里 <code>new</code> 创建并调用</li></ol></div><div class="ok-box"><span class="eico">💡</span> 写不出代码时，可参考<a href="https://yubinpeng2020.github.io/csharp-course/" target="_blank" rel="noopener">《程序设计基础（C#）》课程网页</a>，也可以用 <strong>AI 辅助编程</strong> 帮你起步——下面是正确的使用姿势（参考《C# 课程》的 AI 用法）：</div>
 <div class="card"><h3>① 先用 AI 的正确态度：四步法</h3><ol><li><strong>先思考</strong> 💭：遇到问题自己分析、尝试解决（至少 5 分钟）</li><li><strong>再求助</strong> 🤝：带着自己的分析去问 AI，不是空手提问</li><li><strong>必须懂</strong> 🧠：拿到答案后要求 AI 解释，直到能自己复述</li><li><strong>自己写</strong> ✍️：关掉 AI，独立重写一遍，对比差异</li></ol><p>判断标准：能向老师讲清楚这段代码 = 真的会了。</p></div>
 <div class="card"><h3>② 怎么提问：提示词三要素</h3><p>差的提示词反复返工，好的提示词一次到位。记住 <strong>🎭 角色 + 🎯 任务 + 📋 输出约束</strong>：</p><table><tr><th>要素</th><th>含义</th><th>示例</th></tr><tr><td>🎭 角色</td><td>告诉 AI「你是谁」</td><td>「你是一位 C# 编程助教」</td></tr><tr><td>🎯 任务</td><td>告诉 AI「做什么」</td><td>「用 C# 实现：输入成绩用 if / else if 输出等级 A/B/C/D/F」</td></tr><tr><td>📋 输出约束</td><td>告诉 AI「输出什么格式」</td><td>「每行加注释，并说明判断逻辑」</td></tr></table><p>本课件作业可这样问：<code>&quot;你是一位 C# 编程助教。请用 C# 实现：输入一个成绩，用 if / else if 输出等级 A/B/C/D/F。要求：每行加注释，并说明判断逻辑。&quot;</code></p></div>
 <div class="card"><h3>③ 选什么工具</h3><table><tr><th>工具</th><th>特点</th><th>适合谁</th></tr><tr><td>腾讯元宝 / 豆包</td><td>免费，中文好</td><td>⭐ 初学者首选</td></tr><tr><td>文心一言 / 通义千问</td><td>国内可用，中文支持好</td><td>备选</td></tr><tr><td>ChatGPT / Claude</td><td>能力强，需网络</td><td>有条件的同学</td></tr><tr><td>GitHub Copilot / Cursor</td><td>集成在编辑器里，能读代码、改文件</td><td>熟练后再用</td></tr></table></div>
-<div class="card"><h3>④ 拿到代码后：获取与验证</h3><ol><li><strong>运行</strong>：先在 VS Code / 在线编辑器里跑一遍，确认能运行、输出正确</li><li><strong>追问消化</strong>：不满意就让它重来，有疑问就接着问（如「为什么用 for 而不是 while？」「怎么改成支持小数？」）</li><li><strong>自己动手</strong>：关掉 AI，独立重写一遍，对比自己写的和 AI 给的逻辑是否一样</li></ol><div class="ok-box">⚠️ AI 是<strong>副驾驶</strong>不是<strong>代驾</strong>——方向盘始终在你手里。能看懂、能改写、能讲清，才是真学会。</div></div>
+<div class="card"><h3>④ 拿到代码后：获取与验证</h3><ol><li><strong>运行</strong>：先在 VS Code / 在线编辑器里跑一遍，确认能运行、输出正确</li><li><strong>追问消化</strong>：不满意就让它重来，有疑问就接着问（如「为什么用 for 而不是 while？」「怎么改成支持小数？」）</li><li><strong>自己动手</strong>：关掉 AI，独立重写一遍，对比自己写的和 AI 给的逻辑是否一样</li></ol><div class="ok-box"><span class="eico">⚠️</span> AI 是<strong>副驾驶</strong>不是<strong>代驾</strong>——方向盘始终在你手里。能看懂、能改写、能讲清，才是真学会。</div></div>
 </div></div><div class="slide" data-page="18"><div class="slide-inner end-page">
 
 <div class="end-thanks">
@@ -1537,18 +1561,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

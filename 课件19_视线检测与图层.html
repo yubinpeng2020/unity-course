@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件19_视线检测与图层 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -390,6 +391,26 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
   border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
 .img-missing button:hover{border-color:var(--accent);color:var(--accent)}
 .img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -408,15 +429,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -508,14 +532,14 @@ function copyImgName(btn){
 <div class="slide" data-page="5"><div class="slide-inner markable">
 <h1>重烘 · 房子摆好了，地图还是旧的</h1>
 <div class="card"><h3>④ 重新烘焙导航网格（NavMesh）</h3><p><strong>房子不会自动变成「墙」</strong>：导航网格是课件16 烘焙出来的<strong>旧地图</strong>，房子脚下那块地在图上还标着「能走」——不重烘，敌人直接从屋里穿过去。所以加完房子还要走这三步：</p><ol><li><strong>勾上静态</strong>：选中房子（复制出来的几栋按住 <strong>Ctrl</strong> 一起选），在<strong>检查器（Inspector）</strong>顶部勾上「<strong>静态的（Static）</strong>」——烘焙只认静态物体，不勾等于白摆<div class="step-img"><img src="images/课件19/加墙9-勾选静态.png" alt="选中房子，检查器顶部勾上静态的" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li><li><strong>点烘焙</strong>：菜单<strong>窗口（Window）→ AI → 导航（过时）（Navigation (Obsolete)）</strong>，切到「<strong>烘焙（Bake）</strong>」页，点「<strong>烘焙（Bake）</strong>」——这一步会<strong>覆盖</strong>场景旁边那个 <code>NavMesh.asset</code>，旧地图就换成新的了（装 AI Navigation、代理半径那些，课件16 已经讲过一遍）<div class="step-img"><img src="images/课件19/加墙10-点烘焙.png" alt="导航（过时）窗口切到烘焙页，点烘焙" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li><li><strong>确认烘对了</strong>：Scene 视图里那片<strong>蓝色可走区域</strong>，在房子位置被<strong>挖空</strong>——房子成了地图上的一个「洞」，敌人只能绕着走<div class="step-img"><img src="images/课件19/加墙11-烘焙后挖空.png" alt="烘焙后蓝色可走区域在房子位置被挖空" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li></ol></div>
-<div class="ok-box">⚠️ 以后只要场地变了（加房子、挪墙、加障碍），都得回来<strong>重烘一遍</strong>——这一步最容易忘，忘了敌人就穿墙。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 以后只要场地变了（加房子、挪墙、加障碍），都得回来<strong>重烘一遍</strong>——这一步最容易忘，忘了敌人就穿墙。</div>
 </div></div>
 <div class="slide" data-page="6"><div class="slide-inner markable">
 <h1>布点 · 让动物在巷道里巡逻</h1>
 <img src="images/课件19/加墙14-巷道巡逻.gif" alt="动物在房屋之间的巷道里巡逻" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><p>房子一摆，原来那套<strong>生成</strong>和<strong>巡逻</strong>全对不上号了：生成范围圈到了房子上，巡逻点落在了屋里。要改的其实只有<strong>位置</strong>——把这两样各挪一次；挪完还有一步最容易漏：把改动<strong>覆盖回预制体</strong>。</p></div>
 <div class="card"><h3>⑤ 生成中心与巡逻点，各挪一次</h3><ol><li><strong>生成中心</strong>：课件15 建的那个空对象 <code>SpawnCenter</code> 就是生成范围的圆心（它身上挂过图标，场景里能直接点中）。范围一旦压到房子，动物就可能生成在屋里、屋顶上——那儿没有可走的地面，导航代理找不到落脚点，一开局就卡死。把它拖到巷道空地上；还嫌大就回脚本把 <code>spawnRadius</code> 调小。<div class="step-img"><img src="images/课件19/加墙12-挪生成中心.png" alt="把 SpawnCenter 拖到巷道空地上，范围圆不再压房子" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li><li><strong>巡逻点</strong>：<code>Waypoints</code> 父对象下那几个空子物体，脚本按序号一个一个走过去。点落在房子里就<strong>不可达</strong>——代理会把它贴到最近的可走点，动物走到墙边就停住，看着像「不巡了」。把它们挨个拖进巷道，点与点之间别隔着房子。<div class="step-img"><img src="images/课件19/加墙13-巡逻点进巷道.png" alt="把巡逻点挨个拖进巷道，前后错开、路线不穿房子" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li></ol><p><strong>怎么算摆对</strong>：Scene 视图切俯视——生成范围那圈虚线圆只圈住空地和巷道；巡逻点 1→2→3 连起来的路线整段落在<strong>蓝色可走区域</strong>上，不穿房子。</p></div>
-<div class="ok-box">💡 挪生成中心和巡逻点都只是<strong>挪位置</strong>，不用再烘一次：导航网格只认房子这类静态物体，空对象不参与烘焙。</div>
+<div class="ok-box"><span class="eico">💡</span> 挪生成中心和巡逻点都只是<strong>挪位置</strong>，不用再烘一次：导航网格只认房子这类静态物体，空对象不参与烘焙。</div>
 </div></div>
 <div class="slide" data-page="7"><div class="slide-inner markable">
 <h1>预制体 · 覆盖与重建</h1>
@@ -526,10 +550,10 @@ function copyImgName(btn){
 <li><strong>把场景里这只存成新预制体</strong>：在层级（Hierarchy）里选中<strong>已经调好巡逻点</strong>的那只动物，<strong>拖进项目（Project）窗口</strong>的资源文件夹——Unity 会把它存成一个新预制体，名字可以还叫原来的。拖完这一只就变回「预制体实例」了<div class="step-img"><img src="images/课件19/加墙17-存为新预制体.png" alt="把场景里的动物拖进 Project 窗口，存成新的预制体" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li>
 <li><strong>把新预制体挂回生成中心</strong>：旧预制体一删，生成中心脚本里的预制体槽位就变成 <strong>Missing（缺失）</strong>——把新预制体重新拖进那个槽位，否则重新运行时会报空引用、一只都刷不出来<div class="step-img"><img src="images/课件19/加墙18-挂回生成中心.png" alt="把新预制体重新拖进生成中心的预制体槽位，Missing 变回正常引用" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li>
 </ol></div>
-<div class="ok-box">⚠️ 顺序别搞反：<strong>先存场景、再删预制体</strong>。删完之后场景里的动物只是「不再挂钩」，位置都在；但生成中心的槽位已经 Missing，必须马上把新预制体挂回去。另外场景里其它几只还是<strong>旧副本</strong>，最省事是重新运行一次，让生成中心按新预制体重刷。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 顺序别搞反：<strong>先存场景、再删预制体</strong>。删完之后场景里的动物只是「不再挂钩」，位置都在；但生成中心的槽位已经 Missing，必须马上把新预制体挂回去。另外场景里其它几只还是<strong>旧副本</strong>，最省事是重新运行一次，让生成中心按新预制体重刷。</div>
 <div class="card"><h3>⑧ 播放，看效果</h3><p>位置挪完了、预制体也覆盖好了，到这里就该按一次 <strong>▶ 播放</strong>（或 <strong>Ctrl + P</strong>）验收：动物从巷道里的空地刷出来，沿着几个巡逻点在巷道中往返走，<strong>不穿墙、不进屋、不在墙边卡住</strong>。</p></div>
 <div class="step-img"><img src="images/课件19/加墙14-巷道巡逻.gif" alt="运行后动物在房屋之间的巷道里往返巡逻" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
-<div class="ok-box">💡 还有哪只停在墙边不动、或者一开局就生成在房顶上，说明对应的<strong>巡逻点</strong>或<strong>生成中心</strong>还没挪干净——回到「布点 · 让动物在巷道里巡逻」重新摆一次，再播放验收。</div>
+<div class="ok-box"><span class="eico">💡</span> 还有哪只停在墙边不动、或者一开局就生成在房顶上，说明对应的<strong>巡逻点</strong>或<strong>生成中心</strong>还没挪干净——回到「布点 · 让动物在巷道里巡逻」重新摆一次，再播放验收。</div>
 </div></div>
 <div class="slide" data-page="8"><div class="slide-inner markable">
 <h1>换个脚本 · 整份覆盖 AnimalGuard</h1>
@@ -620,14 +644,14 @@ public class AnimalGuard : MonoBehaviour
     }
 }</code></pre></div>
 
-<div class="ok-box">💡 覆盖完<strong>先别运行</strong>：面板上的数还是上一课留下的，下一页按新表填一遍再跑。</div>
+<div class="ok-box"><span class="eico">💡</span> 覆盖完<strong>先别运行</strong>：面板上的数还是上一课留下的，下一页按新表填一遍再跑。</div>
 </div></div>
 <div class="slide" data-page="9"><div class="slide-inner markable">
 <h1>改参数 · 发现 15、停下 2、放弃 20</h1>
 <div class="card"><h3>照新面板填三个数</h3><p>覆盖完脚本，面板上的数<strong>多半还是上一课留下的</strong>——Unity 换代码时，同名字段会保留旧值，所以「发现距离」可能还停在 <code>6</code>。选中动物预制体，在<strong>检查器（Inspector）</strong>的 <code>AnimalGuard</code> 里照下表填：</p><table><thead><tr><th>面板项</th><th>填</th><th>意思</th></tr></thead><tbody><tr><td><strong>发现距离（Sight Range）</strong></td><td><code>15</code></td><td>玩家进 15 米就发现</td></tr><tr><td><strong>停下距离（Chase Distance）</strong></td><td><code>2</code></td><td>追到离你 2 米就刹住</td></tr><tr><td><strong>放弃距离（Lose Range）</strong></td><td><code>20</code></td><td>跑出 20 米才放弃，中间留出缓冲</td></tr><tr><td><strong>图层名单（Obstacle Mask）</strong></td><td>先空着</td><td>等建好 <code>Wall</code> 再回来勾</td></tr></tbody></table><div class="step-img"><img src="images/课件19/设置发现与放弃距离.png" alt="在动物警戒脚本组件里把发现距离改为15、停下距离改为2、放弃距离改为20" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><p>有几个动物预制体就逐个改一遍：只改场景里的那一只，生成中心刷出来的还是旧数。</p></div>
 <img src="images/课件19/敌人穿墙看见你.gif" alt="隔着房屋也能发现玩家，这就是透视眼" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>改完还是「透视眼」</h3><p>让玩家和动物分别站在房屋两侧，跑起来一看：只要水平距离不超过 15 米，动物照样发现你，就好像能隔着房屋看见一样。玩家躲到房屋后，只要还没跑出 20 米，它也不会放弃。</p><p>参数没填错，问题出在名单：<code>Obstacle Mask</code> 还空着，<code>CanSeePlayer()</code> 里那条射线<strong>什么都不会检测</strong>，一律当成「看得见」——等于还在只判距离。</p></div>
-<div class="ok-box">💡 想修掉这双「透视眼」，得先让引擎知道<strong>哪一类东西算遮挡</strong>。下一步：给房屋分图层。</div>
+<div class="ok-box"><span class="eico">💡</span> 想修掉这双「透视眼」，得先让引擎知道<strong>哪一类东西算遮挡</strong>。下一步：给房屋分图层。</div>
 </div></div>
 <div class="slide" data-page="10"><div class="slide-inner markable">
 <h1>图层（Layer）· 给碰撞体分类</h1>
@@ -692,9 +716,9 @@ public class AnimalGuard : MonoBehaviour
 <p>它和<strong>标签（Tag）</strong>不是一回事：标签常用于代码里找对象，例如 <code>FindGameObjectWithTag("Player")</code>；图层常用于引擎规则，例如碰撞和射线过滤。一个对象可以同时拥有自己的标签和图层。</p></div>
 <div class="card"><h3>图层能管哪三件事</h3><table><thead><tr><th>作用</th><th>谁来使用这份分类</th><th>本课例子</th></tr></thead><tbody><tr><td><strong>分类管理</strong></td><td>场景与脚本按类别识别对象</td><td>房屋统一归为 <code>Wall</code></td></tr><tr><td><strong>碰撞过滤</strong></td><td>物理系统与图层碰撞矩阵</td><td>决定 <code>Player</code> 与 <code>Wall</code> 是否碰撞</td></tr><tr><td><strong>射线过滤</strong></td><td><code>Linecast</code> 等物理查询</td><td>只让 <code>Wall</code> 参与遮挡检测</td></tr></tbody></table><p>只改图层的名字，不会让物体自动获得新行为；要把这层接进碰撞矩阵或 <code>LayerMask</code>，规则才真正生效。</p></div>
 <div class="card"><h3>创建 Wall 层，并分给房屋</h3><ol><li><strong>打开图层列表</strong>：选中房屋，在<strong>检查器（Inspector）</strong>右上角点<strong>图层（Layer）→ 添加图层…（Add Layer…）</strong></li><li><strong>新建图层</strong>：在<strong>用户图层（User Layers）</strong>的空白行输入 <code>Wall</code>，然后回到场景中的房屋<div class="step-img"><img src="images/课件19/添加图层.png" alt="在用户图层空白行新建 Wall 图层" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li><li><strong>分给实际碰撞体</strong>：把房屋父对象的图层改为 <code>Wall</code>，在弹窗中选择<strong>「是，更改子对象（Yes, change children）」</strong>，让房屋模型子对象一起改为 <code>Wall</code>。再展开层级核对实际碰撞体，并把修改应用回房屋预制体<div class="step-img"><img src="images/课件19/设置Wall图层.png" alt="修改父对象图层后选择是，更改子对象" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li></ol><p><strong>一栋都不能漏</strong>：场景里<strong>所有房屋</strong>都要设成 <code>Wall</code>——同一份预制体的实例，改完并应用回预制体会一起变；来源不同的房子（另拖进来的、单独复制出来的）要各自设一遍。漏掉的那栋还是 <code>Default</code>，射线直接从它身上穿过去，看起来就像「这面墙不挡视线」。</p></div>
-<div class="ok-box">⚠️ <strong>弹窗别点错</strong>。Unity 问的是「是否也要将所有子对象的层设置为 Wall？」——点<strong>「是，更改子对象」</strong>，层才会一路分到真正带 <code>Mesh Collider</code> 的子对象；点了<strong>「否，仅此对象」</strong>，父对象显示 <code>Wall</code>、带碰撞体的子对象却还留在 <code>Default</code>，射线名单里没有它，视线就直接穿墙。改完点开那个子对象核对一眼：检查器右上角写着 <code>Wall</code> 才算改到位；点错了就再给父对象设一次层，重选「是」。</div>
+<div class="ok-box"><span class="eico">⚠️</span> <strong>弹窗别点错</strong>。Unity 问的是「是否也要将所有子对象的层设置为 Wall？」——点<strong>「是，更改子对象」</strong>，层才会一路分到真正带 <code>Mesh Collider</code> 的子对象；点了<strong>「否，仅此对象」</strong>，父对象显示 <code>Wall</code>、带碰撞体的子对象却还留在 <code>Default</code>，射线名单里没有它，视线就直接穿墙。改完点开那个子对象核对一眼：检查器右上角写着 <code>Wall</code> 才算改到位；点错了就再给父对象设一次层，重选「是」。</div>
 <div class="card"><h3>图层碰撞矩阵 · 谁和谁能撞</h3><p>分好类之后，物理引擎还要回答一句：<strong>这两层碰上了算不算数</strong>？答案在<strong>图层碰撞矩阵（Layer Collision Matrix）</strong>里。打开方式：<strong>编辑（Edit）→ 项目设置（Project Settings）→ 物理（Physics）</strong>。</p><div class="step-img"><img src="images/课件19/打开物理设置.png" alt="编辑菜单进项目设置，左侧选中物理" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><p>物理面板<strong>底部</strong>那张表就是它：层名横排一遍、竖排一遍，交叉那一格决定这两层的关系——<strong>打勾＝会相撞</strong>（挡住、推开、站得住），<strong>取消＝互相当空气</strong>。行是层、列也是层，同一行里哪几列打勾，这个层就和哪几层相撞。</p><div class="step-img half"><img src="images/课件19/矩阵默认全勾.png" alt="图层碰撞矩阵默认全部打勾，任意两层都会相撞" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><p>上图是<strong>默认状态</strong>：全部打勾，任何两层都正常碰撞，所以平时根本不用管它。它是<strong>项目级</strong>规则，改一次整个工程生效，不是某栋房子的私有开关——真要动它，多半是以后想让玩家能穿过某一类墙（比如做暗门），那时再去取消对应的那一格。</p></div>
-<div class="ok-box">💡 到这一步 <code>Wall</code> 还只是个<strong>分类</strong>：碰撞矩阵里它和其他层保持默认打勾，玩家照样撞得到房子；但射线还不知道它的存在——脚本里那份 <code>Obstacle Mask</code> 仍然空着。下一节先讲射线怎么被墙挡住，再回到「勾上 Wall」那页把这一层勾进去，视线检测才真正生效。</div>
+<div class="ok-box"><span class="eico">💡</span> 到这一步 <code>Wall</code> 还只是个<strong>分类</strong>：碰撞矩阵里它和其他层保持默认打勾，玩家照样撞得到房子；但射线还不知道它的存在——脚本里那份 <code>Obstacle Mask</code> 仍然空着。下一节先讲射线怎么被墙挡住，再回到「勾上 Wall」那页把这一层勾进去，视线检测才真正生效。</div>
 </div></div>
 <div class="slide" data-page="11"><div class="slide-inner markable">
 <h1>射线 · 从起点打到终点</h1>
@@ -758,7 +782,7 @@ if (blocked)
     Debug.Log("视线被 " + hit.collider.name + " 挡住了");
 }</code></pre></div>
 <div class="card"><h3>代码讲解</h3><ol><li><strong>起点与终点</strong>：<code>origin</code> 和 <code>target</code> 决定检测哪一段。两个点都抬高 <code>Vector3.up</code>，避免沿着脚底贴地检测。</li><li><strong>命中结果</strong>：<code>out hit</code> 把撞到的碰撞体、位置等信息装进 <code>hit</code>；只有返回 <code>true</code> 时，才读取 <code>hit.collider</code>。</li><li><strong>图层名单</strong>：<code>obstacleMask</code> 决定哪些层参与。如果只勾 <code>Wall</code>，房屋必须先在<strong>实际碰撞体所在对象</strong>上设好 <code>Wall</code>。</li><li><strong>返回值</strong>：<code>blocked = true</code> 表示线段撞到了名单里的东西；<code>false</code> 表示这段路没有碰到任何参与检测的碰撞体。</li><li><strong>还不等于敌人 AI</strong>：<code>Linecast</code> 只负责回答「有没有遮挡」。什么时候检测、看见后做什么、看不见后是否放弃，要由 <code>AnimalGuard</code> 接管。</li></ol></div>
-<div class="ok-box">⚠️ 射线一直返回 <code>false</code> 时，按顺序检查：<strong>房屋有没有 Collider → 实际 Collider 是否为 Wall → obstacleMask 是否勾了 Wall</strong>。中间这条最容易翻车：父对象显示 <code>Wall</code> 不算数，要点开带 <code>Mesh Collider</code> 的子对象看它自己的层。名单如果是 <code>无内容（Nothing）</code>，射线就什么也不会检测。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 射线一直返回 <code>false</code> 时，按顺序检查：<strong>房屋有没有 Collider → 实际 Collider 是否为 Wall → obstacleMask 是否勾了 Wall</strong>。中间这条最容易翻车：父对象显示 <code>Wall</code> 不算数，要点开带 <code>Mesh Collider</code> 的子对象看它自己的层。名单如果是 <code>无内容（Nothing）</code>，射线就什么也不会检测。</div>
 <div class="card"><h3>确认：房屋必须有碰撞体</h3><p>射线检测的是 <strong>Collider</strong>，不是看得见的美术模型。以 <code>Baker_house</code> 为例，展开房屋层级，选中真正带 <code>Mesh Renderer</code> 的子对象，检查它的<strong>网格碰撞体（Mesh Collider）</strong>：</p><ul><li>组件已启用，<code>Mesh</code> 槽位已经引用房屋网格</li><li><code>Is Trigger</code> 不勾；固定不动的房屋不需要刚体（Rigidbody）</li><li>如果没有 Mesh Collider，就在这个模型子对象上添加，不要只加到空父物体上</li></ul><div class="step-img"><img src="images/课件19/检查房屋碰撞体.png" alt="选中房屋模型子对象，检查网格碰撞体组件和网格引用" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 </div></div>
 <div class="slide" data-page="12"><div class="slide-inner markable">
@@ -766,7 +790,7 @@ if (blocked)
 <img src="images/课件19/敌人视线检测.gif" alt="接入视线检测后，躲到墙后敌人就放弃追击" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>把「有没有遮挡」变成「能不能看见」</h3><p>射线三件事都齐了，脚本就把它们封成一个 <code>CanSeePlayer()</code>：<strong>撞到 <code>Wall</code> 就返回 <code>false</code>，没撞到就返回 <code>true</code></strong>。它接在两处 AI 逻辑上：</p><ul><li><strong>第一次发现</strong>：进入 15 米，并且视线通畅，才进入警戒</li><li><strong>追击途中</strong>：跑出 20 米，或者视线被墙挡住，就放弃并恢复巡逻</li></ul></div>
 <div class="card"><h3>把 Wall 填进 obstacleMask</h3><ol><li>在<strong>项目（Project）</strong>窗口选中动物预制体；有几个动物预制体，就逐个检查，不能只改场景里的某一只</li><li>在 <code>AnimalGuard</code> 组件里找到 <code>Obstacle Mask</code></li><li>勾选 <code>Wall</code>，不要选「所有（Everything）」；保存预制体，让生成中心刷出的动物也带上这份设置<div class="step-img"><img src="images/课件19/设置obstacleMask.png" alt="动物预制体的 AnimalGuard 组件中勾选 Wall" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li></ol></div>
-<div class="ok-box">💡 验收时分三种情况看：<code>无内容（Nothing）</code> 是什么都检测不到，<code>所有（Everything）</code> 是检测所有层、容易被其他物体误挡，<strong>只勾 <code>Wall</code></strong> 才是「墙能挡视线，其他层不参与」。</div>
+<div class="ok-box"><span class="eico">💡</span> 验收时分三种情况看：<code>无内容（Nothing）</code> 是什么都检测不到，<code>所有（Everything）</code> 是检测所有层、容易被其他物体误挡，<strong>只勾 <code>Wall</code></strong> 才是「墙能挡视线，其他层不参与」。</div>
 <div class="card"><h3>代码讲解</h3><ol><li><strong>整份脚本</strong>：保留课件18 的巡逻、发现、追击和放弃；新增 <code>obstacleMask</code> 与 <code>CanSeePlayer()</code>，不需要再建一个脚本文件。</li><li><strong>公开槽位</strong>：<code>public LayerMask obstacleMask</code> 会在检查器里出现一个可多选的图层下拉框。这里勾哪几层，射线就检测哪几层。</li><li><strong>三个参数</strong>：<code>Linecast(origin, target, obstacleMask)</code> 依次是起点、终点和图层名单。第三个参数不是距离，而是过滤条件。</li><li><strong>结果取反</strong>：只检测墙以后，返回 <code>true</code> 表示有墙，所以方法返回 <code>false</code>；什么都没撞到才返回 <code>true</code>。</li><li><strong>不再取 hit</strong>：前面用 <code>hit</code> 是为了看清撞到了什么；这里只问「有没有墙」，因此使用不返回 <code>RaycastHit</code> 的重载，代码更直接。</li><li><strong>距离先行</strong>：两处都把 <code>CanSeePlayer()</code> 放在条件最后。没进入发现距离，或者已经超出放弃距离，都不会做射线检测。</li><li><strong>两处判断</strong>：第一次发现仍要求「够近 + 看得见」；追击途中仍然是「跑远或看不见就放弃」。15～20 米之间属于追击保持区，仍会继续检查视线。</li><li><strong>空名单</strong>：如果 <code>obstacleMask</code> 没勾任何层，<code>Linecast</code> 永远返回 <code>false</code>，敌人就会把所有方向都当成视线通畅。</li></ol></div>
 
 </div></div>
@@ -797,7 +821,7 @@ if (d &gt; loseRange || !inView || !CanSeePlayer())
     // 原来的四行恢复巡逻代码保持不动
 }</code></pre></div>
 <div class="card"><h3>代码讲解</h3><ol><li><strong>视野字段</strong>：<code>fieldOfView</code> 是完整角度，所以 120° 在判断时要除以 2；直接写 <code>angle &lt;= 120f</code>，实际会得到左右各 120° 的超宽视野。</li><li><strong>目标方向</strong>：<code>player.position - transform.position</code> 是「从敌人指向玩家」。写反后会测到相反方向，正前方就可能变成正后方。</li><li><strong>压平方向</strong>：把 <code>direction.y</code> 设为 <code>0</code>，视野角只在水平面上判断，上下坡不会额外改变结果。</li><li><strong>两个条件</strong>：<code>inView</code> 管「在不在前方」，<code>CanSeePlayer()</code> 管「有没有被墙挡住」。它们不能互相替代；把射线调用放在最后，距离或角度不满足时就不会执行。</li><li><strong>发现与放弃</strong>：③ 只管第一次发现；④ 管追击途中跑出视野。两处都接上，才是完整的视野角行为。</li></ol></div>
-<div class="ok-box">⚠️ <code>Vector3.Angle</code> 返回 <strong>0°～180° 的无符号夹角</strong>，它只告诉你「偏了多少」，不区分左右。本作业不需要分左右，直接用 <code>angle &lt;= fieldOfView * 0.5f</code> 即可。</div>
+<div class="ok-box"><span class="eico">⚠️</span> <code>Vector3.Angle</code> 返回 <strong>0°～180° 的无符号夹角</strong>，它只告诉你「偏了多少」，不区分左右。本作业不需要分左右，直接用 <code>angle &lt;= fieldOfView * 0.5f</code> 即可。</div>
 <div class="card"><h3>挑战（选做）</h3><ul><li>用 <code>OnDrawGizmos()</code> 在场景视图画出 <code>sightRange</code> 的视野圆，以及左右两条视野边界，让 120° 范围不用播放也能看见</li><li>把不同动物设成 60°、120°、180°，比较它们的警戒范围；只改预制体上的参数，不为每种动物复制一份脚本</li></ul></div>
 </div></div>
 <div class="slide" data-page="14"><div class="slide-inner end-page">
@@ -1066,18 +1090,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

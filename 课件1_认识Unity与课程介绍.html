@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件1_认识Unity与课程介绍 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -352,15 +353,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -447,11 +451,11 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="7"><div class="slide-inner markable">
 <h1>教材与学习资源</h1>
-<div class="card side-card"><div class="side-body"><h3>📚 教材信息</h3><ul><li>教材：《Unity 3D 游戏开发案例教程（第2版）》（胡垂立 主编，中国铁道出版社）</li><li>教材链接：<a href="https://www.51eds.com/tdjy/tMaterial/searchTeachingMaterialDetail.action?teachingMaterialId=7851" target="_blank" rel="noopener">https://www.51eds.com/tdjy/tMaterial/searchTeachingMaterialDetail.action?teachingMaterialId=7851</a></li><li>涵盖：游戏概述、C# 程序语言基础、Unity 3D 游戏开发基础、基础案例、综合案例</li></ul></div><img src="images/课件1/p6_2.png" alt="教材" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card"><h3>🌐 在线资源</h3></div><div class="card"><table><tr><th>资源</th><th>网址</th><th>用途</th></tr><tr><td>Unity 官网</td><td><a href="https://unity.cn/" target="_blank" rel="noopener">https://unity.cn/</a></td><td>注册、社区、资讯</td></tr><tr><td>Unity 中文学习课堂</td><td><a href="https://learn.u3d.cn/" target="_blank" rel="noopener">https://learn.u3d.cn/</a></td><td>官方中文系统教程（入门→进阶）</td></tr><tr><td>Unity 中文文档</td><td><a href="https://docs.unity.cn/cn/current/Manual/UnityManual.html" target="_blank" rel="noopener">https://docs.unity.cn/cn/current/Manual/UnityManual.html</a></td><td>API / 手册中文查阅</td></tr><tr><td>Unity 中国资源商店</td><td><a href="https://assetstore.u3d.cn/" target="_blank" rel="noopener">https://assetstore.u3d.cn/</a></td><td>素材、插件、Demo 下载</td></tr><tr><td>Unity Hub 安装包（Windows 64 位）</td><td><a href="https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup-x64.exe" target="_blank" rel="noopener">https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup-x64.exe</a></td><td>Unity 官方启动器，安装与管理 Unity 编辑器版本</td></tr><tr><td>Unity 引擎下载</td><td><a href="https://unity.cn/tuanjie/releases" target="_blank" rel="noopener">https://unity.cn/tuanjie/releases</a></td><td>Unity / 团结引擎编辑器下载</td></tr></table></div><div class="ok-box">💡 课后遇到不会的操作，先查 Unity 中文文档，再问 AI，最后问老师——这是最高效的学习路径。</div>
+<div class="card side-card"><div class="side-body"><h3>📚 教材信息</h3><ul><li>教材：《Unity 3D 游戏开发案例教程（第2版）》（胡垂立 主编，中国铁道出版社）</li><li>教材链接：<a href="https://www.51eds.com/tdjy/tMaterial/searchTeachingMaterialDetail.action?teachingMaterialId=7851" target="_blank" rel="noopener">https://www.51eds.com/tdjy/tMaterial/searchTeachingMaterialDetail.action?teachingMaterialId=7851</a></li><li>涵盖：游戏概述、C# 程序语言基础、Unity 3D 游戏开发基础、基础案例、综合案例</li></ul></div><img src="images/课件1/p6_2.png" alt="教材" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card"><h3>🌐 在线资源</h3></div><div class="card"><table><tr><th>资源</th><th>网址</th><th>用途</th></tr><tr><td>Unity 官网</td><td><a href="https://unity.cn/" target="_blank" rel="noopener">https://unity.cn/</a></td><td>注册、社区、资讯</td></tr><tr><td>Unity 中文学习课堂</td><td><a href="https://learn.u3d.cn/" target="_blank" rel="noopener">https://learn.u3d.cn/</a></td><td>官方中文系统教程（入门→进阶）</td></tr><tr><td>Unity 中文文档</td><td><a href="https://docs.unity.cn/cn/current/Manual/UnityManual.html" target="_blank" rel="noopener">https://docs.unity.cn/cn/current/Manual/UnityManual.html</a></td><td>API / 手册中文查阅</td></tr><tr><td>Unity 中国资源商店</td><td><a href="https://assetstore.u3d.cn/" target="_blank" rel="noopener">https://assetstore.u3d.cn/</a></td><td>素材、插件、Demo 下载</td></tr><tr><td>Unity Hub 安装包（Windows 64 位）</td><td><a href="https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup-x64.exe" target="_blank" rel="noopener">https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup-x64.exe</a></td><td>Unity 官方启动器，安装与管理 Unity 编辑器版本</td></tr><tr><td>Unity 引擎下载</td><td><a href="https://unity.cn/tuanjie/releases" target="_blank" rel="noopener">https://unity.cn/tuanjie/releases</a></td><td>Unity / 团结引擎编辑器下载</td></tr></table></div><div class="ok-box"><span class="eico">💡</span> 课后遇到不会的操作，先查 Unity 中文文档，再问 AI，最后问老师——这是最高效的学习路径。</div>
 </div></div>
 <div class="slide" data-page="8"><div class="slide-inner markable">
 <h1>课程项目预览</h1>
-<div class="ok-box">🎮 本课程将从零开始，带你完成 <strong>2 个递进游戏项目</strong>，最终做出一个完整的 FPS 游戏。</div><div class="card side-card"><div class="side-body"><h3>① 小球吃食物</h3></div><img src="images/课件1/p7_3.gif" alt="小球吃食物" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="ok-box">入门项目：物体移动 + 碰撞检测 + 计分系统</div><div class="card side-card"><div class="side-body"><h3>② 第一人称射击（FPS）</h3></div><img src="images/课件1/p9_5.gif" alt="第一人称射击" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="ok-box">综合项目：移动射击 + AI 敌人 + 血条 + 死亡 + 打包发布 —— <strong>本课程核心，课堂上逐步教学，完成即可作为最终大作业成品</strong></div>
+<div class="ok-box"><span class="eico">🎮</span> 本课程将从零开始，带你完成 <strong>2 个递进游戏项目</strong>，最终做出一个完整的 FPS 游戏。</div><div class="card side-card"><div class="side-body"><h3>① 小球吃食物</h3></div><img src="images/课件1/p7_3.gif" alt="小球吃食物" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="ok-box">入门项目：物体移动 + 碰撞检测 + 计分系统</div><div class="card side-card"><div class="side-body"><h3>② 第一人称射击（FPS）</h3></div><img src="images/课件1/p9_5.gif" alt="第一人称射击" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="ok-box">综合项目：移动射击 + AI 敌人 + 血条 + 死亡 + 打包发布 —— <strong>本课程核心，课堂上逐步教学，完成即可作为最终大作业成品</strong></div>
 </div></div>
 <div class="slide" data-page="9"><div class="slide-inner markable">
 <h1>什么是游戏</h1>
@@ -463,7 +467,7 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="11"><div class="slide-inner markable">
 <h1>电子游戏分类</h1>
-<div class="ok-box">你们对游戏都不陌生，但&quot;游戏是怎么被造出来的&quot;才是本课要回答的问题。先看看你玩过的游戏都属于哪些类型——<strong>每一类，背后都对应引擎的一组核心能力</strong>。</div><div class="card"><h3>🎮 按玩法核心分类</h3></div><div class="card"><table><tr><th>类型</th><th>说明</th><th>代表游戏</th><th>对引擎能力的侧重</th></tr><tr><td>🗡️ RPG 角色扮演</td><td>剧情推进 + 角色成长</td><td>原神、崩坏：星穹铁道</td><td>动画、资源管理、剧情系统</td></tr><tr><td>⚔️ ACT 动作</td><td>操作手感与战斗反馈</td><td>永劫无间、黑神话：悟空</td><td>物理、动画、打击感</td></tr><tr><td>🏎️ 竞速 RAC</td><td>速度感与车辆操控</td><td>极品飞车、QQ飞车</td><td>物理、渲染</td></tr><tr><td>🏗️ 模拟 SIM</td><td>拟真经营 / 生活</td><td>模拟城市、动物森友会</td><td>逻辑、AI</td></tr><tr><td>🧩 冒险 AVG</td><td>解谜与叙事</td><td>塞尔达传说、原神</td><td>关卡、交互</td></tr><tr><td>🏀 体育竞技 SPG</td><td>体育规则对抗</td><td>FIFA、和平精英</td><td>物理、动画</td></tr></table></div><div class="card"><h3>🔗 游戏类型 ↔ 引擎能力</h3><ul><li><strong>RPG</strong> 需要动画系统 + 资源管理 → Unity 的 Animator、Addressables</li><li><strong>ACT</strong> 需要物理系统 + 动画 → Unity 的 Rigidbody、物理材质</li><li><strong>竞速 / 体育</strong> 需要刚体物理 + 渲染 → Unity 的 WheelCollider、URP/HDRP</li><li><strong>模拟 / 冒险</strong> 需要逻辑 + 交互 → Unity 的 C# 脚本、UI 系统</li></ul></div><div class="ok-box">💡 不管什么类型，背后都跑在同一套引擎能力上——<strong>渲染、物理、动画、交互</strong>。你学的 Unity，就是造这些游戏的&quot;工厂&quot;。下一节我们就看这台&quot;工厂&quot;到底是什么。</div>
+<div class="ok-box">你们对游戏都不陌生，但&quot;游戏是怎么被造出来的&quot;才是本课要回答的问题。先看看你玩过的游戏都属于哪些类型——<strong>每一类，背后都对应引擎的一组核心能力</strong>。</div><div class="card"><h3>🎮 按玩法核心分类</h3></div><div class="card"><table><tr><th>类型</th><th>说明</th><th>代表游戏</th><th>对引擎能力的侧重</th></tr><tr><td>🗡️ RPG 角色扮演</td><td>剧情推进 + 角色成长</td><td>原神、崩坏：星穹铁道</td><td>动画、资源管理、剧情系统</td></tr><tr><td>⚔️ ACT 动作</td><td>操作手感与战斗反馈</td><td>永劫无间、黑神话：悟空</td><td>物理、动画、打击感</td></tr><tr><td>🏎️ 竞速 RAC</td><td>速度感与车辆操控</td><td>极品飞车、QQ飞车</td><td>物理、渲染</td></tr><tr><td>🏗️ 模拟 SIM</td><td>拟真经营 / 生活</td><td>模拟城市、动物森友会</td><td>逻辑、AI</td></tr><tr><td>🧩 冒险 AVG</td><td>解谜与叙事</td><td>塞尔达传说、原神</td><td>关卡、交互</td></tr><tr><td>🏀 体育竞技 SPG</td><td>体育规则对抗</td><td>FIFA、和平精英</td><td>物理、动画</td></tr></table></div><div class="card"><h3>🔗 游戏类型 ↔ 引擎能力</h3><ul><li><strong>RPG</strong> 需要动画系统 + 资源管理 → Unity 的 Animator、Addressables</li><li><strong>ACT</strong> 需要物理系统 + 动画 → Unity 的 Rigidbody、物理材质</li><li><strong>竞速 / 体育</strong> 需要刚体物理 + 渲染 → Unity 的 WheelCollider、URP/HDRP</li><li><strong>模拟 / 冒险</strong> 需要逻辑 + 交互 → Unity 的 C# 脚本、UI 系统</li></ul></div><div class="ok-box"><span class="eico">💡</span> 不管什么类型，背后都跑在同一套引擎能力上——<strong>渲染、物理、动画、交互</strong>。你学的 Unity，就是造这些游戏的&quot;工厂&quot;。下一节我们就看这台&quot;工厂&quot;到底是什么。</div>
 </div></div>
 <div class="slide" data-page="12"><div class="slide-inner markable">
 <h1>什么是游戏引擎</h1>
@@ -564,7 +568,7 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="13"><div class="slide-inner markable">
 <h1>Unity3D 互动引擎</h1>
-<div class="card"><h3>🎯 Unity 是什么</h3><p>Unity3D 是一款功能强大的游戏开发工具和互动内容创作平台。</p></div><a href="https://unity.cn/" target="_blank" rel="noopener"><img src="images/课件1/unity_logo.svg" alt="Unity 官网图标" class="card-img" style="cursor:pointer" onclick="zoomQR(this)" onerror="imgMissing(this)"></a><img src="images/课件1/unity_editor_ui.png" alt="Unity 编辑器操作界面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>✨ 四大特点</h3><ol><li><strong>完整的游戏功能</strong>：从建模到发布一站式</li><li><strong>强大的编辑器</strong>：可视化编辑 + 丰富的第三方插件</li><li><strong>简洁的 SDK</strong>：C# 接口友好，学习曲线平缓</li><li><strong>跨平台发布</strong>：Windows、Mac、Linux、Android、iOS、WebGL……</li></ol></div><img src="images/课件1/cross_platform_avalonia.svg" alt="跨平台与 Avalonia 展示" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>这些大作都是 Unity 开发的：</h3></div><div class="contest-row"><img src="images/games/wzry.png" alt="王者荣耀" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/games/yuanshen.png" alt="原神" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/games/yjwj.png" alt="永劫无间" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card"><h3>🔗 Unity 与 C# 的关系</h3></div><div class="ok-box">🎮 Unity 管场景和渲染，C# 管逻辑和行为。</div><div class="card"><table><tr><th>Unity 负责</th><th>C# 负责</th></tr><tr><td>🏗️ 场景搭建</td><td>🏃 角色移动</td></tr><tr><td>🎯 物理引擎</td><td>🔫 射击逻辑</td></tr><tr><td>🖥️ 渲染管线</td><td>🤖 AI 行为</td></tr><tr><td>🎬 动画系统</td><td>📊 游戏规则</td></tr><tr><td>📦 资源管理</td><td>🖱️ 界面交互</td></tr></table></div><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 我 C# 还没学好，能学 Unity 吗？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">能。本课程会带你从 Unity 语境直接学习 C# 核心语法——边做游戏边学编程，不要求你先系统学过 C#。C# 是地基，Unity 是房子：地基打牢，楼才盖得高。</div></div><div class="card"><h3>🔧 学好引擎，你能干嘛？</h3></div><div class="ok-box">引擎是工厂，C# 代码 + 创意是图纸——工厂给你 4 大能力，图纸决定你做出什么。</div><div class="engine-rel">
+<div class="card"><h3>🎯 Unity 是什么</h3><p>Unity3D 是一款功能强大的游戏开发工具和互动内容创作平台。</p></div><a href="https://unity.cn/" target="_blank" rel="noopener"><img src="images/课件1/unity_logo.svg" alt="Unity 官网图标" class="card-img" style="cursor:pointer" onclick="zoomQR(this)" onerror="imgMissing(this)"></a><img src="images/课件1/unity_editor_ui.png" alt="Unity 编辑器操作界面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>✨ 四大特点</h3><ol><li><strong>完整的游戏功能</strong>：从建模到发布一站式</li><li><strong>强大的编辑器</strong>：可视化编辑 + 丰富的第三方插件</li><li><strong>简洁的 SDK</strong>：C# 接口友好，学习曲线平缓</li><li><strong>跨平台发布</strong>：Windows、Mac、Linux、Android、iOS、WebGL……</li></ol></div><img src="images/课件1/cross_platform_avalonia.svg" alt="跨平台与 Avalonia 展示" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>这些大作都是 Unity 开发的：</h3></div><div class="contest-row"><img src="images/games/wzry.png" alt="王者荣耀" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/games/yuanshen.png" alt="原神" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/games/yjwj.png" alt="永劫无间" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card"><h3>🔗 Unity 与 C# 的关系</h3></div><div class="ok-box"><span class="eico">🎮</span> Unity 管场景和渲染，C# 管逻辑和行为。</div><div class="card"><table><tr><th>Unity 负责</th><th>C# 负责</th></tr><tr><td>🏗️ 场景搭建</td><td>🏃 角色移动</td></tr><tr><td>🎯 物理引擎</td><td>🔫 射击逻辑</td></tr><tr><td>🖥️ 渲染管线</td><td>🤖 AI 行为</td></tr><tr><td>🎬 动画系统</td><td>📊 游戏规则</td></tr><tr><td>📦 资源管理</td><td>🖱️ 界面交互</td></tr></table></div><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 我 C# 还没学好，能学 Unity 吗？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">能。本课程会带你从 Unity 语境直接学习 C# 核心语法——边做游戏边学编程，不要求你先系统学过 C#。C# 是地基，Unity 是房子：地基打牢，楼才盖得高。</div></div><div class="card"><h3>🔧 学好引擎，你能干嘛？</h3></div><div class="ok-box">引擎是工厂，C# 代码 + 创意是图纸——工厂给你 4 大能力，图纸决定你做出什么。</div><div class="engine-rel">
 <svg viewBox="0 0 760 380" width="100%" style="max-width:720px;margin:8px auto;display:block" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="engGrad" x1="0" y1="0" x2="1" y2="1">
@@ -611,6 +615,26 @@ function copyImgName(btn){
   /* 平铺/PDF导出：并排多图改为单独一行放大显示（保持可点击放大） */
 .flat-mode .contest-row{display:block}
 .flat-mode .contest-row img{display:block;width:100%;max-width:100%;max-height:none;object-fit:contain;margin:16px auto 4px}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 
   <!-- 能力节点：左侧 -->
@@ -680,11 +704,11 @@ function copyImgName(btn){
     <text x="605" y="319" text-anchor="middle" class="er-chip">🏭 工业</text>
   </g>
 </svg>
-</div><div class="ok-box">🚀 把 Unity 学扎实、C# 写好，上面那些游戏你也能做——本课程的 FPS 大作业，就是第一步。</div>
+</div><div class="ok-box"><span class="eico">🚀</span> 把 Unity 学扎实、C# 写好，上面那些游戏你也能做——本课程的 FPS 大作业，就是第一步。</div>
 </div></div>
 <div class="slide" data-page="14"><div class="slide-inner markable">
 <h1>广东省职业院校学生专业技能大赛</h1>
-<div class="ok-box">🏆 胡泽川老师（带队）与彭堉斌老师从2022年起指导学生参加<strong>广东省职业院校学生专业技能大赛</strong>，累计斩获 <strong>6 项省级奖项</strong>。学好 Unity，下一个站上领奖台的就是你！</div><div class="contest-row"><img src="images/contest/photo1.png" alt="竞赛照片1" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/contest/photo2.png" alt="竞赛照片2" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/contest/photo3.png" alt="竞赛照片3" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card"><h3>关于这项赛事</h3><ul><li><strong>主办方</strong>：广东省教育厅</li><li><strong>宗旨</strong>：以赛促教、以赛促学，产教融合</li><li><strong>地位</strong>：全省高职院校最具权威性、代表性的综合性竞赛</li></ul></div><div class="card"><h3>我们主攻的赛项：数字化产品设计与开发</h3></div><div class="card"><table><tr><th>考核模块</th><th>涉及技能</th></tr><tr><td>三维建模与贴图</td><td>3ds Max / Maya / Blender</td></tr><tr><td>三维动画制作</td><td>角色动画、场景动画</td></tr><tr><td>交互开发</td><td><strong>C# + Unity 引擎</strong></td></tr><tr><td>项目路演</td><td>展示与答辩</td></tr></table></div><div class="ok-box">Unity 是整个赛项的<strong>核心技术</strong>——交互逻辑、游戏机制、VR/AR 交互全要靠它实现。</div><div class="card"><h3>💼 对口就业</h3></div><div class="card"><table><tr><th>方向</th><th>岗位</th></tr><tr><td>🎮 游戏开发</td><td>Unity 客户端工程师</td></tr><tr><td>🥽 VR/AR</td><td>虚拟现实开发工程师</td></tr><tr><td>🎨 互动媒体</td><td>交互设计师</td></tr><tr><td>🏭 工业仿真</td><td>数字孪生工程师</td></tr></table></div>
+<div class="ok-box"><span class="eico">🏆</span> 胡泽川老师（带队）与彭堉斌老师从2022年起指导学生参加<strong>广东省职业院校学生专业技能大赛</strong>，累计斩获 <strong>6 项省级奖项</strong>。学好 Unity，下一个站上领奖台的就是你！</div><div class="contest-row"><img src="images/contest/photo1.png" alt="竞赛照片1" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/contest/photo2.png" alt="竞赛照片2" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/contest/photo3.png" alt="竞赛照片3" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card"><h3>关于这项赛事</h3><ul><li><strong>主办方</strong>：广东省教育厅</li><li><strong>宗旨</strong>：以赛促教、以赛促学，产教融合</li><li><strong>地位</strong>：全省高职院校最具权威性、代表性的综合性竞赛</li></ul></div><div class="card"><h3>我们主攻的赛项：数字化产品设计与开发</h3></div><div class="card"><table><tr><th>考核模块</th><th>涉及技能</th></tr><tr><td>三维建模与贴图</td><td>3ds Max / Maya / Blender</td></tr><tr><td>三维动画制作</td><td>角色动画、场景动画</td></tr><tr><td>交互开发</td><td><strong>C# + Unity 引擎</strong></td></tr><tr><td>项目路演</td><td>展示与答辩</td></tr></table></div><div class="ok-box">Unity 是整个赛项的<strong>核心技术</strong>——交互逻辑、游戏机制、VR/AR 交互全要靠它实现。</div><div class="card"><h3>💼 对口就业</h3></div><div class="card"><table><tr><th>方向</th><th>岗位</th></tr><tr><td>🎮 游戏开发</td><td>Unity 客户端工程师</td></tr><tr><td>🥽 VR/AR</td><td>虚拟现实开发工程师</td></tr><tr><td>🎨 互动媒体</td><td>交互设计师</td></tr><tr><td>🏭 工业仿真</td><td>数字孪生工程师</td></tr></table></div>
 </div></div>
 <div class="slide" data-page="15"><div class="slide-inner end-page">
 
@@ -914,18 +938,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

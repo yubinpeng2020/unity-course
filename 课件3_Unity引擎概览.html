@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件3_Unity引擎概览 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -361,6 +362,26 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
   border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
 .img-missing button:hover{border-color:var(--accent);color:var(--accent)}
 .img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -379,15 +400,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -467,15 +491,15 @@ function copyImgName(btn){
 
 
 <h2>创建项目时报错 H0007</h2>
-<div class="ok-box">每次打开实训室电脑，配置好编译器后，创建或打开项目都会报错 H0007。这是实训室环境必遇的问题，按下面步骤修复即可。</div><img src="images/课件3/p6_h0007_error.png" alt="H0007 报错截图" class="card-img small" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card side-card"><div class="side-body"><h3>① 打开编译器所在文件夹</h3><ul><li>在 Unity Hub 编译器配置页面，点击编译器右侧的设置图标（⚙️）→「在资源管理器中显示」</li><li>可以看到打开了 <code>Unity 2022.3.xx/Editor</code> 文件夹</li></ul></div><img src="images/课件3/p6_h0007_1.png" alt="打开编译器文件夹" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card side-card"><div class="side-body"><h3>② 打开终端</h3><ul><li>在 <code>Editor</code> 文件夹的地址栏输入 <code>cmd</code>，回车打开命令行</li></ul></div><img src="images/课件3/p6_h0007_2.png" alt="打开终端" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card side-card"><div class="side-body"><h3>③ 在终端执行修复命令</h3><ul><li>在命令行中输入以下指令并回车：</li></ul></div><img src="images/课件3/p6_h0007_3.png" alt="执行修复命令" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><pre class="plain-box"><code>  hasp_update.exe u unity-sl.v2c</code></pre><div class="card"><ul><li>执行完毕，即可正常创建 / 打开项目</li></ul></div><div class="ok-box">💡 这个命令需要在每次重启实训室电脑，设置编译器后执行一次，后续打开同一项目不再报错。</div>
+<div class="ok-box">每次打开实训室电脑，配置好编译器后，创建或打开项目都会报错 H0007。这是实训室环境必遇的问题，按下面步骤修复即可。</div><img src="images/课件3/p6_h0007_error.png" alt="H0007 报错截图" class="card-img small" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card side-card"><div class="side-body"><h3>① 打开编译器所在文件夹</h3><ul><li>在 Unity Hub 编译器配置页面，点击编译器右侧的设置图标（⚙️）→「在资源管理器中显示」</li><li>可以看到打开了 <code>Unity 2022.3.xx/Editor</code> 文件夹</li></ul></div><img src="images/课件3/p6_h0007_1.png" alt="打开编译器文件夹" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card side-card"><div class="side-body"><h3>② 打开终端</h3><ul><li>在 <code>Editor</code> 文件夹的地址栏输入 <code>cmd</code>，回车打开命令行</li></ul></div><img src="images/课件3/p6_h0007_2.png" alt="打开终端" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card side-card"><div class="side-body"><h3>③ 在终端执行修复命令</h3><ul><li>在命令行中输入以下指令并回车：</li></ul></div><img src="images/课件3/p6_h0007_3.png" alt="执行修复命令" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><pre class="plain-box"><code>  hasp_update.exe u unity-sl.v2c</code></pre><div class="card"><ul><li>执行完毕，即可正常创建 / 打开项目</li></ul></div><div class="ok-box"><span class="eico">💡</span> 这个命令需要在每次重启实训室电脑，设置编译器后执行一次，后续打开同一项目不再报错。</div>
 </div></div>
 <div class="slide" data-page="4"><div class="slide-inner markable">
 <h1>打开已有项目</h1>
-<div class="ok-box">每次重启实训室电脑，都会重新安装 Unity Hub。安装好后，需要在 Unity Hub 中重新打开之前创建的项目。</div><div class="card side-card"><div class="side-body"><h3>① 点击「项目」→「添加」</h3><ul><li>启动 Unity Hub，点击左侧「项目」→ 点击右上角「添加」→「从磁盘添加项目」</li></ul></div><img src="images/课件3/p4_open_1.png" alt="项目-打开" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card side-card"><div class="side-body"><h3>② 选择项目文件夹</h3><ul><li>找到并选中之前创建的项目文件夹（如 <code>My Project</code>），点击「打开」</li><li>首次打开某项目会加载初始界面（Project 视图 + 场景），这就是工作起点</li></ul></div><img src="images/课件3/p4_open_2.png" alt="选择项目文件夹" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><img src="images/课件3/p4_open_done.png" alt="打开后的项目界面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box">💡 可要是 Hub 一直卡在登录、转圈进不来呢？<strong>下一页给一条不登录也能把工程打开的路。</strong></div>
+<div class="ok-box">每次重启实训室电脑，都会重新安装 Unity Hub。安装好后，需要在 Unity Hub 中重新打开之前创建的项目。</div><div class="card side-card"><div class="side-body"><h3>① 点击「项目」→「添加」</h3><ul><li>启动 Unity Hub，点击左侧「项目」→ 点击右上角「添加」→「从磁盘添加项目」</li></ul></div><img src="images/课件3/p4_open_1.png" alt="项目-打开" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card side-card"><div class="side-body"><h3>② 选择项目文件夹</h3><ul><li>找到并选中之前创建的项目文件夹（如 <code>My Project</code>），点击「打开」</li><li>首次打开某项目会加载初始界面（Project 视图 + 场景），这就是工作起点</li></ul></div><img src="images/课件3/p4_open_2.png" alt="选择项目文件夹" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><img src="images/课件3/p4_open_done.png" alt="打开后的项目界面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box"><span class="eico">💡</span> 可要是 Hub 一直卡在登录、转圈进不来呢？<strong>下一页给一条不登录也能把工程打开的路。</strong></div>
 </div></div>
 <div class="slide" data-page="5"><div class="slide-inner markable">
 <h1>免登录启动项目</h1>
-<div class="ok-box">⚠️ 实训室网络时好时坏，Unity Hub 常常卡在<strong>登录 / 一直转圈</strong>这一屏，工程根本进不去。这一页给一条<strong>绕开 Hub</strong>的路：在编辑器所在文件夹里开一个终端，用一条命令把工程直接打开。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 实训室网络时好时坏，Unity Hub 常常卡在<strong>登录 / 一直转圈</strong>这一屏，工程根本进不去。这一页给一条<strong>绕开 Hub</strong>的路：在编辑器所在文件夹里开一个终端，用一条命令把工程直接打开。</div>
 <div class="card"><h3>原理：Hub 只是「启动器」</h3><p>真正打开工程的是 <strong>Unity 编辑器</strong>（<code>Unity.exe</code>），Hub 只负责下载、安装、管理版本。工程已经在本地，<strong>用编辑器直接打开就行——打开工程这一步不用联网</strong>。</p><p>唯一前提：这台电脑<strong>激活过许可证</strong>（之前登录成功过一次，或老师帮忙激活过）。这条路只绕开 Hub，绕不开许可证。</p></div>
 <div class="card"><h3>五步，用一条命令把工程打开</h3><p>下面的路径都是<strong>示例</strong>，换成你自己电脑上的实际路径即可。</p><ol>
 <li><strong>打开工程目录</strong>：先进到<strong>自己的工程文件夹</strong>（截图里是 <code>D:\projects\My project</code>，你的工程放哪就进哪），里面能看到 <code>Assets</code>、<code>ProjectSettings</code> 这些文件夹——这就是要打开的那个工程<div class="step-img"><img src="images/课件3/4.1.png" alt="在资源管理器中打开工程目录，能看到 Assets 等文件夹" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li>
@@ -485,7 +509,7 @@ function copyImgName(btn){
 <li><strong>执行这条命令</strong>：在终端里输入 <code>start "" "Unity.exe" -projectPath "工程路径"</code>，其中工程路径换成第 2 步复制的那条。截图里执行的是<br><code>start "" "Unity.exe" -projectPath "D:\projects\My project"</code><br>回车——Unity 直接打开工程，<strong>全程不经过 Hub 登录界面</strong><div class="step-img"><img src="images/课件3/4.5.png" alt="在终端执行 start 命令，Unity 直接打开工程" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></li>
 </ol></div>
 <div class="card"><h3>这条命令逐段看</h3><ul><li><code>start</code>：让 Unity 单独起来，终端立刻回到提示符，不用一直挂着</li><li><code>""</code>：start 后面第一对引号是「窗口标题」，<strong>留空也必须有</strong>，少了它 <code>Unity.exe</code> 会被当成标题，命令就白跑了</li><li><code>-projectPath</code>：告诉 Unity 要打开哪个工程，后面跟工程路径</li><li><strong>路径里的空格要用英文双引号包住</strong>：<code>My project</code> 中间有空格，不加引号路径会被截断在空格处</li><li><strong>路径写到哪一层</strong>：就写到第 1 步那个<strong>能看到 Assets 文件夹</strong>的目录；写成上一级（<code>D:\projects</code>）或里一层（<code>...\My project\Assets</code>），Unity 都会当成空文件夹，<strong>新建一个空工程</strong>，白等一场</li></ul></div>
-<div class="ok-box">💡 嫌每次敲命令麻烦：终端里按 <strong>↑</strong> 就能翻出上一条命令，改一下路径换个工程；也可以把这行命令存成 <code>启动工程.bat</code>（记事本写一行即可）放桌面，双击就开。</div>
+<div class="ok-box"><span class="eico">💡</span> 嫌每次敲命令麻烦：终端里按 <strong>↑</strong> 就能翻出上一条命令，改一下路径换个工程；也可以把这行命令存成 <code>启动工程.bat</code>（记事本写一行即可）放桌面，双击就开。</div>
 <div class="ok-box">🆘 执行后弹「<strong>许可证无效</strong>／找不到许可证」：说明前提没满足——找老师用能联网的电脑激活一次，或把已激活的许可证文件拷过来。</div>
 <div class="ok-box"><mark style="background:rgba(239,68,68,.16);color:#f87171;padding:1px 5px;border-radius:4px;font-weight:600">都是英文，看不懂？怎么办？</mark></div>
 </div></div>
@@ -496,7 +520,7 @@ function copyImgName(btn){
 
 <div class="slide" data-page="7"><div class="slide-inner markable">
 <h1>编辑器界面区域总览</h1>
-<div class="card"><p>在深入菜单和视图之前，先看一眼整个编辑器的布局——知道各个区域在哪，后面才好找。</p></div><img src="images/课件3/p7_interface_overview.png" alt="Unity 编辑器区域总览" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><p>Unity 编辑器默认布局分为五大区域：</p></div><div class="card"><table><tr><th>位置</th><th>区域</th><th>作用</th></tr><tr><td>顶部</td><td><strong>菜单栏 + 工具栏</strong></td><td>菜单操作入口，变换工具、播放控制</td></tr><tr><td>中左</td><td><strong>Hierarchy 层级视图</strong></td><td>场景中所有物体的列表</td></tr><tr><td>中央</td><td><strong>Scene 场景视图</strong></td><td>3D 世界主舞台，布置和编辑物体</td></tr><tr><td>左下</td><td><strong>Project 项目视图</strong></td><td>所有资源文件的仓库</td></tr><tr><td>右侧</td><td><strong>Inspector 检视视图</strong></td><td>查看/修改选中物体的属性</td></tr></table></div><div class="ok-box">💡 记忆口诀：Scene 是&quot;世界&quot;，Hierarchy 是&quot;目录&quot;，Project 是&quot;仓库&quot;，Inspector 是&quot;属性面板&quot;。</div>
+<div class="card"><p>在深入菜单和视图之前，先看一眼整个编辑器的布局——知道各个区域在哪，后面才好找。</p></div><img src="images/课件3/p7_interface_overview.png" alt="Unity 编辑器区域总览" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><p>Unity 编辑器默认布局分为五大区域：</p></div><div class="card"><table><tr><th>位置</th><th>区域</th><th>作用</th></tr><tr><td>顶部</td><td><strong>菜单栏 + 工具栏</strong></td><td>菜单操作入口，变换工具、播放控制</td></tr><tr><td>中左</td><td><strong>Hierarchy 层级视图</strong></td><td>场景中所有物体的列表</td></tr><tr><td>中央</td><td><strong>Scene 场景视图</strong></td><td>3D 世界主舞台，布置和编辑物体</td></tr><tr><td>左下</td><td><strong>Project 项目视图</strong></td><td>所有资源文件的仓库</td></tr><tr><td>右侧</td><td><strong>Inspector 检视视图</strong></td><td>查看/修改选中物体的属性</td></tr></table></div><div class="ok-box"><span class="eico">💡</span> 记忆口诀：Scene 是&quot;世界&quot;，Hierarchy 是&quot;目录&quot;，Project 是&quot;仓库&quot;，Inspector 是&quot;属性面板&quot;。</div>
 </div></div>
 <div class="slide" data-page="8"><div class="slide-inner markable">
 <h1>菜单栏概览</h1>
@@ -508,7 +532,7 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="10"><div class="slide-inner markable">
 <h1>Scene 场景视图 · Game 游戏视图 · 播放调试</h1>
-<img src="images/课件3/p10_game_intro.png" alt="游戏界面截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><p>游戏场景是怎么开发出来的？先在 <strong>Scene（场景视图）</strong> 中把对象（模型、灯光、特效等）布置进来，设置它们的位置、大小、旋转等信息，组成一幕画面。一个 Scene 只能组合出一幕画面，多幕画面则需要由多个场景构成——<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">如战斗场景、欢迎场景、设置场景等</mark>，组合起来就是一个完整的游戏。</p></div><img src="images/课件3/p10_scene_game_label.png" alt="Scene 与 Game 视图区域标注" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card side-card"><div class="side-body"><h3>Scene（场景视图）</h3><p>是游戏场景设计的主编辑区域，所有对象在这里布置（位置 / 大小 / 旋转），组成一幕画面。</p><p><strong>一个 Scene 场景 = 一个独立的空间</strong>，场景文件是 <code>Assets</code> 下的 <code>.unity</code> 文件（如 <code>SampleScene.unity</code>）。</p><p>游戏可以由多个场景组成，通过脚本实现<strong>场景切换（地图切换）</strong>（如战斗场景、欢迎场景、设置场景等）。</p></div><img src="images/课件3/p10_scene.png" alt="Scene 场景视图界面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><img src="images/课件3/p10_scene_view.png" alt="Scene 场景视图截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card side-card"><div class="side-body"><h3>Game（游戏视图）</h3><p>是游戏运行时的显示窗口，对 Scene 的修改会实时同步过来。Scene 和 Game 是同一个窗口区域的两个 tab，可以切换查看。</p></div><img src="images/课件3/p10_game.png" alt="Game 游戏视图界面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><img src="images/课件3/p10_game_view.png" alt="Game 游戏视图截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>Game 视图常见控件</h3><p>Game 视图顶部常见控件：</p><ul><li><strong>Simulator 模拟设备</strong>：模拟不同设备运行（默认安卓），快速预览多端表现</li><li><strong>Free Aspect 自由比例</strong>：控制显示比例 / 分辨率适配</li><li><strong>缩放</strong>：控制画面缩放倍数</li><li><strong>Play Focused 运行聚焦</strong>：运行时让游戏视图抢占焦点，操作更流畅</li><li><strong>设备模拟 / 喇叭 / Gizmos / 状态栏</strong>：分别控制模拟环境、音频、辅助调试信息、实时状态（FPS / 渲染耗时 / 内存）</li></ul></div><div class="card"><h3>播放工具</h3><p>（工具栏中央）：<code>▶ 运行</code> / <code>⏸ 暂停</code> / <code>⏭ 单帧</code>，用于编辑器内测试游戏。点 ▶ 运行后，Game 视图实时显示游戏画面。</p></div><img src="images/课件3/p10_play_tools.png" alt="播放工具" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>控制台（Console）与状态栏</h3><p>两个很有用的调试工具：</p><ul><li>状态栏在编辑器底部（通常是一条灰线）</li><li>脚本里用 <code>Debug.Log()</code> 向控制台输出信息，有助于调试和修复错误</li></ul></div><img src="images/课件3/p10_console.png" alt="控制台" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box">💡 写完脚本跑不起来？第一反应是看 Console 的红字报错，而不是猜。</div>
+<img src="images/课件3/p10_game_intro.png" alt="游戏界面截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><p>游戏场景是怎么开发出来的？先在 <strong>Scene（场景视图）</strong> 中把对象（模型、灯光、特效等）布置进来，设置它们的位置、大小、旋转等信息，组成一幕画面。一个 Scene 只能组合出一幕画面，多幕画面则需要由多个场景构成——<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">如战斗场景、欢迎场景、设置场景等</mark>，组合起来就是一个完整的游戏。</p></div><img src="images/课件3/p10_scene_game_label.png" alt="Scene 与 Game 视图区域标注" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card side-card"><div class="side-body"><h3>Scene（场景视图）</h3><p>是游戏场景设计的主编辑区域，所有对象在这里布置（位置 / 大小 / 旋转），组成一幕画面。</p><p><strong>一个 Scene 场景 = 一个独立的空间</strong>，场景文件是 <code>Assets</code> 下的 <code>.unity</code> 文件（如 <code>SampleScene.unity</code>）。</p><p>游戏可以由多个场景组成，通过脚本实现<strong>场景切换（地图切换）</strong>（如战斗场景、欢迎场景、设置场景等）。</p></div><img src="images/课件3/p10_scene.png" alt="Scene 场景视图界面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><img src="images/课件3/p10_scene_view.png" alt="Scene 场景视图截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card side-card"><div class="side-body"><h3>Game（游戏视图）</h3><p>是游戏运行时的显示窗口，对 Scene 的修改会实时同步过来。Scene 和 Game 是同一个窗口区域的两个 tab，可以切换查看。</p></div><img src="images/课件3/p10_game.png" alt="Game 游戏视图界面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><img src="images/课件3/p10_game_view.png" alt="Game 游戏视图截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>Game 视图常见控件</h3><p>Game 视图顶部常见控件：</p><ul><li><strong>Simulator 模拟设备</strong>：模拟不同设备运行（默认安卓），快速预览多端表现</li><li><strong>Free Aspect 自由比例</strong>：控制显示比例 / 分辨率适配</li><li><strong>缩放</strong>：控制画面缩放倍数</li><li><strong>Play Focused 运行聚焦</strong>：运行时让游戏视图抢占焦点，操作更流畅</li><li><strong>设备模拟 / 喇叭 / Gizmos / 状态栏</strong>：分别控制模拟环境、音频、辅助调试信息、实时状态（FPS / 渲染耗时 / 内存）</li></ul></div><div class="card"><h3>播放工具</h3><p>（工具栏中央）：<code>▶ 运行</code> / <code>⏸ 暂停</code> / <code>⏭ 单帧</code>，用于编辑器内测试游戏。点 ▶ 运行后，Game 视图实时显示游戏画面。</p></div><img src="images/课件3/p10_play_tools.png" alt="播放工具" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>控制台（Console）与状态栏</h3><p>两个很有用的调试工具：</p><ul><li>状态栏在编辑器底部（通常是一条灰线）</li><li>脚本里用 <code>Debug.Log()</code> 向控制台输出信息，有助于调试和修复错误</li></ul></div><img src="images/课件3/p10_console.png" alt="控制台" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box"><span class="eico">💡</span> 写完脚本跑不起来？第一反应是看 Console 的红字报错，而不是猜。</div>
 </div></div>
 <div class="slide" data-page="11"><div class="slide-inner markable">
 <h1>场景视图详解（变换工具 · 坐标系 · 显示开关）</h1>
@@ -517,7 +541,7 @@ function copyImgName(btn){
 <div class="slide" data-page="12"><div class="slide-inner markable">
 <h1>课堂练习 — 创建你的工程</h1>
 <div class="card"><h3>要求</h3><ol><li>用 Unity Hub <strong>新建一个 3D 工程</strong>（纯英文路径，命名为 <code>MyUnityLab</code>），将编辑器切换为<strong>简体中文界面</strong></li><li>点击 <code>▶ 运行</code>，观察 Game 视图与 Scene 视图的同步变化，再点 <code>⏸ 暂停</code></li></ol></div>
-<div class="ok-box">⚠️ <strong>重要提醒</strong>：这个工程是后续所有作业的<strong>工作台</strong>，请保存在自己的文件夹里，下次上课直接打开接着做。</div>
+<div class="ok-box"><span class="eico">⚠️</span> <strong>重要提醒</strong>：这个工程是后续所有作业的<strong>工作台</strong>，请保存在自己的文件夹里，下次上课直接打开接着做。</div>
 </div></div>
 <div class="slide" data-page="13"><div class="slide-inner end-page">
 
@@ -783,18 +807,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

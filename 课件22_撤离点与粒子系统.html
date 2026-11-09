@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件22_撤离点与粒子系统 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -346,6 +347,26 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 .step-img img{display:block;width:100%;max-width:100%;max-height:none;height:auto;margin:0;object-fit:contain;border-radius:10px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer}
 .step-img.half img{width:50%;max-width:50%;margin:0 auto}
 .step-img.third img{width:33.3333%;max-width:33.3333%;margin:0 auto}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -364,15 +385,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -448,7 +472,7 @@ function copyImgName(btn){
 <h1>1. 摆一个撤离点</h1>
 <div class="card"><p>关卡得有个出口。在关卡尽头放一块<strong>触发器区域</strong>，玩家走进去就算通关。它<strong>不挡路</strong>，只负责判定——所以用 Trigger，不用实体墙。</p></div>
 <div class="card"><h3>① 摆出口</h3><ol><li>层级里建空对象 <code>ExitZone</code>，位置挪到关卡出口</li><li>加 <code>Box Collider（盒碰撞体）</code>，勾上 <code>Is Trigger（是否为触发器）</code></li><li>把 <code>Size</code> 拉到能罩住整条通道——玩家走进去时，身体要能碰到它</li></ol><div class="step-img"><img src="images/课件22/撤离点触发器.png" alt="ExitZone 加盒碰撞体并勾上是否为触发器" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
-<div class="ok-box">💡 门口最好留个视觉提示：地上一块异色地面、一束光、或者本课后面加的粒子光柱——不然玩家不知道往哪跑。</div>
+<div class="ok-box"><span class="eico">💡</span> 门口最好留个视觉提示：地上一块异色地面、一束光、或者本课后面加的粒子光柱——不然玩家不知道往哪跑。</div>
 </div></div>
 <div class="slide" data-page="4"><div class="slide-inner markable">
 <h1>2. 写脚本</h1>
@@ -478,14 +502,14 @@ public class ExitLevel : MonoBehaviour
 <h1>3. 为什么能触发</h1>
 <div class="card"><ul><li>触发器要生效，<strong>至少一方得带刚体</strong>；玩家身上是课件13 加的 <code>CharacterController</code>，它本身就能触发 <code>OnTriggerEnter</code>，<strong>不用再加刚体</strong></li><li>如果玩家用的是普通 <code>Collider</code>，就给玩家加 <code>Rigidbody</code> 并勾上 <code>Is Kinematic</code>，否则走进去毫无反应</li><li>标签必须对得上：玩家标签是 <code>Player</code>，脚本里的 <code>"Player"</code> 一字不差</li><li>两个都是 Trigger 不会触发——触发器只和<strong>实体碰撞体</strong>碰</li></ul></div>
 <div class="card"><h3>排错：走进去了没反应</h3><ol><li>看 <code>ExitZone</code> 的 <code>Is Trigger</code> 有没有勾</li><li>看玩家标签是不是 <code>Player</code>、脚本里写的也是 <code>"Player"</code></li><li>看 <code>ExitZone</code> 的 <code>Size</code> 是不是太小，玩家根本没碰到</li><li>看场景有没有加进生成设置——没加，<code>LoadScene</code> 会报错，画面不动</li></ol></div>
-<div class="ok-box">⚠️ 想做成「先黑屏再回启动页」，把课件21 <code>GameFlowManager</code> 的黑屏渐变照搬过来，只把最后那句 <code>LoadScene</code> 换成启动场景名。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 想做成「先黑屏再回启动页」，把课件21 <code>GameFlowManager</code> 的黑屏渐变照搬过来，只把最后那句 <code>LoadScene</code> 换成启动场景名。</div>
 </div></div>
 <div class="slide" data-page="6"><div class="slide-inner markable">
 <h1>4. 粒子系统参数</h1>
 <div class="card"><p>粒子系统（Particle System）用一个组件管成千上万个小点：参数决定它们<strong>什么时候出现、活多久、往哪飞、长什么样</strong>。常用三块：</p></div>
 <div class="card"><ul><li><strong>主模块</strong>：Duration（一次播放时长）、Looping（循环）、Start Delay（延迟）、Start Lifetime（粒子寿命）、Start Speed（初速）、Start Size（初大小）、Start Color（颜色/渐变）</li><li><strong>发射</strong>：Rate Over Time（每秒数量）、Rate Over Distance（每距离数量）、Bursts（特定时刻突发，适合爆炸）</li><li><strong>形状</strong>：决定粒子从何处发射（发射区域形状）</li></ul></div>
 <img src="images/课件22/粒子参数.png" alt="粒子参数" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="ok-box">💡 记住一句：<strong>Looping + Rate Over Time 是「一直冒」</strong>（光柱、烟雾），<strong>不勾 Looping + Bursts 是「炸一次」</strong>（爆炸、通关特效）。</div>
+<div class="ok-box"><span class="eico">💡</span> 记住一句：<strong>Looping + Rate Over Time 是「一直冒」</strong>（光柱、烟雾），<strong>不勾 Looping + Bursts 是「炸一次」</strong>（爆炸、通关特效）。</div>
 </div></div>
 <div class="slide" data-page="7"><div class="slide-inner markable">
 <h1>5. 用现成粒子</h1>
@@ -498,7 +522,7 @@ public class ExitLevel : MonoBehaviour
     void Update() { if (Time.time &gt; DestoryTime) Destroy(gameObject); }
 }</code></pre></div>
 <img src="images/课件22/导入粒子.png" alt="导入粒子" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="ok-box">⚠️ <code>LifeTime</code> 要<strong>大于等于</strong>粒子播完的时间（Duration + Start Lifetime），否则特效还没散完就被删掉，看着像「炸一半没了」。</div>
+<div class="ok-box"><span class="eico">⚠️</span> <code>LifeTime</code> 要<strong>大于等于</strong>粒子播完的时间（Duration + Start Lifetime），否则特效还没散完就被删掉，看着像「炸一半没了」。</div>
 </div></div>
 <div class="slide" data-page="8"><div class="slide-inner markable">
 <h1>6. 给撤离点加一道光柱</h1>
@@ -506,7 +530,7 @@ public class ExitLevel : MonoBehaviour
 <div class="card"><h3>怎么摆</h3><ol><li>把粒子预制体拖到层级里的 <code>ExitZone</code> 上，松手后它变成子物体</li><li>选中它，把 <code>Position</code> 归零，再把 <code>Y</code> 往上抬一点，让光柱从地面升起</li><li>主模块勾上 <code>Looping</code>、保留 <code>Play On Awake</code>，一进关卡它就一直亮</li></ol></div>
 <div class="card"><h3>调成「光柱感」的三个参数</h3><ul><li><code>Start Speed</code> 调小（0.5~2），粒子才不四散</li><li><code>Start Lifetime</code> 调大（2~4 秒），光柱才立得高</li><li><code>Start Color</code> 用渐变：底部亮、顶部透明，柱体才有淡出感</li></ul></div>
 <div class="step-img"><img src="images/课件22/撤离点光柱.png" alt="撤离点上方的常驻粒子光柱" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
-<div class="ok-box">💡 光柱是「提示」，不是「判定」：判定还是靠 <code>ExitZone</code> 上那个 Box Collider，粒子不参与碰撞。</div>
+<div class="ok-box"><span class="eico">💡</span> 光柱是「提示」，不是「判定」：判定还是靠 <code>ExitZone</code> 上那个 Box Collider，粒子不参与碰撞。</div>
 </div></div>
 <div class="slide" data-page="9"><div class="slide-inner markable">
 <h1>7. 通关瞬间爆开</h1>
@@ -539,7 +563,7 @@ public class ExitLevel : MonoBehaviour
         SceneManager.LoadScene(startSceneName);
     }
 }</code></pre></div>
-<div class="ok-box">⚠️ 协程要 <code>using System.Collections;</code>；<code>WaitForSeconds</code> 的长度跟着特效走，别比爆开还短。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 协程要 <code>using System.Collections;</code>；<code>WaitForSeconds</code> 的长度跟着特效走，别比爆开还短。</div>
 </div></div>
 <div class="slide" data-page="10"><div class="slide-inner markable">
 <h1>作业 · 撤离点特效</h1>
@@ -811,18 +835,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件15_游戏管理器与生成物体 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -341,6 +342,26 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
   border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
 .img-missing button:hover{border-color:var(--accent);color:var(--accent)}
 .img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -359,15 +380,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -486,7 +510,7 @@ public class MainLogic : MonoBehaviour {
     }
     void Start() { }
 }</code></pre>
-</div><div class="card"><h3>代码讲解</h3><ol><li><strong>挂载</strong>：脚本挂在<strong>空对象</strong>上，由它承载这类全局逻辑。</li><li><strong>Awake 比 Start 更早</strong>：<code>Awake</code> 在对象一被创建就执行，<code>Start</code> 要等所有 <code>Awake</code> 都跑完才轮得到。设帧率这种&quot;越早越好&quot;的事就该放 <code>Awake</code>。</li><li><strong>设帧率这一行</strong>：<code>Application.targetFrameRate = 60</code> 把目标帧率定在每秒 60 帧。不设的话，在手机上可能跑满屏幕刷新率，白白发热耗电。</li><li><strong><code>Debug.Log</code> 是干什么的</strong>：往控制台（Console）打印一行字，用来确认&quot;这段代码到底跑了没有&quot;——写代码时最常用的排错手段，不影响游戏本身。</li><li><strong>空的 <code>Start()</code></strong>：这里先留个空壳占位——下一页就要用它来生成动物；哪天真的用不上，把这一段删掉也不影响。</li><li><strong>都只跑一次</strong>：<code>Awake</code> 和 <code>Start</code> 都只在游戏开始前各跑一次，不是每帧——所以帧率设一次就够，不会反复设。</li></ol></div><img src="images/课件15/空对象_主控脚本.png" alt="创建空对象与主控脚本" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box">⚠️ <strong>还差一步：它真能"最先"启动吗？</strong>
+</div><div class="card"><h3>代码讲解</h3><ol><li><strong>挂载</strong>：脚本挂在<strong>空对象</strong>上，由它承载这类全局逻辑。</li><li><strong>Awake 比 Start 更早</strong>：<code>Awake</code> 在对象一被创建就执行，<code>Start</code> 要等所有 <code>Awake</code> 都跑完才轮得到。设帧率这种&quot;越早越好&quot;的事就该放 <code>Awake</code>。</li><li><strong>设帧率这一行</strong>：<code>Application.targetFrameRate = 60</code> 把目标帧率定在每秒 60 帧。不设的话，在手机上可能跑满屏幕刷新率，白白发热耗电。</li><li><strong><code>Debug.Log</code> 是干什么的</strong>：往控制台（Console）打印一行字，用来确认&quot;这段代码到底跑了没有&quot;——写代码时最常用的排错手段，不影响游戏本身。</li><li><strong>空的 <code>Start()</code></strong>：这里先留个空壳占位——下一页就要用它来生成动物；哪天真的用不上，把这一段删掉也不影响。</li><li><strong>都只跑一次</strong>：<code>Awake</code> 和 <code>Start</code> 都只在游戏开始前各跑一次，不是每帧——所以帧率设一次就够，不会反复设。</li></ol></div><img src="images/课件15/空对象_主控脚本.png" alt="创建空对象与主控脚本" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box"><span class="eico">⚠️</span> <strong>还差一步：它真能"最先"启动吗？</strong>
 <ul>
 <li><strong>期望</strong>：设帧率、做全局初始化这类事越早越好——希望 <code>MainLogic</code> 抢在所有脚本之前先跑；</li>
 <li><strong>问题</strong>：可 Unity <strong>不保证脚本执行顺序</strong>，脚本分散挂在不同对象上，谁的 <code>Awake</code> 先跑是不确定的；</li>
@@ -505,7 +529,7 @@ public class MainLogic : MonoBehaviour {
 <div class="card"><h3>动手：把动物模型做成预制体</h3><p>光有模型还不行——它只是外面一层&quot;皮&quot;，还不是能参与游戏的<strong>实体</strong>。把动物做成预制体，一共四步（下面这几步都能<strong>一次把所有动物一起做完</strong>）：</p><ol><li>把 <strong>6 只动物</strong>都从 <strong>Meshes 文件夹</strong>拖进场景——先一只只摆上去，此刻它们都还只是一坨坨网格。</li><li>在<strong>层级（Hierarchy）窗口把它们全选中</strong>（点第一只、按住 Shift 点最后一只——课件6 学过的多选），再在<strong>检查器（Inspector）</strong>里<strong>添加刚体（Rigidbody）和碰撞体（Collider）</strong>——组件会<strong>一次加到所有选中的对象上</strong>。这就是课件12 学过的&quot;实体两件套&quot;：有了它们，动物才会被撞到、会掉落，<img src="images/课件15/动物模型_拖入并加组件.png" alt="把 6 只动物模型拖进场景后，在层级窗口全选，一次性给它们添加刚体组件和碰撞体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:100%; max-height:none; float:none; display:block; margin:14px auto 4px" onerror="imgMissing(this)">而不是一张贴图飘在那儿。</li><li>先备好存放的文件夹：在项目（Project）窗口里<strong>新建一个文件夹</strong>，命名为 <code>PreFabs</code>（右键 → <strong>创建（Create）</strong> → <strong>文件夹（Folder）</strong>；<img src="images/课件15/新建PreFabs文件夹.png" alt="在项目窗口里新建 PreFabs 文件夹（右键 → 创建 → 文件夹）" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:100%; max-height:none; float:none; display:block; margin:14px auto 4px" onerror="imgMissing(this)">已经有就跳过这步）。</li><li>把场景里的动物<strong>一起拖进 PreFabs 文件夹</strong>，存成预制体；再把场景里的原模型<strong>全部删掉</strong>——<img src="images/课件15/存为动物预制体.png" alt="把场景里的动物一起拖进 PreFabs 文件夹，存成预制体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:100%; max-height:none; float:none; display:block; margin:14px auto 4px" onerror="imgMissing(this)">生成交给代码，不用手摆。</li></ol><p>小技巧：层级（Hierarchy）窗口里选中的对象，在检查器里<strong>添加的组件会一起加上</strong>——6 只动物一次搞定，不用一只只来；<strong>批量改属性、批量删对象也是同理</strong>。</p></div>
 <div class="card"><h3>⚠️ 多选也有它的「规矩」</h3><p>检查器里<strong>只显示这些对象&quot;都有的&quot;组件</strong>——某只独有的组件不会显示（检查器底部会有一行提示，说明这些组件不能多选编辑）；属性值也一样，<strong>6 只全是同一个值才显示数字</strong>，只要有一只不同，那一栏就变成&quot;—&quot;。</p><p>所以一起添加组件时，<strong>只要其中有一只本来就带着刚体，它就会加不上</strong>——Unity 会弹窗说明原因：<strong>&quot;无法多次添加相同的组件！&quot;</strong>，下面那一行还会点名是哪只、哪个组件（例如：<strong>&quot;无法添加组件 Rigidbody，因为 Pig_pink1 中已经包含了相同的组件&quot;</strong>）。</p><p>好在从 Meshes 拖进来的模型<strong>默认既没有刚体、也没有碰撞体</strong>，正常不会撞上；万一遇到，<strong>把那一只单独选中，在组件右上角 ⋮ 里移除刚体（Remove Component）</strong>，再全选一起加。</p><img src="images/课件15/多选加组件_已存在提示.png" alt="多选一起添加组件时 Unity 弹窗：无法多次添加相同的组件！无法添加组件 Rigidbody，因为 Pig_pink1 中已经包含了相同的组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:50%; max-height:none; float:none; display:block; margin:14px auto 4px" onerror="imgMissing(this)">
 </div>
-<div class="ok-box">⚠️ <strong>模板做好了，可它自己不会动</strong>
+<div class="ok-box"><span class="eico">⚠️</span> <strong>模板做好了，可它自己不会动</strong>
 <ul>
 <li><strong>期望</strong>：游戏一开局，场上就撒出一群动物，位置随机、种类随机；</li>
 <li><strong>问题</strong>：预制体只是静静躺在项目窗口里的&quot;模板&quot;，不会自己跑到场景里；</li>
@@ -546,7 +570,7 @@ public class MainLogic : MonoBehaviour {
 </div>
 <div class="card"><h3>代码讲解</h3><ol><li><strong>整份脚本</strong>：这就是主控脚本 <code>MainLogic</code> 的完整代码——上面的 <code>Awake</code>（设帧率）是前面写好的，下面这段 <code>Start</code> 是这一页新加的，由游戏管理器统一决定&quot;生成几只、生成什么&quot;。<strong>Unity 先把所有 <code>Awake</code> 跑完，才轮到 <code>Start</code></strong>，所以帧率一定在动物生成之前就设好了。</li><li><strong><code>animals</code> 是一串对象</strong>：<code>GameObject[]</code> 后面那对 <code>[]</code> 表示<strong>数组</strong>——原来一个槽位只能拖一个，现在是一排槽位，把 6 个动物预制体全拖进去（怎么拖见下面「接到脚本上」那张卡），它们就从 0 号排到 5 号。</li><li><strong>中心点靠槽位塞进来</strong>：<code>spawnCenter</code> 写成 <code>public Transform</code>，检查器（Inspector）里就多出一个<strong>槽位</strong>——把场景里的空对象 <code>SpawnCenter</code> 拖进去就行（怎么建、怎么摆见上面那张卡）。（槽位写 <code>Transform</code>，拿到的就是那个空对象，能直接写 <code>.position</code>；写成 <code>GameObject</code> 就要写 <code>.transform.position</code>——同课件14 ① 的槽位类型。）</li><li><strong>另外两个可调参数</strong>：<code>spawnCount</code>（生成几只）、<code>spawnRadius</code>（撒多大的范围）也都写成 <code>public</code>，在检查器里随时能改，不用动代码。上面那张卡圈的那块"地"，<strong>中心</strong>由 <code>SpawnCenter</code> 定，<strong>多大</strong>就由 <code>spawnRadius</code> 说了算。</li><li><strong>为什么放 <code>Start</code></strong>：游戏开始时生成这一批，跑一次就够；写进 <code>Update</code> 就变成每帧刷一批，一秒就爆满。</li><li><strong><code>for</code> 循环</strong>：<code>i</code> 从 0 数到 <code>spawnCount - 1</code>，循环体每转一圈生成一只，一共生成 <code>spawnCount</code> 只。</li><li><strong>① 随机位置</strong>：<code>Random.insideUnitCircle</code> 取的是<strong>以原点为中心</strong>的单位圆内随机点，乘上 <code>spawnRadius</code> 就得到一个半径 10 以内的随机偏移；再 <code>+ spawnCenter.position</code>，整个圆就<strong>平移到空对象所在的位置</strong>——中心点挪到哪，动物就在哪一片冒出来。</li><li><strong>为什么用 <code>Vector2</code> 拼出 <code>Vector3</code></strong>：圆是平面的，只给出<strong>水平</strong>的两个方向（x、z）；竖直方向要<strong>单独给一个高度</strong>——这里写 <code>1f</code>，就是在中心点<strong>上方 1 米</strong>处生成。<strong>这个高度要照着场景调</strong>：中心点 <code>SpawnCenter</code> 摆多高、动物模型的原点在哪儿，都会影响它——写成 <code>0f</code> 常常让动物贴地甚至陷进地面，抬到 <code>1f</code> 就稳稳站在地上（本课为方便演示取 1）。</li><li><strong>② 随机动物</strong>：<code>Random.Range(0, animals.Length)</code> 在 0 到 5 之间抽一个整数当<strong>下标</strong>，每一只抽到的种类都可能不同。注意<strong>整数版的 <code>Range</code> 取不到上界</strong>，所以上界写 <code>animals.Length</code> 正好；写成 <code>animals.Length - 1</code>，最后一只就永远抽不到。</li><li><strong><code>Instantiate</code> 是什么</strong>：这就是这一节的主角——<strong>在代码里凭空复制出一个对象</strong>；复制出来的这一份叫一个<strong>实例</strong>，这个动作就叫<strong>实例化</strong>。它接三个参数：<code>Instantiate(要复制的模板, 生成的位置, 生成的旋转)</code>。旋转传 <code>Quaternion.identity</code>，意思是<strong>不做任何旋转</strong>、保持默认朝向。</li><li><strong>生成出来的只是副本</strong>：每一只都是 <code>animals</code> 里那张模板的复制品——模板一改，场上所有副本一起变。</li></ol></div><div class="card"><h3>接到脚本上：把资源拖进槽位</h3><p>主控脚本里有两个槽位要手动填——<strong>要复制的&quot;模板&quot;</strong>和<strong>生成区域的中心</strong>。⚠️ 槽位<strong>不是天生就有的</strong>——就是上面「写在哪：主控脚本 MainLogic」那张卡里<code>public GameObject[] animals;</code> 和 <code>public Transform spawnCenter;</code> 这两行开出来的：写上它们，检查器（Inspector）里才会多出这两个槽位，然后才能往里拖。（<strong>不加这两行，槽位根本不存在</strong>，也就无处可拖。）</p><ol><li>把层级（Hierarchy）窗口里的 <code>SpawnCenter</code> <strong>拖到 <code>spawnCenter</code> 槽位上</strong><img src="images/课件15/设置生成中心点.png" alt="在检查器里把层级窗口中的空对象 SpawnCenter 拖到 spawnCenter 槽位" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:100%; max-height:none; float:none; display:block; margin:14px auto 4px" onerror="imgMissing(this)"></li><li>把项目（Project）窗口里的 <strong>6 个动物预制体一起选中</strong>，<strong>拖到 <code>animals</code> 槽位上</strong>——数组槽位会<strong>一格格排开</strong>，从 0 号排到 5 号；这样后面代码里 <code>animals[随机下标]</code> 才抽得到东西<img src="images/课件15/设置动物预制体.png" alt="在检查器里把项目窗口中的动物预制体拖到 animals 槽位" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></li></ol></div>
 <img src="images/课件15/随机撒出一群动物.gif" alt="最终效果：游戏一开局，场上凭空撒出一群动物——每只的位置和种类都不一样" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="ok-box">💡 <strong>记住一句话：要复制的东西先做成预制体，<code>Instantiate(模板, 位置, 旋转)</code> 就能让对象凭空出现</strong>——出现几只、放在哪、长什么样，都可以交给随机数说了算。游戏里的子弹、金币、一波波敌人都是这么来的。</div>
+<div class="ok-box"><span class="eico">💡</span> <strong>记住一句话：要复制的东西先做成预制体，<code>Instantiate(模板, 位置, 旋转)</code> 就能让对象凭空出现</strong>——出现几只、放在哪、长什么样，都可以交给随机数说了算。游戏里的子弹、金币、一波波敌人都是这么来的。</div>
 </div></div>
 <div class="slide" data-page="7"><div class="slide-inner markable">
 <h1>作业 · 每隔一秒刷出一只动物</h1>
@@ -570,7 +594,7 @@ void SpawnOne() {
     Vector3 pos = spawnCenter.position + new Vector3(r.x, 1f, r.y);
     GameObject animal = animals[Random.Range(0, animals.Length)];
     Instantiate(animal, pos, Quaternion.identity);
-}</code></pre></div><p>这三段里新的东西只有一个——&quot;<strong>秒表</strong>&quot;：<code>timer += Time.deltaTime</code> 是<strong>走秒</strong>，<code>if (timer &gt;= interval)</code> 是看<strong>到点没有</strong>，<code>timer = 0f</code> 是<strong>归零重来</strong>。前面那页说过&quot;把生成写进 <code>Update</code> 会一秒刷出一批&quot;——那是因为<strong>没有这道闸门</strong>；加上闸门，<code>Update</code> 反而是&quot;每隔一会儿做一次&quot;最常用的写法。把生成那几行单独包成 <code>SpawnOne()</code>，是因为以后想让别处也生成一只（比如按个键），只要调它一句就行。</p><p>要看到的效果：<strong>游戏跑起来后，场上每隔 1 秒凭空冒出一只动物</strong>，位置、种类都随机；把 <code>interval</code> 改成 0.2，就变成&quot;一眨眼一只&quot;。</p></div><div class="card"><h3>挑战（选做）</h3><ul><li><strong>① 按空格立刻再来一只</strong>：在 <code>Update</code> 里加上 <code>if (Input.GetKeyDown(KeyCode.Space)) SpawnOne();</code>——和定时并存（按键是课件11 学过的）</li><li><strong>② 到 20 只就停</strong>：加一个计数，够了就不再生成（试试用 <code>if</code> 把 <code>SpawnOne()</code> 拦下来）</li><li><strong>③ 换个更省事的写法</strong>：把整段计时删掉，改用 <code>InvokeRepeating("SpawnOne", 1f, 1f)</code> 一行搞定，比一比两种写法</li><li><strong>④ 生成时随手换个颜色</strong>：<code>animal.GetComponent&lt;Renderer&gt;().material.color = Random.ColorHSV();</code></li></ul></div><div class="ok-box">⚠️ <strong>别把生成那几行直接塞进 <code>Update</code> 却不计时</strong>——那就是前面说过的坑：一秒 60 只，场面立刻爆满、机器也卡。另外，<code>InvokeRepeating</code> 和 <code>Update</code> 计时<strong>两套别一起用</strong>，两次触发叠在一起，生成速度会翻倍。</div>
+}</code></pre></div><p>这三段里新的东西只有一个——&quot;<strong>秒表</strong>&quot;：<code>timer += Time.deltaTime</code> 是<strong>走秒</strong>，<code>if (timer &gt;= interval)</code> 是看<strong>到点没有</strong>，<code>timer = 0f</code> 是<strong>归零重来</strong>。前面那页说过&quot;把生成写进 <code>Update</code> 会一秒刷出一批&quot;——那是因为<strong>没有这道闸门</strong>；加上闸门，<code>Update</code> 反而是&quot;每隔一会儿做一次&quot;最常用的写法。把生成那几行单独包成 <code>SpawnOne()</code>，是因为以后想让别处也生成一只（比如按个键），只要调它一句就行。</p><p>要看到的效果：<strong>游戏跑起来后，场上每隔 1 秒凭空冒出一只动物</strong>，位置、种类都随机；把 <code>interval</code> 改成 0.2，就变成&quot;一眨眼一只&quot;。</p></div><div class="card"><h3>挑战（选做）</h3><ul><li><strong>① 按空格立刻再来一只</strong>：在 <code>Update</code> 里加上 <code>if (Input.GetKeyDown(KeyCode.Space)) SpawnOne();</code>——和定时并存（按键是课件11 学过的）</li><li><strong>② 到 20 只就停</strong>：加一个计数，够了就不再生成（试试用 <code>if</code> 把 <code>SpawnOne()</code> 拦下来）</li><li><strong>③ 换个更省事的写法</strong>：把整段计时删掉，改用 <code>InvokeRepeating("SpawnOne", 1f, 1f)</code> 一行搞定，比一比两种写法</li><li><strong>④ 生成时随手换个颜色</strong>：<code>animal.GetComponent&lt;Renderer&gt;().material.color = Random.ColorHSV();</code></li></ul></div><div class="ok-box"><span class="eico">⚠️</span> <strong>别把生成那几行直接塞进 <code>Update</code> 却不计时</strong>——那就是前面说过的坑：一秒 60 只，场面立刻爆满、机器也卡。另外，<code>InvokeRepeating</code> 和 <code>Update</code> 计时<strong>两套别一起用</strong>，两次触发叠在一起，生成速度会翻倍。</div>
 </div></div>
 <div class="slide" data-page="8"><div class="slide-inner end-page">
 
@@ -836,18 +860,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

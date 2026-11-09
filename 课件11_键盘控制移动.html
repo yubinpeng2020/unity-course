@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件11_键盘控制移动 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -369,6 +370,26 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
   border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
 .img-missing button:hover{border-color:var(--accent);color:var(--accent)}
 .img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -387,15 +408,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -568,7 +592,7 @@ public class Move2D : MonoBehaviour
 </ul>
 <p>执行后，摄像头的位姿会<strong>瞬间跳到场景视图当前的视角</strong>——也就是<strong>游戏视图</strong>对齐到了<strong>场景视图</strong>：你场景里怎么看，运行时就怎么看（快捷键 Ctrl / Cmd + Shift + F）。</p></div>
 <img src="images/课件11/对齐到视图_操作步骤.png" alt="对齐到视图操作步骤" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:66.67%" onerror="imgMissing(this)">
-<div class="ok-box">💡 记住这套动作：<strong>建脚本 → 类名与文件名一致 → 拖到对象上</strong>。以后写任何新功能，都是先建脚本、再挂到对应的对象上。</div>
+<div class="ok-box"><span class="eico">💡</span> 记住这套动作：<strong>建脚本 → 类名与文件名一致 → 拖到对象上</strong>。以后写任何新功能，都是先建脚本、再挂到对应的对象上。</div>
 <img src="images/课件11/脚本 --- 运行 --- 键盘控制.gif" alt="效果：按住 WASD，游戏对象在地面上前后左右移动" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4347561728',this)">复制</button></div>
@@ -673,7 +697,7 @@ public class Move3D : MonoBehaviour
 <p style="margin-top:.6rem"><strong>做法二</strong>的操作示意（取消勾选组件名左边复选框）：</p>
 <img src="images/课件11/取消勾选Move2D组件.png" alt="取消勾选 Move2D 组件使其不启用" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 </div>
-<div class="ok-box">💡 摄像机默认水平看，人物上升 / 下降后可能跑出画面，运行时注意调整视角。<br>Move3D 这样写能用，但键一多就啰嗦——下一页用 <code>Input.GetAxis</code> 轴线写法更省事。</div>
+<div class="ok-box"><span class="eico">💡</span> 摄像机默认水平看，人物上升 / 下降后可能跑出画面，运行时注意调整视角。<br>Move3D 这样写能用，但键一多就啰嗦——下一页用 <code>Input.GetAxis</code> 轴线写法更省事。</div>
 </div></div>
 <div class="slide" data-page="5"><div class="slide-inner markable">
 <h1>用轴线实现移动 · Input.GetAxis</h1>
@@ -827,7 +851,7 @@ public class Move3D : MonoBehaviour
 }</code></pre>
 </div>
 <img src="images/课件11/脚本 --- 运行 --- 升降控制.gif" alt="用轴线控制三维移动的效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="ok-box">💡 轴线在<strong>输入管理器</strong>里配置，<strong>改按键不用改代码</strong>；GetAxis 版和第3节 的 <code>Move3D</code> 效果一致，但更简洁、手感更顺。</div>
+<div class="ok-box"><span class="eico">💡</span> 轴线在<strong>输入管理器</strong>里配置，<strong>改按键不用改代码</strong>；GetAxis 版和第3节 的 <code>Move3D</code> 效果一致，但更简洁、手感更顺。</div>
 </div></div>
 <div class="slide" data-page="6"><div class="slide-inner markable">
 <h1>作业 · 用键盘控制角色（移动 · 升降 · 斜向 · 加速）</h1>
@@ -842,7 +866,7 @@ public class Move3D : MonoBehaviour
 <li>用 <code>Time.deltaTime</code> 保证"与帧率无关"——换台电脑快慢一致</li>
 <li>新增轴线要在<strong>输入管理器</strong>里配置（名称 <code>VerticalY</code>、正向 <code>j</code>、负向 <code>k</code>），改按键不用改代码</li>
 </ul></div>
-<div class="ok-box">⚠️ 改了脚本里 <code>public</code> 变量的默认值，场景里已挂的组件<strong>不会</strong>跟着变（Inspector 里还是旧值）。把该脚本组件移除后<strong>重新添加</strong>，或点组件右上角 <strong>⋮ → Reset</strong>，新值才会生效。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 改了脚本里 <code>public</code> 变量的默认值，场景里已挂的组件<strong>不会</strong>跟着变（Inspector 里还是旧值）。把该脚本组件移除后<strong>重新添加</strong>，或点组件右上角 <strong>⋮ → Reset</strong>，新值才会生效。</div>
 <div class="card"><h3>改造要求：在 Move3D 上再加两个功能（必做）</h3>
 <p>下面两个功能都是<strong>必做</strong>的——它们不换运动方式，只在已经写好的 <code>Move3D</code> 上加<strong>判断</strong>。先把基本要求（移动 + 升降）跑通，再照着改：</p>
 <ul>
@@ -1131,18 +1155,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

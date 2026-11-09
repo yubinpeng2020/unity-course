@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件14_访问其他游戏对象 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -339,6 +340,26 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
   border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
 .img-missing button:hover{border-color:var(--accent);color:var(--accent)}
 .img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -357,15 +378,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -489,7 +513,7 @@ public class CatBrain : MonoBehaviour {
 </div>
 <div class="card"><h3>代码讲解</h3><ol><li><strong>挂载</strong>：这次脚本挂在 <strong>Cat</strong> 身上——是猫自己在找玩家，"猫有脑子"。</li><li><strong>不用拖、代码自己找</strong>：<code>player</code> 设成 <code>private</code>，<strong>不在检查器（Inspector）里露脸</strong>，而是在 <code>Start</code> 里用 <code>GameObject.FindWithTag("Player")</code> 自己去场景里搜。</li><li><strong>为什么按标签而不是按名字</strong>：<code>Find("Player")</code> 按<strong>对象名</strong>找，名字一改就失效；<code>FindWithTag("Player")</code> 按<strong>标签</strong>找，改名不受影响，也不在乎它在场景哪个角落。（<code>Find("Player")</code> 那行留成注释，认识一下就行。）</li><li><strong>Start 与 Update 的分工</strong>：找玩家只需一次 → 放 <code>Start</code>；判断距离每帧都要做 → 放 <code>Update</code>。<strong>千万别把 Find 写进 Update</strong>，那等于每帧把场景搜一遍，白白费性能。</li><li><strong>判断"走近"</strong>：<code>Vector3.Distance(a, b)</code> 算两点之间的直线距离；<code>transform.position</code> 是猫自己的位置，<code>player.position</code> 是玩家的位置，两者<strong>小于 3 米</strong>就算走近了。</li><li><strong>转身看向你</strong>：<code>transform.LookAt(player)</code> 让猫的<strong>正前方</strong>对准玩家——一句话搞定朝向，很常用。</li><li><strong>为什么还要把 X、Z 清零</strong>：<code>LookAt</code> 是让猫"盯住"目标，玩家比猫高或低时猫会<strong>前扑后仰</strong>；最后一行把欧拉角里的 <strong>X、Z 归零、只留水平的 Y</strong>，猫就永远直着站。<strong>顺序不能反</strong>——必须<strong>先 LookAt、再取 <code>eulerAngles</code></strong> 重新赋值。</li></ol></div>
 <img src="images/课件14/Cat的检查器.png" alt="Cat 的检查器：CatBrain 脚本就挂在这只猫身上" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:50%" onerror="imgMissing(this)">
-<div class="ok-box">⚠️ <strong>注意：猫身上一挂上 <code>CatBrain</code>，① 的 E 键转圈就不灵了。</strong>两个脚本都在改<strong>同一只猫的旋转</strong>：只要你在 <strong>3 米内</strong>，<code>CatBrain</code> 就<strong>每帧</strong>把猫转向你，<code>PetCat</code> 让它转的那点角度每帧都被<strong>覆盖</strong>掉——猫只会盯着你看，不再转圈；走远到 3 米以外，<code>CatBrain</code> 不再插手，转圈又恢复。<strong>多个脚本同时改同一个对象的同一个属性，就会这样互相打架</strong>：写代码前先想想"这块是不是已经有别人在管"。</div>
+<div class="ok-box"><span class="eico">⚠️</span> <strong>注意：猫身上一挂上 <code>CatBrain</code>，① 的 E 键转圈就不灵了。</strong>两个脚本都在改<strong>同一只猫的旋转</strong>：只要你在 <strong>3 米内</strong>，<code>CatBrain</code> 就<strong>每帧</strong>把猫转向你，<code>PetCat</code> 让它转的那点角度每帧都被<strong>覆盖</strong>掉——猫只会盯着你看，不再转圈；走远到 3 米以外，<code>CatBrain</code> 不再插手，转圈又恢复。<strong>多个脚本同时改同一个对象的同一个属性，就会这样互相打架</strong>：写代码前先想想"这块是不是已经有别人在管"。</div>
 </div></div>
 <div class="slide" data-page="6"><div class="slide-inner markable">
 <h1>标签（Tag）</h1>
@@ -535,14 +559,14 @@ public class SquatLook : MonoBehaviour {
 }</code></pre>
 </div>
 <div class="card"><h3>代码讲解</h3><ol><li><strong>挂载</strong>：脚本挂在 <strong>Player</strong> 上，要找的 Main Camera 就是它<strong>自己下面的子对象</strong>。</li><li><strong>只在自己下面找</strong>：<code>transform.Find("Main Camera")</code> 从脚本所在对象出发，<strong>在子物体里逐层往下搜</strong>，取回名字叫 Main Camera 的那个 Transform；它<strong>不会满场景找</strong>——这正是它和刚才 <code>GameObject.Find</code> 的区别（后者是全场景搜）。</li><li><strong>名字必须完全一致</strong>：<code>Find</code> 按名字匹配，大小写、空格都要<strong>一模一样</strong>；相机子对象一旦改名，这里就会返回 <code>null</code>。</li><li><strong>localPosition 与 position</strong>：<code>localPosition</code> 是<strong>相对父对象</strong>的位置（摄像机相对玩家），<code>position</code> 是世界坐标。要让镜头在<strong>玩家身上</strong>上下挪，就该用 <code>localPosition</code>——0.8 / 1.6 说的是"离玩家多高"。</li><li><strong>按住，不是按一下</strong>：这里用 <code>Input.GetKey</code>（<strong>按住 C 一直蹲</strong>），和 ① 的 <code>GetKeyDown</code>（按一下触发一次）不一样——蹲下是一个"按住才保持"的状态。</li><li><strong>if / else 是两档高度</strong>：按住就降到 <strong>0.8</strong>，松开就回 <strong>1.6</strong>；因为每帧都重写一次 <code>localPosition</code>，所以手一松镜头自然弹回眼睛高度。</li><li><strong>补一句 <code>transform.parent</code></strong>：注释里那行是<strong>反方向</strong>的用法——<code>transform.Find</code> 往下找子对象，<code>transform.parent</code> 往上找父对象。本节用不到父对象，留个印象即可。</li></ol></div>
-<div class="ok-box">💡 <strong>重点：和上一个课件（课件13）里学的 <code>GetComponentInChildren&lt;Camera&gt;()</code> 比一比。</strong>两者拿到的是<strong>同一台摄像机</strong>，区别在<strong>怎么找</strong>：<code>GetComponent</code> 系列按<strong>组件类型</strong>找（谁身上挂着 Camera 组件就是谁）；<code>transform.Find</code> 按<strong>层级位置</strong>找（在 Player 下面、名字叫 Main Camera 的那个）。要找"自己身上的东西"用 <code>GetComponent</code>；要找"层级里的某个对象"，<code>transform.Find</code> 更直接。</div>
+<div class="ok-box"><span class="eico">💡</span> <strong>重点：和上一个课件（课件13）里学的 <code>GetComponentInChildren&lt;Camera&gt;()</code> 比一比。</strong>两者拿到的是<strong>同一台摄像机</strong>，区别在<strong>怎么找</strong>：<code>GetComponent</code> 系列按<strong>组件类型</strong>找（谁身上挂着 Camera 组件就是谁）；<code>transform.Find</code> 按<strong>层级位置</strong>找（在 Player 下面、名字叫 Main Camera 的那个）。要找"自己身上的东西"用 <code>GetComponent</code>；要找"层级里的某个对象"，<code>transform.Find</code> 更直接。</div>
 <div class="card"><h3>三种方式怎么选</h3><table>
 <tr><th>方式</th><th>什么时候用</th><th>要注意</th></tr>
 <tr><td><strong>① 公共变量拖引用</strong></td><td>两个对象是<strong>固定搭配</strong>时，比如脚本 ↔ 那只猫</td><td>最稳的一个：在检查器（Inspector）里指定好，对象改名也不怕</td></tr>
 <tr><td><strong>② 按名字 / 标签查找</strong><br><code>GameObject.Find</code> / <code>FindWithTag</code></td><td>名字确定的<strong>单个</strong>对象偶尔用一下（<code>Find</code>）；<strong>认类不认名</strong>、同类有好几个时（<code>FindWithTag</code>）</td><td>名字 / 标签要完全一致；<strong>比较慢</strong>，别每帧都调；自定义标签要先 <strong>添加标签（Add Tag）</strong>；找不到会返回 <code>null</code></td></tr>
 <tr><td><strong>③ 按层级关系查找</strong><br><code>transform.Find</code> / <code>transform.parent</code></td><td>对象之间有明显的<strong>父子关系</strong>时（摄像机挂在 Player 下）</td><td>只在自己的子物体里找；没有父对象时 <code>parent</code> 是 <code>null</code></td></tr>
 </table></div>
-<div class="ok-box">⚠️ 三种方式拿到对象后，想用它的组件，还是接着 <code>GetComponent&lt;T&gt;()</code> 取；<code>Find</code> 系列比较慢，尽量在 <code>Start</code> 里找一次、用变量存起来，别每帧都找。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 三种方式拿到对象后，想用它的组件，还是接着 <code>GetComponent&lt;T&gt;()</code> 取；<code>Find</code> 系列比较慢，尽量在 <code>Start</code> 里找一次、用变量存起来，别每帧都找。</div>
 </div></div>
 <div class="slide" data-page="8"><div class="slide-inner markable">
 <h1>按组件类型查找 · 让所有猫一起转圈</h1>
@@ -575,8 +599,8 @@ public class PetAllCats : MonoBehaviour {
 }</code></pre>
 </div>
 <div class="card"><h3>代码讲解</h3><ol><li><strong>挂载</strong>：脚本挂在 <strong>Player</strong> 上——是"招呼猫的人"在喊，不是猫自己。</li><li><strong>从一只到一群</strong>：循环里那句 <code>cat.Rotate(0f, 360f * Time.deltaTime, 0f)</code> 就是 <strong>① 里的原话</strong>——① 用<strong>拖进来的一个引用</strong>转一只猫，这里用<strong>数组</strong>把同一件事对每一只猫做一遍。要干的活一个字没变，变的是"一次招呼几只"。</li><li><strong>按组件类型找同类</strong>：<code>FindObjectsOfType&lt;CatBrain&gt;()</code> 不看名字、不看层级，只找<strong>身上挂着 <code>CatBrain</code> 组件的对象</strong>，一次返回一个<strong>数组</strong>——场景里有几只猫，数组就有几个元素。这就是"批量"：不用拖三个引用，也不用写三遍 <code>Find</code>。</li><li><strong>为什么声明成 <code>CatBrain[]</code></strong>：它返回的是<strong>组件</strong>的数组，不是对象的数组，所以 <code>cats[i]</code> 是 <code>CatBrain</code> 组件，要取位置 / 旋转得写 <code>cats[i].transform</code>。</li><li><strong>为什么放在 Start</strong>：查找是"找一次就够"的事，放 <code>Start</code> 只跑一遍。<strong>千万别写进 <code>Update</code></strong>——那等于每帧把整个场景扫一遍，白白费性能。</li><li><strong>只想要"一个"就用 <code>FindObjectOfType&lt;T&gt;()</code></strong>：它返回<strong>第一个</strong>挂着 T 组件的对象，不是数组。<strong>后面的作业里，球找玩家用的就是它</strong>——球不知道玩家叫什么名字，但知道玩家身上挂着 <code>PlayerMove</code>。</li><li><strong>按键触发</strong>：<code>Input.GetKeyDown(KeyCode.E)</code> 只在按下 E 的<strong>那一帧</strong>为真，所以按一次触发一次；<code>spinTime</code> 那套是 <strong>① 学过的</strong>——按 E 记 1 秒，转满 1 秒就自动停，猫不会转个没完。</li><li><strong>循环做同一件事</strong>：<code>for</code> 按 <code>i &lt; cats.Length</code> 把数组走一遍，对<strong>每一只猫</strong>都做一次——场景里有几只猫就转几只，<strong>多一只少一只都不用改代码</strong>，这就是"批量"。</li><li><strong>下标从 0 开始</strong>：<code>cats[0]</code> 是第一只猫，所以循环条件写 <code>i &lt; cats.Length</code> 而不是 <code>&lt;=</code>，否则会越界报错。</li></ol></div>
-<div class="ok-box">⚠️ <strong>演示时站到 3 米外</strong>：三只猫身上都有 <code>CatBrain</code>，只要你在 3 米内，它每帧都会把猫转向你，转圈会被它盖掉——就是 ② 页那条 ⚠️ 说的情况。</div>
-<div class="ok-box">⚠️ <code>FindObjectsOfType</code> 要遍历整个场景，<strong>比较慢</strong>：只在 <code>Start</code> 里找一次、把结果存进变量；确实只要"一个"时，就用更轻的 <code>FindObjectOfType</code>。</div>
+<div class="ok-box"><span class="eico">⚠️</span> <strong>演示时站到 3 米外</strong>：三只猫身上都有 <code>CatBrain</code>，只要你在 3 米内，它每帧都会把猫转向你，转圈会被它盖掉——就是 ② 页那条 ⚠️ 说的情况。</div>
+<div class="ok-box"><span class="eico">⚠️</span> <code>FindObjectsOfType</code> 要遍历整个场景，<strong>比较慢</strong>：只在 <code>Start</code> 里找一次、把结果存进变量；确实只要"一个"时，就用更轻的 <code>FindObjectOfType</code>。</div>
 </div></div>
 <div class="slide" data-page="9"><div class="slide-inner markable">
 <h1>作业 · 靠近就转的猫群</h1>
@@ -618,7 +642,7 @@ for (int i = 0; i &lt; cats.Length; i++) {
 <li><strong>② 转速可调</strong>：把转速提成 <code>public float turnSpeed = 600f;</code>，在检查器（Inspector）里现场调快调慢</li>
 <li><strong>③ 换成按 E 触发</strong>：把"靠距离自动转"改成"按 E 才转"（页8 用过的那招），比一比两种触发方式的差别</li>
 </ul></div>
-<div class="ok-box">⚠️ <strong>复制出来的猫一定要移除 <code>CatBrain</code></strong>：它每帧都在写猫的旋转（就是 ② 页那条 ⚠️ 说的情况），留着它，转圈会被它盖掉，你会以为是自己代码写错了。另外标签名<strong>大小写敏感</strong>，要和你新建的 <code>Cat</code> 完全一致——贴错了标签，别的对象也会跟着转。</div>
+<div class="ok-box"><span class="eico">⚠️</span> <strong>复制出来的猫一定要移除 <code>CatBrain</code></strong>：它每帧都在写猫的旋转（就是 ② 页那条 ⚠️ 说的情况），留着它，转圈会被它盖掉，你会以为是自己代码写错了。另外标签名<strong>大小写敏感</strong>，要和你新建的 <code>Cat</code> 完全一致——贴错了标签，别的对象也会跟着转。</div>
 </div></div>
 <div class="slide" data-page="10"><div class="slide-inner end-page">
 
@@ -884,18 +908,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

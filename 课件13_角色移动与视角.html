@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件13_角色移动与视角 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -339,6 +340,26 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
   border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
 .img-missing button:hover{border-color:var(--accent);color:var(--accent)}
 .img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -357,15 +378,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -458,7 +482,7 @@ function copyImgName(btn){
 <tr><td><strong>高度（Height）</strong></td><td>胶囊的总高度（含上下两端的半球）。默认 <code>2</code> 比角色还高，调到 <code>1.85</code> 刚好贴住角色</td></tr>
 </table></div>
 <img src="images/课件13/中心参数修改效果.png" alt="修改 Center 中心参数后，胶囊线框的位置随之上下移动" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="ok-box">⚠️ 上一节给角色加的<strong>刚体（Rigidbody）</strong>和 <strong>Capsule Collider</strong> 要一起移除——Character Controller <strong>本身就是个胶囊碰撞体</strong>，位移也由它自己算：留着刚体会和它抢着算位移，再挂碰撞体则容易让角色卡住。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 上一节给角色加的<strong>刚体（Rigidbody）</strong>和 <strong>Capsule Collider</strong> 要一起移除——Character Controller <strong>本身就是个胶囊碰撞体</strong>，位移也由它自己算：留着刚体会和它抢着算位移，再挂碰撞体则容易让角色卡住。</div>
 <img src="images/课件13/移除刚体与碰撞体.png" alt="在 Player 上移除刚体与 Capsule Collider 组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>移除组件的流程</h3><p>想把刚体、Capsule Collider 删掉，两步就行：</p><ol><li>点组件右上角的<strong>设置按钮（⋮）</strong></li><li>在弹出的菜单里选<strong>「移除组件」</strong>，组件就没了</li></ol></div>
 <img src="images/课件13/移除组件操作.png" alt="点击设置按钮并选择移除组件，删除组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:50%" onerror="imgMissing(this)">
@@ -512,9 +536,9 @@ public class PlayerMove : MonoBehaviour {
 }</code></pre>
 </div>
 <div class="card"><h3>代码讲解</h3><ol><li><strong>字段</strong>：<code>controller</code> 是角色控制器，设成 <code>private</code>——它由代码自己 <code>GetComponent</code> 拿到，不用在检查器（Inspector）里拖；<code>moveSpeed</code> / <code>jumpHeight</code> / <code>gravity</code> 设成 <code>public</code>，可以直接在检查器（Inspector）里调；<code>verticalVelocity</code>、<code>isJumping</code> 只在脚本内部用，也设成 <code>private</code></li><li><strong>获取自身组件</strong>：<code>controller = GetComponent&lt;CharacterController&gt;()</code>——<code>GetComponent&lt;T&gt;()</code> 就是在<strong>脚本所在的这个物体（Player）自己身上</strong>找类型为 <code>T</code> 的组件，找到后把引用交给 <code>controller</code></li><li><strong>每帧两件事</strong>：<code>Update</code> 里只调两个方法——<code>PlayerMovement</code> 管前后左右，<code>PlayerJump</code> 管跳跃和下落</li><li><strong>水平移动</strong>：<code>Input.GetAxis</code> 取键盘输入，<code>transform.right</code> / <code>transform.forward</code> 把它拼成"角色自身"的方向，再交给 <code>Move</code>；乘 <code>Time.deltaTime</code> 是为了不受帧率影响</li><li><strong>什么时候受重力</strong>：<code>!controller.isGrounded || isJumping</code>——只要<strong>离了地</strong>或<strong>正处于跳跃中</strong>，就每帧减重力、并沿 <code>Vector3.up</code> 走一步</li><li><strong>起跳</strong>：站在地上（<code>isGrounded</code>）且按下跳跃键时，把 <code>isJumping</code> 记成 <code>true</code>，并用 <code>Mathf.Sqrt(2f * jumpHeight * gravity)</code> 算出初速度（跳跃键默认绑定<strong>空格</strong>）</li><li><strong>为什么要 <code>isJumping</code> 这个标志</strong>：按下跳跃键的<strong>那一帧</strong>角色还站在地上，如果只看 <code>isGrounded</code>，下一帧就会把速度清零、人根本起不来；用标志"记住正在跳"，就能一直往上走，直到落地才复位</li><li><strong>落地</strong>：<code>isGrounded</code> 且不在跳跃中时，走 <code>else</code>——<code>isJumping</code> 复位、竖直速度清零，角色稳稳站住</li><li><strong>下落越来越快</strong>：正是靠每帧减掉的 <code>gravity * Time.deltaTime</code> 一点点累积，速度才越掉越快——这也是不能用固定值代替变量的原因</li></ol></div>
-<div class="ok-box">💡 <strong>重点：<code>GetComponent&lt;T&gt;()</code> —— 从自己身上拿组件。</strong>它只在<strong>脚本所在的这个物体</strong>上查找：脚本挂在 Player 上，拿到的就是 Player 身上的 Character Controller。要是 Player 上没挂这个组件，它会返回 <code>null</code>，后面的 <code>controller.Move</code> 就会报空引用——所以"脚本挂谁身上"很关键。</div>
+<div class="ok-box"><span class="eico">💡</span> <strong>重点：<code>GetComponent&lt;T&gt;()</code> —— 从自己身上拿组件。</strong>它只在<strong>脚本所在的这个物体</strong>上查找：脚本挂在 Player 上，拿到的就是 Player 身上的 Character Controller。要是 Player 上没挂这个组件，它会返回 <code>null</code>，后面的 <code>controller.Move</code> 就会报空引用——所以"脚本挂谁身上"很关键。</div>
 <img src="images/课件13/获取自身组件.png" alt="Player 身上挂着 PlayerMove 脚本与 Character Controller 组件，脚本用它获取自身组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="ok-box">⚠️ 竖直速度必须用<strong>变量累加</strong>，不能每帧直接写成 <code>-gravity</code>——那样只是匀速下落，没有"越掉越快"的手感；另外"是否在跳"要用 <code>isJumping</code> 记下来，否则起跳那一帧就会被判成落地、速度清零。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 竖直速度必须用<strong>变量累加</strong>，不能每帧直接写成 <code>-gravity</code>——那样只是匀速下落，没有"越掉越快"的手感；另外"是否在跳"要用 <code>isJumping</code> 记下来，否则起跳那一帧就会被判成落地、速度清零。</div>
 <img src="images/课件13/角色控制器演示.gif" alt="效果：角色用 Character Controller 移动" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>还差一步：让镜头跟住角色</h3><p>角色现在能走能跳了，可镜头还<strong>钉在原地</strong>——角色一跑远，画面里就看不见它了。游戏里不管是第一人称还是第三人称，镜头都是跟着角色走的。下一页就解决两件事：先让摄像机<strong>跟住角色</strong>，再让鼠标把<strong>视角转起来</strong>。</p></div>
 </div></div>
@@ -559,7 +583,7 @@ public class PlayerRotate : MonoBehaviour {
 }</code></pre>
 </div>
 <div class="card"><h3>代码讲解</h3><ol><li><strong>挂载与取引用</strong>：脚本挂在 <strong>Player</strong> 上（和 <code>PlayerMove</code> 同一个对象）；<code>Start</code> 里把两个引用都自己找出来——<code>playerTrans = transform</code>（挂脚本的就是玩家自己），相机见下一条</li><li><strong>获取子节点上的组件</strong>：<code>mainCameraTrans = GetComponentInChildren&lt;Camera&gt;().transform</code>——<code>GetComponentInChildren&lt;T&gt;()</code> 会先看<strong>自己</strong>，再<strong>往所有子物体里逐层找</strong>，返回第一个类型为 <code>T</code> 的组件；这里取到 Camera 之后，再用 <code>.transform</code> 拿它的 Transform</li><li><strong>鼠标灵敏度</strong>：<code>rotateSpeed</code> 是基础速度，<code>[Range(2, 4)]</code> 让 <code>rotateRatio</code> 在检查器（Inspector）里显示成 <strong>2~4 的滑杆</strong>，课堂上好调</li><li><strong>左右环视</strong>：<code>Input.GetAxis("Mouse X")</code> 取鼠标左右移动量，乘上速度交给 <code>playerTrans.Rotate(Vector3.up * …)</code>——<strong>转的是玩家</strong>，作为子对象的摄像机自然跟着转</li><li><strong>上下俯仰</strong>：<code>Mouse Y</code> 累加进 <code>xRotateOffset</code>（用 <code>-=</code>，所以鼠标前推时镜头往下压），再用 <code>Mathf.Clamp</code> 卡在 <strong>±60°</strong>，抬头低头都不会翻过去</li><li><strong>应用旋转</strong>：只把俯仰角放进欧拉角的 X，Y、Z 沿用摄像机原来的值，再赋给 <code>localRotation</code>——这样头只上下转，画面不会歪</li></ol></div>
-<div class="ok-box">💡 <strong>重点：<code>GetComponent</code> 只找自己，<code>GetComponentInChildren</code> 才会往子物体里找。</strong>上一页已把 Main Camera 挂成了 Player 的子节点，所以这里能一路往下找到它；如果相机没挂在 Player 下面，这段会返回 <code>null</code>，那就得改用 <code>Camera.main.transform</code> 按 MainCamera 标签去找。</div>
+<div class="ok-box"><span class="eico">💡</span> <strong>重点：<code>GetComponent</code> 只找自己，<code>GetComponentInChildren</code> 才会往子物体里找。</strong>上一页已把 Main Camera 挂成了 Player 的子节点，所以这里能一路往下找到它；如果相机没挂在 Player 下面，这段会返回 <code>null</code>，那就得改用 <code>Camera.main.transform</code> 按 MainCamera 标签去找。</div>
 <img src="images/课件13/获取子节点组件.png" alt="层级窗口中 Main Camera 是 Player 的子节点，脚本往下找到它" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 </div></div>
 <div class="slide" data-page="6"><div class="slide-inner markable">
@@ -597,7 +621,7 @@ controller.Move(move * speed * Time.deltaTime);</code></pre>
 <li><strong>① 落地反馈</strong>：在落地那一刻用 <code>Debug.Log</code> 打印下落速度，看看"从多高落下会摔多快"</li>
 <li><strong>② 参数滑杆</strong>：给 <code>jumpHeight</code> 加一个 <code>[Range(1, 8)]</code>，在检查器里用滑杆调跳跃高度，找出手感最好的一档</li>
 </ul></div>
-<div class="ok-box">⚠️ 在代码里改 <code>public</code> 变量的默认值，<strong>不会同步到已经挂好脚本的组件上</strong>——要让新值生效，点组件右上角的 <strong>⋮ → 重置（Reset）</strong>，或者直接在检查器里改那一栏。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 在代码里改 <code>public</code> 变量的默认值，<strong>不会同步到已经挂好脚本的组件上</strong>——要让新值生效，点组件右上角的 <strong>⋮ → 重置（Reset）</strong>，或者直接在检查器里改那一栏。</div>
 </div></div>
 <div class="slide" data-page="7"><div class="slide-inner end-page">
 
@@ -863,18 +887,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件7_网格与材质 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -346,6 +347,26 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
   border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
 .img-missing button:hover{border-color:var(--accent);color:var(--accent)}
 .img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -364,15 +385,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -444,7 +468,7 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="3"><div class="slide-inner markable">
 <h1>渲染模式</h1>
-<div class="card"><p>Scene 视图左上角下拉框，控制场景的显示方式：</p></div><img src="images/课件7/渲染模式下拉框.png" alt="渲染模式下拉框" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><p><strong>Shaded（着色）</strong>：正常实体显示，能看到材质颜色与光影</p></div><img src="images/课件7/shaded着色.png" alt="Shaded 着色模式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><p><strong>Wireframe（线框）</strong>：只显示网格线框，看物体结构</p></div><img src="images/课件7/wireframe线框.png" alt="Wireframe 线框模式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><p><strong>Shaded Wireframe（着色线框）</strong>：实体 + 线框叠加</p></div><img src="images/课件7/shaded_wireframe着色线框.png" alt="Shaded Wireframe 着色线框模式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box">💡 想看清楚一个复杂模型的&quot;骨架&quot;时，切到 Wireframe 最直观。</div>
+<div class="card"><p>Scene 视图左上角下拉框，控制场景的显示方式：</p></div><img src="images/课件7/渲染模式下拉框.png" alt="渲染模式下拉框" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><p><strong>Shaded（着色）</strong>：正常实体显示，能看到材质颜色与光影</p></div><img src="images/课件7/shaded着色.png" alt="Shaded 着色模式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><p><strong>Wireframe（线框）</strong>：只显示网格线框，看物体结构</p></div><img src="images/课件7/wireframe线框.png" alt="Wireframe 线框模式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><p><strong>Shaded Wireframe（着色线框）</strong>：实体 + 线框叠加</p></div><img src="images/课件7/shaded_wireframe着色线框.png" alt="Shaded Wireframe 着色线框模式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box"><span class="eico">💡</span> 想看清楚一个复杂模型的&quot;骨架&quot;时，切到 Wireframe 最直观。</div>
 </div></div>
 <div class="slide" data-page="4"><div class="slide-inner markable">
 <h1>Mesh 网格</h1>
@@ -452,7 +476,7 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="5"><div class="slide-inner markable">
 <h1>Material 材质</h1>
-<div class="card"><p><strong>Material（材质）</strong> 决定物体表面的&quot;光学特性&quot;：</p><ul><li>颜色、金属 / 非金属、光滑 / 粗糙、透明 / 半透明 / 不透明、凹凸……</li></ul></div><div class="card"><h3>更换材质</h3><p>游戏对象的材质可以替换。选中材质时会有阴影效果，点击右下角的 <strong>选择材质</strong> 按钮弹出&quot;选择材质&quot;窗口。</p></div><div class="card"><h3>添加材质</h3><ul><li>资源放置在 <code>Assets</code> 文件夹内</li><li>在 Project 窗口<strong>创建新文件夹</strong>（如 <code>Materials</code>）归类</li><li>右键 <code>Create（创建）</code> → <code>Material（材质）</code> 新建一个材质</li><li>命名（如 <code>black</code>）</li></ul></div><img src="images/课件7/场景窗口 - 添加资源 - 材质.gif" alt="创建材质资源" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>修改 / 选用材质</h3><ul><li>材质<strong>拖拽到物体上</strong>即使用</li><li><strong>Albedo（反照率）</strong> 就是材质的&quot;基础颜色&quot;，点开色板就能改</li><li>点击选择材质，即可查看其属性并设置</li></ul></div><img src="images/课件7/场景窗口 - 材质 - 设置.gif" alt="设置材质" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>游戏对象材质可直接拖拽切换</h3><p>游戏对象材质可<strong>直接拖拽切换</strong>。</p></div><img src="images/课件7/场景窗口 - 材质 - 修改.gif" alt="拖拽更换材质" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>多个自定义材质拖拽切换</h3><p>有多个自定义材质，都可直接拖拽到游戏对象上切换。</p></div><img src="images/课件7/场景窗口 - 材质 - 切换.gif" alt="切换材质" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>精准设置</h3><ul><li>场景中多个游戏对象时，直接拖拽材质到 Inspector 的<strong>材质框</strong>最为精准，不会误伤别的物体</li><li>点击右下角的 <strong>选择材质</strong> 按钮弹出窗口，也可看到创建的材质</li></ul></div><img src="images/课件7/场景窗口 - 材质 - 精准切换.gif" alt="精准切换" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box">💡 颜色用 Albedo 调；要更真实就调 Smoothness（光滑度）和 Metallic（金属度）。</div>
+<div class="card"><p><strong>Material（材质）</strong> 决定物体表面的&quot;光学特性&quot;：</p><ul><li>颜色、金属 / 非金属、光滑 / 粗糙、透明 / 半透明 / 不透明、凹凸……</li></ul></div><div class="card"><h3>更换材质</h3><p>游戏对象的材质可以替换。选中材质时会有阴影效果，点击右下角的 <strong>选择材质</strong> 按钮弹出&quot;选择材质&quot;窗口。</p></div><div class="card"><h3>添加材质</h3><ul><li>资源放置在 <code>Assets</code> 文件夹内</li><li>在 Project 窗口<strong>创建新文件夹</strong>（如 <code>Materials</code>）归类</li><li>右键 <code>Create（创建）</code> → <code>Material（材质）</code> 新建一个材质</li><li>命名（如 <code>black</code>）</li></ul></div><img src="images/课件7/场景窗口 - 添加资源 - 材质.gif" alt="创建材质资源" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>修改 / 选用材质</h3><ul><li>材质<strong>拖拽到物体上</strong>即使用</li><li><strong>Albedo（反照率）</strong> 就是材质的&quot;基础颜色&quot;，点开色板就能改</li><li>点击选择材质，即可查看其属性并设置</li></ul></div><img src="images/课件7/场景窗口 - 材质 - 设置.gif" alt="设置材质" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>游戏对象材质可直接拖拽切换</h3><p>游戏对象材质可<strong>直接拖拽切换</strong>。</p></div><img src="images/课件7/场景窗口 - 材质 - 修改.gif" alt="拖拽更换材质" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>多个自定义材质拖拽切换</h3><p>有多个自定义材质，都可直接拖拽到游戏对象上切换。</p></div><img src="images/课件7/场景窗口 - 材质 - 切换.gif" alt="切换材质" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>精准设置</h3><ul><li>场景中多个游戏对象时，直接拖拽材质到 Inspector 的<strong>材质框</strong>最为精准，不会误伤别的物体</li><li>点击右下角的 <strong>选择材质</strong> 按钮弹出窗口，也可看到创建的材质</li></ul></div><img src="images/课件7/场景窗口 - 材质 - 精准切换.gif" alt="精准切换" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box"><span class="eico">💡</span> 颜色用 Albedo 调；要更真实就调 Smoothness（光滑度）和 Metallic（金属度）。</div>
 </div></div>
 <div class="slide" data-page="6"><div class="slide-inner markable">
 <h1>Shader 着色器</h1>
@@ -469,7 +493,7 @@ function copyImgName(btn){
 <h4>Emission（发射）</h4><p>自发光颜色和强度，可做霓虹灯、屏幕、光芒等效果。勾选后可设置发光颜色和亮度，超过 1 的强度会触发 HDR 辉光效果。</p><img src="images/课件7/standard_emission.png" alt="Emission 属性" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <h4>Detail Mask / Map（细节遮罩）</h4><p>近距离叠加更细的纹理细节（如近看木纹更清晰）。Detail Mask 控制哪些区域显示细节贴图，Detail Map 是细节纹理本身。</p><img src="images/课件7/standard_detail.png" alt="Detail 属性" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 
-<div class="card"><h3 class="h-example">PBR 贴图效果 — 同一模型不同贴图对比</h3><p>Standard Shader 的强大之处在于<strong>贴图驱动</strong>：不需要换模型，只换贴图就能改变材质外观。一组完整的 PBR 贴图通常包含：</p><ul><li><strong>Albedo Map</strong>（颜色贴图）→ 物体本身的颜色和图案</li><li><strong>Normal Map</strong>（法线贴图）→ 表面凹凸细节（蓝紫色图）</li><li><strong>Metallic Map</strong>（金属度贴图）→ 哪些部分是金属、哪些不是</li><li><strong>Roughness/Smoothness Map</strong>（粗糙度贴图）→ 哪些部分光滑、哪些粗糙</li><li><strong>AO Map</strong>（环境光遮蔽贴图）→ 缝隙和角落的阴影</li></ul><div class="ok-box">💡 <strong>老师演示</strong>：新建一个立方体，把默认材质换成 <code>brick_floor</code>（砖地板）材质，观察立方体表面从默认灰白变成砖块纹理的过程；<strong>学生实操</strong>：用老师给的纹理包亲手做出这个材质。</div></div>
+<div class="card"><h3 class="h-example">PBR 贴图效果 — 同一模型不同贴图对比</h3><p>Standard Shader 的强大之处在于<strong>贴图驱动</strong>：不需要换模型，只换贴图就能改变材质外观。一组完整的 PBR 贴图通常包含：</p><ul><li><strong>Albedo Map</strong>（颜色贴图）→ 物体本身的颜色和图案</li><li><strong>Normal Map</strong>（法线贴图）→ 表面凹凸细节（蓝紫色图）</li><li><strong>Metallic Map</strong>（金属度贴图）→ 哪些部分是金属、哪些不是</li><li><strong>Roughness/Smoothness Map</strong>（粗糙度贴图）→ 哪些部分光滑、哪些粗糙</li><li><strong>AO Map</strong>（环境光遮蔽贴图）→ 缝隙和角落的阴影</li></ul><div class="ok-box"><span class="eico">💡</span> <strong>老师演示</strong>：新建一个立方体，把默认材质换成 <code>brick_floor</code>（砖地板）材质，观察立方体表面从默认灰白变成砖块纹理的过程；<strong>学生实操</strong>：用老师给的纹理包亲手做出这个材质。</div></div>
 <img src="images/课件7/pbr_compare.png" alt="PBR 贴图效果对比" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 
 <h3>课堂实操：用老师给的纹理包做 PBR 材质</h3>
@@ -482,11 +506,11 @@ function copyImgName(btn){
 <li><code>brick_floor_04_diff_2k.jpg</code> → <strong>反射率（Albedo）</strong></li>
 <li><code>brick_floor_04_disp_2k.png</code> → <strong>高度贴图（Height）</strong></li>
 <li><code>brick_floor_04_nor_gl_2k.exr</code> → <strong>法线贴图（Normal Map）</strong></li>
-</ul></li></ul><div class="ok-box">💡 平滑度（Smoothness）没有独立贴图槽：砖地板整体粗糙，这里不用贴图，直接在材质面板把 <strong>Smoothness 滑块</strong> 调到 <strong>0.1~0.3</strong> 即可。纹理包里的 roughness（粗糙度）贴图是做精细控制用的，本课了解即可。</div></div>
+</ul></li></ul><div class="ok-box"><span class="eico">💡</span> 平滑度（Smoothness）没有独立贴图槽：砖地板整体粗糙，这里不用贴图，直接在材质面板把 <strong>Smoothness 滑块</strong> 调到 <strong>0.1~0.3</strong> 即可。纹理包里的 roughness（粗糙度）贴图是做精细控制用的，本课了解即可。</div></div>
 <img src="images/课件7/实操3设置贴图属性.png" alt="设置贴图属性" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><ul><li><strong>第四步</strong>：选中立方体，用 <strong>Scale 工具</strong> 设置缩放：<strong>X = Z = 20、Y = 0.1</strong>，压成一块大而扁的板，再用 <strong>Move 工具</strong> 把它移到场景地面位置，作为一块大地板使用。</li></ul></div>
 <img src="images/课件7/实操4变地板.png" alt="立方体变地板" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="card"><ul><li><strong>第五步</strong>：选中材质，在 Inspector 找到贴图的 <strong>Tiling（正在平铺）</strong> 属性，调整 X 和 Y 的数值（如 5~10），调到贴图在地板上看起来自然舒服即可。</li></ul><div class="ok-box">💡 <strong>Tiling（正在平铺）</strong> 控制贴图在表面上重复的次数：X、Y 数值越大贴图越密。立方体拉伸得越大，Tiling 也要相应调大，才能保持砖块大小自然。</div></div>
+<div class="card"><ul><li><strong>第五步</strong>：选中材质，在 Inspector 找到贴图的 <strong>Tiling（正在平铺）</strong> 属性，调整 X 和 Y 的数值（如 5~10），调到贴图在地板上看起来自然舒服即可。</li></ul><div class="ok-box"><span class="eico">💡</span> <strong>Tiling（正在平铺）</strong> 控制贴图在表面上重复的次数：X、Y 数值越大贴图越密。立方体拉伸得越大，Tiling 也要相应调大，才能保持砖块大小自然。</div></div>
 <img src="images/课件7/实操5设置平铺.png" alt="设置平铺参数" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 
 <div class="card"><p><strong>免费 PBR 贴图资源网站（CC0 许可，可商用）：</strong></p><ul><li><a href="https://ambientcg.com" target="_blank">ambientCG</a> — 最大免费 CC0 PBR 贴图库，3000+ 组材质，8K 分辨率</li><li><a href="https://polyhaven.com/textures" target="_blank">Poly Haven</a> — 高质量免费 PBR 贴图 + HDRI + 3D 模型</li><li><a href="https://freepbr.com" target="_blank">FreePBR</a> — 600+ 免费 PBR 材质包</li></ul></div>
@@ -510,7 +534,7 @@ function copyImgName(btn){
 <img src="images/课件7/实操2设置场景天空盒.png" alt="设置场景天空盒" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><ul><li><strong>操作 3 · 修改天空盒参数看效果</strong>：选中 <code>Sky_Procedural</code> 材质，调整 <strong>Sun Size（太阳大小）</strong>、<strong>Exposure（曝光度）</strong>、<strong>Sky Tint（天空色调）</strong> 等滑块，观察场景天空随之变化，找出自己喜欢的效果。</li></ul></div>
 <img src="images/课件7/实操3调整天空盒参数.png" alt="调整天空盒参数" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="ok-box">💡 Procedural 天空盒不依赖图片，调几个滑块就能换一整天色，课堂最方便。</div>
+<div class="ok-box"><span class="eico">💡</span> Procedural 天空盒不依赖图片，调几个滑块就能换一整天色，课堂最方便。</div>
 
 <h3>课堂实操二：添加 HDRI 资源，设置真实天空盒</h3>
 <div class="card"><ul><li><strong>操作 1 · 导入 HDRI 资源</strong>：把老师提供的 <code>golden_gate_hills_2k.hdr</code> 拖进 Project 窗口的 <strong>Assets 文件夹</strong> 导入。</li></ul></div>
@@ -521,12 +545,12 @@ function copyImgName(btn){
 <img src="images/课件7/实操6设置HDRI贴图.png" alt="设置 HDRI 贴图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><ul><li><strong>操作 4 · 应用到场景</strong>：打开 <code>Window（窗口）→ Rendering（渲染）→ Lighting（照明）</code>，切换到 <strong>Environment（环境）</strong> 标签页，把 <code>Skybox_HDRI</code> 材质拖进 <strong>Skybox Material（天空盒材质）</strong> 槽，场景背景立即变成真实天空。</li></ul></div>
 <img src="images/课件7/实操7应用HDRI天空盒.png" alt="应用 HDRI 天空盒" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="ok-box">💡 对比：<strong>Procedural</strong> 用滑块生成天空（不需要图片），<strong>Panoramic + HDRI</strong> 用真实照片（更逼真）。两种材质都能在 Lighting 窗口直接替换。</div>
+<div class="ok-box"><span class="eico">💡</span> 对比：<strong>Procedural</strong> 用滑块生成天空（不需要图片），<strong>Panoramic + HDRI</strong> 用真实照片（更逼真）。两种材质都能在 Lighting 窗口直接替换。</div>
 <img src="images/课件7/实操8HDRI最终效果.png" alt="HDRI 天空盒最终效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 </div></div>
 <div class="slide" data-page="8"><div class="slide-inner markable">
 <h1>作业 — 下载免费资源美化场景</h1>
-<div class="ok-box">📌 本次作业用免费资源网站 <strong>Poly Haven</strong> 下载贴图和 HDRI，美化自己的场景：作业一给基础模型贴图，作业二给天空盒换真实天空。</div>
+<div class="ok-box"><span class="eico">📌</span> 本次作业用免费资源网站 <strong>Poly Haven</strong> 下载贴图和 HDRI，美化自己的场景：作业一给基础模型贴图，作业二给天空盒换真实天空。</div>
 <div class="card"><h3>Poly Haven 免费资源网站</h3><p>打开浏览器访问 <a href="https://polyhaven.com" target="_blank">https://polyhaven.com</a>，这是一个完全免费（CC0）的 3D 资源网站，可以下载<strong>贴图（Textures）</strong>、<strong>HDRI</strong> 和<strong>模型（Models）</strong>。</p></div>
 <img src="images/课件7/作业0访问网站.png" alt="访问 Poly Haven 网站" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 
@@ -546,7 +570,7 @@ function copyImgName(btn){
 <div class="card"><ul><li><strong>步骤三</strong>：进入详情页点击 <strong>Download（下载）</strong>，分辨率任选，<strong>格式选择 <code>.hdr</code></strong>。下载完成后导入 Unity，做成天空盒材质应用到场景</li></ul></div>
 <img src="images/课件7/作业2步骤3下载HDRI.png" alt="下载 HDRI 资源" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 
-<div class="ok-box">💬 验收标准：地板上出现清晰贴图纹理，场景天空变为真实 HDRI 天空；能说出自己下载的分辨率并说明为什么这样选。</div>
+<div class="ok-box"><span class="eico">💬</span> 验收标准：地板上出现清晰贴图纹理，场景天空变为真实 HDRI 天空；能说出自己下载的分辨率并说明为什么这样选。</div>
 </div></div>
 <div class="slide" data-page="9"><div class="slide-inner end-page">
 
@@ -717,7 +741,7 @@ function changeFont(d){
 // ========== 幻灯片 ==========
 let slides=document.querySelectorAll('.slide,.cover'),
     navLinks=document.querySelectorAll('.nav-link'),
-    curr=0,total=12,contentTotal=10;
+    curr=0,total=9,contentTotal=7;
 
 // 进度圆点
 // 侧边栏点击
@@ -812,18 +836,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

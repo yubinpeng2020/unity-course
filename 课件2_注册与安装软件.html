@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件2_注册与安装软件 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -348,6 +349,26 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
   border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
 .img-missing button:hover{border-color:var(--accent);color:var(--accent)}
 .img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -366,15 +387,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -460,8 +484,8 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="6"><div class="slide-inner markable">
 <h1>安装与登录 Unity Hub</h1>
-<div class="ok-box">⚠️ 注意：Unity 中国推出了国产分支"团结引擎"，但我们学的是 <mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">Unity 2022 LTS 稳定版</mark>，下载时不要选错。原因：<br>① 版本稳定、国内外均可发布，省赛（数字化产品设计与开发、数媒游戏与交互设计）均基于 <mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">Unity</mark>；<br>② 团结引擎对国内小游戏 / 鸿蒙适配更好，但其工程（尤其场景文件）与 Unity <mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">不能直接互通</mark>，生态与教程尚不成熟，不适合入门教学。</div>
-<div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">💡 实训室电脑每节课都要重装 Unity Hub（开机还原系统）；自己电脑只需安装一次。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 注意：Unity 中国推出了国产分支"团结引擎"，但我们学的是 <mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">Unity 2022 LTS 稳定版</mark>，下载时不要选错。原因：<br>① 版本稳定、国内外均可发布，省赛（数字化产品设计与开发、数媒游戏与交互设计）均基于 <mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">Unity</mark>；<br>② 团结引擎对国内小游戏 / 鸿蒙适配更好，但其工程（尤其场景文件）与 Unity <mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">不能直接互通</mark>，生态与教程尚不成熟，不适合入门教学。</div>
+<div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))"><span class="eico">💡</span> 实训室电脑每节课都要重装 Unity Hub（开机还原系统）；自己电脑只需安装一次。</div>
 <div class="card"><h3>Unity Hub 安装包（Windows 64 位）</h3><ul><li>自己电脑安装 Unity Hub，可直接下载官方安装包：</li><li>🔗 <a href="https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup-x64.exe" target="_blank" rel="noopener">UnityHubSetup-x64.exe（点击下载，Windows 64 位）</a></li><li>💡 实训室电脑已提供本地安装包，无需下载；自己电脑也可到 <a href="https://unity.cn/releases" target="_blank" rel="noopener">unity.cn/releases</a> 下载</li></ul></div>
 <h3>一、安装 Unity Hub</h3>
 <div class="card side-card"><div class="side-body"><h3>① 双击 UnityHubSetup-x64.exe 运行安装</h3><ul><li>实训室：桌面文件夹<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">数字产品设计实训课件</mark> → "平台安装包"里找到 <code>UnityHubSetup-x64.exe</code></li><li>自己电脑：到 <a href="https://unity.cn/releases" target="_blank" rel="noopener">unity.cn/releases</a> 下载 <code>UnityHubSetup-x64.exe</code>（Windows 64 位）</li><li>双击运行，安装向导共三步：</li></ul></div><img src="images/课件2/hub_package.png" alt="实训室安装包位置" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
@@ -481,7 +505,7 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="7"><div class="slide-inner markable">
 <h1>安装个人许可证</h1>
-<div class="ok-box">⚠️ 每次安装 Unity Hub 后都要重新激活许可证（实训室 <mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">每节课都要做</mark>）；自己电脑只需激活一次。许可证相当于使用授权签名。个人版免费、适合学习，但做出来的作品不能商用。</div><div class="card"><h3>三种许可证</h3><table><tr><th>类型</th><th>适用对象</th><th>说明</th></tr><tr><td><mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">个人版</mark></td><td>独立开发者 / 学习</td><td><mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">免费</mark>，功能有一定限制，不能商用</td></tr><tr><td>专业版</td><td>专业游戏团队 / 公司</td><td>功能全面、可商用，需付费</td></tr><tr><td>企业版</td><td>大型企业</td><td>面向企业级，需付费</td></tr></table></div><div class="card side-card"><div class="side-body"><h3>① 打开许可证管理</h3><ul><li>切换&quot;许可证选项&quot;，点击&quot;添加许可证&quot;</li></ul></div><img src="images/课件2/license_licenses.png" alt="许可证选项" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card side-card"><div class="side-body"><h3>② 添加个人版许可证</h3><ul><li>选择&quot;获取免费的个人版许可证&quot;（也可尝试申请学生版）</li></ul></div><img src="images/课件2/license_get_free.png" alt="获取免费的个人版许可证" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card"><h3>③ 同意并获取</h3><ul><li>点击&quot;同意&quot;，获取个人版授权</li><li>界面出现新的个人版许可证，即激活成功</li></ul></div><div class="contest-row"><img src="images/课件2/license_agree.png" alt="同意" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件2/license_active.png" alt="激活成功" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="ok-box">💡 许可证有有效期，会过期；过期后重新申请即可，不影响已创建的项目。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 每次安装 Unity Hub 后都要重新激活许可证（实训室 <mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">每节课都要做</mark>）；自己电脑只需激活一次。许可证相当于使用授权签名。个人版免费、适合学习，但做出来的作品不能商用。</div><div class="card"><h3>三种许可证</h3><table><tr><th>类型</th><th>适用对象</th><th>说明</th></tr><tr><td><mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">个人版</mark></td><td>独立开发者 / 学习</td><td><mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">免费</mark>，功能有一定限制，不能商用</td></tr><tr><td>专业版</td><td>专业游戏团队 / 公司</td><td>功能全面、可商用，需付费</td></tr><tr><td>企业版</td><td>大型企业</td><td>面向企业级，需付费</td></tr></table></div><div class="card side-card"><div class="side-body"><h3>① 打开许可证管理</h3><ul><li>切换&quot;许可证选项&quot;，点击&quot;添加许可证&quot;</li></ul></div><img src="images/课件2/license_licenses.png" alt="许可证选项" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card side-card"><div class="side-body"><h3>② 添加个人版许可证</h3><ul><li>选择&quot;获取免费的个人版许可证&quot;（也可尝试申请学生版）</li></ul></div><img src="images/课件2/license_get_free.png" alt="获取免费的个人版许可证" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card"><h3>③ 同意并获取</h3><ul><li>点击&quot;同意&quot;，获取个人版授权</li><li>界面出现新的个人版许可证，即激活成功</li></ul></div><div class="contest-row"><img src="images/课件2/license_agree.png" alt="同意" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件2/license_active.png" alt="激活成功" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="ok-box"><span class="eico">💡</span> 许可证有有效期，会过期；过期后重新申请即可，不影响已创建的项目。</div>
 </div></div>
 <div class="slide" data-page="8"><div class="slide-inner markable">
 <h1>安装 LTS 编辑器（方式一 · 本地安装包，实训室推荐）</h1>
@@ -489,7 +513,7 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="9"><div class="slide-inner markable">
 <h1>安装 LTS 编辑器（方式二 · 在线安装，自己电脑）</h1>
-<div class="card"><h3>① 修改下载路径</h3><ul><li>&quot;设置&quot; → &quot;安装&quot;，修改下载和安装路径（不要装 C 盘）</li></ul></div><div class="contest-row"><img src="images/课件2/editor_online_path1.png" alt="修改下载路径1" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件2/editor_online_path2.png" alt="修改下载路径2" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card"><h3>② 安装编辑器，选择 LTS 版本</h3><ul><li>点击&quot;安装编辑器&quot;，选择 LTS 版本（课程要求 2022.3），点击&quot;安装&quot;</li></ul></div><div class="contest-row"><img src="images/课件2/editor_online_lts.png" alt="选择 LTS 版本" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件2/editor_online_install.png" alt="点击安装" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card"><h3>③ 勾选简体中文模块</h3><ul><li>拉到最下面，勾选&quot;简体中文&quot;模块，点击安装</li><li>等待安装完成，列表中出现所选编辑器</li></ul></div><div class="contest-row"><img src="images/课件2/editor_online_module.png" alt="勾选中文模块" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件2/editor_online_downloading.png" alt="安装中" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="ok-box">💡 安装后若需再加模块，可点击编辑器右侧设置 → &quot;添加模块&quot;。</div>
+<div class="card"><h3>① 修改下载路径</h3><ul><li>&quot;设置&quot; → &quot;安装&quot;，修改下载和安装路径（不要装 C 盘）</li></ul></div><div class="contest-row"><img src="images/课件2/editor_online_path1.png" alt="修改下载路径1" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件2/editor_online_path2.png" alt="修改下载路径2" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card"><h3>② 安装编辑器，选择 LTS 版本</h3><ul><li>点击&quot;安装编辑器&quot;，选择 LTS 版本（课程要求 2022.3），点击&quot;安装&quot;</li></ul></div><div class="contest-row"><img src="images/课件2/editor_online_lts.png" alt="选择 LTS 版本" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件2/editor_online_install.png" alt="点击安装" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card"><h3>③ 勾选简体中文模块</h3><ul><li>拉到最下面，勾选&quot;简体中文&quot;模块，点击安装</li><li>等待安装完成，列表中出现所选编辑器</li></ul></div><div class="contest-row"><img src="images/课件2/editor_online_module.png" alt="勾选中文模块" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件2/editor_online_downloading.png" alt="安装中" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="ok-box"><span class="eico">💡</span> 安装后若需再加模块，可点击编辑器右侧设置 → &quot;添加模块&quot;。</div>
 </div></div>
 <div class="slide" data-page="10"><div class="slide-inner end-page">
 
@@ -660,7 +684,7 @@ function changeFont(d){
 // ========== 幻灯片 ==========
 let slides=document.querySelectorAll('.slide,.cover'),
     navLinks=document.querySelectorAll('.nav-link'),
-    curr=0,total=11,contentTotal=9;
+    curr=0,total=10,contentTotal=8;
 
 // 进度圆点
 // 侧边栏点击
@@ -755,18 +779,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

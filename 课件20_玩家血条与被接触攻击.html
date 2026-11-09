@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件20_玩家血条与被接触攻击 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -390,6 +391,28 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
   border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
 .img-missing button:hover{border-color:var(--accent);color:var(--accent)}
 .img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+
+
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -479,7 +502,7 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 
 <div class="card"><h3>中英对照：这几个词后面天天用</h3><table><thead><tr><th>中文</th><th>English</th><th>干什么用</th></tr></thead><tbody><tr><td>画布</td><td>Canvas</td><td>UI 的底板，所有 UI 元素的爹</td></tr><tr><td>事件系统</td><td>EventSystem</td><td>按钮、输入框的点击命中</td></tr><tr><td>图像</td><td>Image</td><td>画血条的底板和红条</td></tr><tr><td>文本</td><td>Text</td><td>显示血量数字（作业用）</td></tr><tr><td>画布组</td><td>Canvas Group</td><td>一次调整整组 UI 的透明度</td></tr><tr><td>矩形变换</td><td>Rect Transform</td><td>UI 元素的位置与大小</td></tr></tbody></table></div>
 <div class="step-img"><img src="images/课件20/血条5-看不到画布.png" alt="Game 视图里只有场景画面，画布上什么都看不到" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
-<div class="ok-box">💡 建完看不见东西是正常的：画布本身是透明的，此刻它还是个空底板，真正显示出来的是挂在它下面的子对象。<br>它的位置、大小这些设置<strong>先别动</strong>——下一页说它是干什么用的，再下一页专门讲怎么设。</div>
+<div class="ok-box"><span class="eico">💡</span> 建完看不见东西是正常的：画布本身是透明的，此刻它还是个空底板，真正显示出来的是挂在它下面的子对象。<br>它的位置、大小这些设置<strong>先别动</strong>——下一页说它是干什么用的，再下一页专门讲怎么设。</div>
 </div></div>
 <div class="slide" data-page="4"><div class="slide-inner markable">
 <h1>画布 · 游戏 UI 的底板</h1>
@@ -512,7 +535,7 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <text x="340" y="283" font-size="12" font-weight="700" fill="var(--accent)" text-anchor="middle">画布的作用：给屏幕上要显示的东西一块底板</text>
 <text x="340" y="301" font-size="11" fill="var(--text-muted)" text-anchor="middle">图上画的是做出来的样子 —— 左边血条就是本课的目标效果</text>
 </svg>
-<div class="card"><h3>画布（Canvas）· 它到底是什么</h3><p>上一步右键建出来的 <code>GameUI</code>，就是<strong>画布（Canvas）</strong>。Unity 把「要显示在屏幕上的东西」统一画在<strong>一块专用的平面</strong>上，这块平面就是画布——它是 Unity 里所有 UI 的落脚点。</p><p>画布上的元素按层次一层层往上叠：底板在最下，红条盖在底板上，图标再盖上去。这一整块就是<strong>游戏 UI</strong>（用户界面）。</p><p>画布本身不提供任何内容，<strong>它的作用就是给这些元素当底板</strong>。</p></div><div class="card"><h3>画布上装的东西，和 3D 物体差在哪</h3><table><thead><tr><th>对比项</th><th>3D 物体（动物、房屋、玩家）</th><th>UI（血条）</th></tr></thead><tbody><tr><td><strong>在哪</strong></td><td>场景里有真实位置，相机一转就跟着变</td><td>屏幕上固定的位置，玩家怎么跑都不动</td></tr><tr><td><strong>会被挡住吗</strong></td><td>被墙、房子挡住就看不见</td><td>永远画在最上层，什么都挡不住</td></tr></tbody></table><p>血条这类东西，<strong>不属于 3D 世界，只属于屏幕</strong>——所以才必须挂到画布上，靠画布统一画出来。</p></div><img src="images/课件20/血条效果.gif" alt="血条挂在画布上：玩家跑动它不动，敌人咬一口红条就短一截" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>三条必须记住的规则</h3><ul><li><strong>UI 元素必须是画布的子对象</strong>：不在画布底下的图像、文本，Unity 不会把它当 UI 画出来，建了也看不见</li><li><strong>画布只要一块</strong>：本课的血条、以后的准心、提示文字，全都挂在 <code>GameUI</code> 下面，不用每做一个界面就新建一块画布</li><li><strong>UI 的坐标是屏幕坐标</strong>：锚点定在屏幕哪个角，它就跟着哪个角走，跟玩家跑多远、转多少度没关系</li></ul></div><div class="ok-box">💡 一句话记法：<strong>3D 物体归场景管，UI 归画布管</strong>。以后遇到「UI 建不出来 / 建了看不见」，第一件事就是查它是不是画布的子对象。</div>
+<div class="card"><h3>画布（Canvas）· 它到底是什么</h3><p>上一步右键建出来的 <code>GameUI</code>，就是<strong>画布（Canvas）</strong>。Unity 把「要显示在屏幕上的东西」统一画在<strong>一块专用的平面</strong>上，这块平面就是画布——它是 Unity 里所有 UI 的落脚点。</p><p>画布上的元素按层次一层层往上叠：底板在最下，红条盖在底板上，图标再盖上去。这一整块就是<strong>游戏 UI</strong>（用户界面）。</p><p>画布本身不提供任何内容，<strong>它的作用就是给这些元素当底板</strong>。</p></div><div class="card"><h3>画布上装的东西，和 3D 物体差在哪</h3><table><thead><tr><th>对比项</th><th>3D 物体（动物、房屋、玩家）</th><th>UI（血条）</th></tr></thead><tbody><tr><td><strong>在哪</strong></td><td>场景里有真实位置，相机一转就跟着变</td><td>屏幕上固定的位置，玩家怎么跑都不动</td></tr><tr><td><strong>会被挡住吗</strong></td><td>被墙、房子挡住就看不见</td><td>永远画在最上层，什么都挡不住</td></tr></tbody></table><p>血条这类东西，<strong>不属于 3D 世界，只属于屏幕</strong>——所以才必须挂到画布上，靠画布统一画出来。</p></div><img src="images/课件20/血条效果.gif" alt="血条挂在画布上：玩家跑动它不动，敌人咬一口红条就短一截" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>三条必须记住的规则</h3><ul><li><strong>UI 元素必须是画布的子对象</strong>：不在画布底下的图像、文本，Unity 不会把它当 UI 画出来，建了也看不见</li><li><strong>画布只要一块</strong>：本课的血条、以后的准心、提示文字，全都挂在 <code>GameUI</code> 下面，不用每做一个界面就新建一块画布</li><li><strong>UI 的坐标是屏幕坐标</strong>：锚点定在屏幕哪个角，它就跟着哪个角走，跟玩家跑多远、转多少度没关系</li></ul></div><div class="ok-box"><span class="eico">💡</span> 一句话记法：<strong>3D 物体归场景管，UI 归画布管</strong>。以后遇到「UI 建不出来 / 建了看不见」，第一件事就是查它是不是画布的子对象。</div>
 </div></div>
 <div class="slide" data-page="5"><div class="slide-inner markable">
 <h1>画布设置 · 缩放与渲染模式</h1>
@@ -520,7 +543,7 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <div class="card"><h3>渲染模式：UI 画在哪儿</h3><p>上一页的对比表里说，UI <strong>永远画在最上层、什么都挡不住</strong>——其实这条<strong>不是绝对</strong>的，取决于<strong>渲染模式</strong>这一项怎么选。</p><table><thead><tr><th>渲染模式</th><th>什么意思</th><th>什么时候用</th></tr></thead><tbody><tr><td><strong>屏幕空间-覆盖</strong><br><span style="font-size:11px;color:var(--text-muted)">Screen Space - Overlay</span></td><td>直接画在屏幕最上层，跟相机没关系，也不会被任何 3D 物体挡住</td><td><strong>本课</strong>的血条、以后的准心和提示文字（默认值）</td></tr><tr><td><strong>屏幕空间-摄像机</strong><br><span style="font-size:11px;color:var(--text-muted)">Screen Space - Camera</span></td><td>画在指定相机前面，靠近相机的 3D 物体能挡住它</td><td>想让 UI 被场景里的东西遮挡时</td></tr><tr><td><strong>世界空间</strong><br><span style="font-size:11px;color:var(--text-muted)">World Space</span></td><td>UI 变成场景里的一个平面，有真实位置和朝向</td><td>敌人头顶血条、墙上的告示牌</td></tr></tbody></table><p>本课保持默认的<strong>屏幕空间-覆盖</strong>不动。选它之后，<strong>画布的位置和宽高根本不用管</strong>：在 Scene 里拖它、改那几个数字都不起作用，它永远铺满 Game 视图。</p><div class="step-img"><img src="images/课件20/血条4-渲染模式.png" alt="选中 GameUI，画布组件的渲染模式是屏幕空间-覆盖" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>画布缩放器：换分辨率不变形</h3><p>这是本课最容易踩的坑：默认的「恒定像素大小」会让 UI 按<strong>像素</strong>算大小。1920×1080 上调好的血条，到了 1366×768 的笔记本上就占掉半屏，投到教室大屏又小得看不见。</p><ol><li><strong>UI 缩放模式（UI Scale Mode）</strong> 选 <strong>随屏幕大小缩放（Scale With Screen Size）</strong></li><li><strong>参考分辨率（Reference Resolution）</strong> 填 <code>1920</code> × <code>1080</code>——按这个尺寸摆，别的分辨率等比缩放</li><li><strong>屏幕匹配模式（Screen Match Mode）</strong> 选 <strong>匹配（Match）</strong>，Match 拉到 <code>0.5</code>（宽高各占一半权重）</li></ol><div class="step-img"><img src="images/课件20/血条7-画布缩放器.png" alt="画布缩放器：随屏幕大小缩放、参考分辨率 1920×1080、Match 0.5" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>顺手把 Game 视图也定成 1920 × 1080</h3><p>先说清楚：<strong>不设也能用</strong>。画布缩放器里的 1920×1080 是<strong>设计基准</strong>，不是实际运行的分辨率——换台电脑、把窗口拉大拉小，UI 都会按这个基准等比缩放。</p><p>但 Game 视图默认是<strong>自由比例（Free Aspect）</strong>，窗口一拉尺寸就变，预览时血条的位置会跟着飘，很容易误以为「哪里没设对」。把 Game 视图左上角的分辨率选成 <code>1920 × 1080</code>，预览就和设计基准对齐，截图、验收、投屏看到的是同一个样子。</p><div class="step-img"><img src="images/课件20/血条7b-Game视图分辨率.png" alt="Game 视图左上角的分辨率下拉菜单，选中 1920×1080" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
-<div class="ok-box">⚠️ 这一步<strong>只做一次、一辈子受用</strong>：整个工程的 UI 都按 1920×1080 摆，投影仪、笔记本、大屏都能正常显示。忘了设，以后每加一个界面都要在每台电脑上单独调一遍。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 这一步<strong>只做一次、一辈子受用</strong>：整个工程的 UI 都按 1920×1080 摆，投影仪、笔记本、大屏都能正常显示。忘了设，以后每加一个界面都要在每台电脑上单独调一遍。</div>
 </div></div>
 <div class="slide" data-page="6"><div class="slide-inner markable">
 <h1>血条骨架 · 建 PlayerHealth 空对象</h1>
@@ -622,7 +645,7 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <div class="card"><h3>① 建一个 UI 图像</h3><p>选中 <code>PlayerHealth</code>，右键 → <strong>UI → 图像（Image）</strong>，改名 <code>BackgroundImage</code>。</p><p>用「UI → 图像」建出来的对象自带 <strong>矩形变换</strong> 和 <strong>图像（Image）</strong> 组件，不用自己加。</p><div class="step-img"><img src="images/课件20/血条12-建BackgroundImage.png" alt="在 PlayerHealth 上右键 UI → 图像，改名为 BackgroundImage" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>② 拉伸，铺满父对象</h3><p>点面板最右边的<strong>全屏拉伸</strong>，再把 <strong>左 / 右 / 顶部 / 底部</strong> 四个偏移都填 <code>0</code>。底板就和 <code>PlayerHealth</code> 一样大了。</p><div class="step-img"><img src="images/课件20/血条13-背景铺满.png" alt="BackgroundImage 锚点选全屏拉伸，四边偏移都是 0" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>③ 调颜色：黑色 + 半透明</h3><p>图像组件里点 <strong>颜色（Color）</strong> 色块，调成黑色，再把 <strong>A（Alpha）</strong> 拉到 <code>140</code> 左右——A 就是透明度，范围 <code>0</code>～<code>255</code>：<code>255</code> 完全不透明，<code>0</code> 全透明，中间值就是半透明。</p><div class="step-img"><img src="images/课件20/血条14-背景颜色.png" alt="图像颜色设为黑色，Alpha 约 140，也就是半透明" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
-<div class="ok-box">💡 <strong>底板可以不放图</strong>：Image 的源图像留空时会画一个纯色矩形，正好拿来当底板，不用满工程去找纯色图。<strong>红条不行</strong>——它要靠填充总数控制长度，必须有 sprite。</div>
+<div class="ok-box"><span class="eico">💡</span> <strong>底板可以不放图</strong>：Image 的源图像留空时会画一个纯色矩形，正好拿来当底板，不用满工程去找纯色图。<strong>红条不行</strong>——它要靠填充总数控制长度，必须有 sprite。</div>
 </div></div>
 <div class="slide" data-page="10"><div class="slide-inner markable">
 <h1>血条填充 · FillImageHealth</h1>
@@ -632,7 +655,7 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <div class="card"><h3>③ 图像类型改成「已填充」</h3><p><strong>图像类型（Image Type）</strong> 从「简单」改成 <strong>已填充（Filled）</strong>。这一步是整节课的关键——<strong>只有「已填充」的图像才有「填充总数」</strong>，普通图像只能整张显示或整张隐藏。</p><p>改完之后下面会多出三项：<strong>填充方法（Fill Method）</strong>、<strong>填充原点（Fill Origin）</strong>、<strong>填充总数（Fill Amount）</strong>。</p><div class="step-img"><img src="images/课件20/血条16-已填充设置.png" alt="图像类型改为已填充，下方出现填充方法、填充原点、填充总数三项" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>④ 填充方法：水平 + 从左往右</h3><ul><li><strong>填充方法</strong> 选 <strong>水平（Horizontal）</strong>：从一边缩到另一边</li><li><strong>填充原点</strong> 选 <strong>左（Left）</strong>：从左往右缩，血少的时候先掉右边那一截</li><li><strong>填充总数</strong> 先保持 <code>1</code>（满血）</li></ul><p>选「垂直」会变成从下往上缩——那是电梯、载入进度条用的，不是血条。</p><div class="step-img half"><img src="images/课件20/血条16b-填充方法.png" alt="图像组件的填充设置：填充方法选水平，填充原点选左，填充总数保持 1" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>⑤ 调颜色与边距</h3><ul><li><strong>颜色</strong> 填 (249, 33, 55)，偏暗的鲜红；用十六进制就是 <code>F92137</code></li><li><strong>锚点</strong> 同样选<strong>全屏拉伸</strong>，四个偏移各填 <code>8</code>——红条比底板小一圈，看起来才像「框里灌了血」</li></ul><div class="step-img"><img src="images/课件20/血条17-填充颜色.png" alt="FillImageHealth 颜色设为 F92137，锚点拉伸四边各 8" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
-<div class="ok-box">⚠️ <strong>填充总数是 0～1 的小数，不是百分数</strong>：<code>1</code> = 满，<code>0.5</code> = 一半，<code>0</code> = 空。填 <code>50</code> 不会变成一半，而是被当成 1（满格）。</div>
+<div class="ok-box"><span class="eico">⚠️</span> <strong>填充总数是 0～1 的小数，不是百分数</strong>：<code>1</code> = 满，<code>0.5</code> = 一半，<code>0</code> = 空。填 <code>50</code> 不会变成一半，而是被当成 1（满格）。</div>
 <div class="step-img half"><img src="images/课件20/血条17b-填充0.5.png" alt="填充总数改成 0.5 后，红条只剩左边一半，右边露出底板" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
 </div></div>
 <div class="slide" data-page="11"><div class="slide-inner markable">
@@ -641,14 +664,14 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 <div class="card"><h3>② 源图像选心形图标</h3><p>源图像拖 <code>HUD_LifeBar_Icon.png</code>（心形图标）。没有图标就随便找一张也行，这一层只是为了好看。</p><div class="step-img"><img src="images/课件20/血条19-图标源图.png" alt="HealthIcon 的源图像设为心形图标" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>③ 勾上「保持长宽比」</h3><p>图像组件里把 <strong>保持长宽比（Preserve Aspect）</strong> 勾上。不勾的话，图标会跟着矩形宽高被拉成扁的或长的。</p><div class="step-img half"><img src="images/课件20/血条20-保持长宽比.png" alt="图像组件里勾选保持长宽比 Preserve Aspect" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>④ 压在血条左端</h3><p>锚点选 <strong>左中（middle-left）</strong>，位置 X 填 <code>28</code>、Y 填 <code>0</code>，宽度和高度都填 <code>40</code>。</p><p>X 填 28 是为了让图标左边和红条左边对齐：红条的左边离父对象左边 <code>8</code>（那是红条自己的四边偏移），图标宽 <code>40</code>、轴心在正中，左边缘等于 X 减 20，所以 X = <code>8 + 20 = 28</code>。Y 填 <code>0</code> 就行，锚点选的是左中，本来就垂直居中。</p><p>高度取 <code>40</code>：父对象高 <code>50</code>，上下各留 5 的余地；红条只有 <code>34</code> 高，图标比它略高一点点，看着像嵌在血条里。宽也给 <code>40</code>，图标才不会被拉扁。</p><p>它能压在红条上，是因为它<strong>最后建</strong>——同级里排在后面的后画，不用另外设置。血量掉得很低时，红条会缩到图标背后，所以后面作业会加<strong>血量数字</strong>和<strong>低血闪烁</strong>。</p><div class="step-img"><img src="images/课件20/血条20b-图标位置.png" alt="HealthIcon 的矩形变换：锚点左中，位置 28 / 0，宽高各 40" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
-<div class="ok-box">💡 <strong>叠放顺序由层级里的上下顺序决定</strong>：同级子对象里，<strong>排在上面的先画、被压在下面；排在后面的后画、盖在最上面</strong>。我们是按「底板 → 红条 → 图标」的顺序建的，正好正确——别去拖层级顺序，底板一旦被拖到最后，整条血条就被它盖住了。</div>
+<div class="ok-box"><span class="eico">💡</span> <strong>叠放顺序由层级里的上下顺序决定</strong>：同级子对象里，<strong>排在上面的先画、被压在下面；排在后面的后画、盖在最上面</strong>。我们是按「底板 → 红条 → 图标」的顺序建的，正好正确——别去拖层级顺序，底板一旦被拖到最后，整条血条就被它盖住了。</div>
 <div class="card"><h3>回头看：为什么非要多套一个空对象</h3><p>三样东西——半透明黑底板、红色填充、生命图标——<strong>要一起动、一起淡出</strong>。套在同一个空对象底下，以后调位置、调透明度，动这一个就够；三样各自散在画布上，改一次得改三处。</p><p>空对象自己不画任何东西，它就是这三样共用的<strong>把手</strong>。</p><p>这也是<strong>为什么不干脆用一张图当血条</strong>：血条要按比例缩短、要压在底板上、左边还要压一个图标，三件事分开做才简单，合在一张图里就改不动了。以后做蓝条、经验条、Boss 血条，都是这个三段式。</p></div></div></div>
 <div class="slide" data-page="12"><div class="slide-inner markable">
 <h1>摆放验收 · 让血条待在左下角</h1>
 <div class="card"><h3>对一遍四样东西的位置</h3><table><thead><tr><th>对象</th><th>锚点</th><th>应该长什么样</th></tr></thead><tbody><tr><td><code>PlayerHealth</code></td><td>左下</td><td>整条血条离屏幕左边 50、下边 75</td></tr><tr><td><code>BackgroundImage</code></td><td>全屏拉伸 + 四边 0</td><td>和 PlayerHealth 一样大，半透明黑</td></tr><tr><td><code>FillImageHealth</code></td><td>全屏拉伸 + 四边 8</td><td>比底板小一圈的红色条</td></tr><tr><td><code>HealthIcon</code></td><td>左中</td><td>贴在血条左端，垂直居中</td></tr></tbody></table><div class="step-img"><img src="images/课件20/血条21-摆放完成.png" alt="三个子元素摆好后，2D 视图里血条的样子" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>不用运行也能看见</h3><p>切到 <strong>Game 视图</strong>（不用点播放），血条就已经在左下角了——UI 是直接画在屏幕上的，跟有没有运行无关。运行之后按 <strong>WASD</strong> 跑一圈、转个身：<strong>血条一动不动</strong>，这才对。</p><div class="step-img"><img src="images/课件20/血条26-血条不随移动.gif" alt="运行后人物在场景里移动，血条始终留在左下角" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>再验一次缩放</h3><p>Game 视图左上角把分辨率从 <code>1920×1080</code> 依次换成 <code>1366×768</code>、<code>Free Aspect</code> 各看一遍：血条的<strong>相对位置和比例不变</strong>。这就是「画布设置」那一页画布缩放器干的活——没设它的话，小窗口里血条会顶到屏幕外去。</p><div class="step-img"><img src="images/课件20/血条27-换分辨率不变形.png" alt="分辨率换成 1366×768 后，血条仍在左下角、比例不变" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
-<div class="ok-box">💡 血条大小不合适、位置偏了，<strong>不要改三个子对象</strong>，改 <code>PlayerHealth</code> 一个的宽度和位置就行——底板和红条是拉伸的，会跟着一起变。这就是套一层父对象的好处。</div>
+<div class="ok-box"><span class="eico">💡</span> 血条大小不合适、位置偏了，<strong>不要改三个子对象</strong>，改 <code>PlayerHealth</code> 一个的宽度和位置就行——底板和红条是拉伸的，会跟着一起变。这就是套一层父对象的好处。</div>
 </div></div>
 <div class="slide" data-page="13"><div class="slide-inner markable">
 <h1>血条原理 · 只改一个 fillAmount</h1>
@@ -717,7 +740,7 @@ public class HealthChange : MonoBehaviour
 </svg>
 <div class="anim-replay-bar"><button type="button" class="anim-replay" onclick="replayAnim(this)" aria-label="重播这张图的动效">↻ 重播动效</button></div>
 <div class="card"><h3>这就是游戏 UI 的分工</h3><table><thead><tr><th>谁</th><th>负责</th><th>本课对应</th></tr></thead><tbody><tr><td><strong>数据</strong></td><td>血量还剩多少</td><td><code>HealthChange</code> 里的 <code>CurrentHealth</code></td></tr><tr><td><strong>显示</strong></td><td>把数字画成一根条</td><td><code>FillImageHealth</code> 的 <code>fillAmount</code></td></tr><tr><td><strong>联系</strong></td><td>一句赋值</td><td><code>fillAmount = CurrentHealth / MaxHealth</code></td></tr></tbody></table><p>把「数据」和「显示」分开，好处是改显示不用动数据：想把血条换成圆环、换成数字百分比，只改 UI 就行，脚本那行公式一个字都不用改。</p></div>
-<div class="ok-box">⚠️ 分母一定是<strong>满血 <code>MaxHealth</code></strong>，不是当前血量。写成 <code>CurrentHealth / CurrentHealth</code> 永远是 1，血条永远满格——这个错很难一眼看出来，因为画面「看起来很正常」。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 分母一定是<strong>满血 <code>MaxHealth</code></strong>，不是当前血量。写成 <code>CurrentHealth / CurrentHealth</code> 永远是 1，血条永远满格——这个错很难一眼看出来，因为画面「看起来很正常」。</div>
 </div></div>
 <div class="slide" data-page="14"><div class="slide-inner markable">
 <h1>敌人准备 · 碰撞体与 Player 标签</h1>
@@ -725,7 +748,7 @@ public class HealthChange : MonoBehaviour
 <div class="card"><h3>① 六个动物的碰撞体早就有了</h3><p>不用新加——<strong>课件16</strong> 给动物建「空壳」的时候，就把 <strong>盒型碰撞体（Box Collider）</strong> 一起加上去了，六种动物（<code>NewCat</code>、<code>NewChiken</code>、<code>NewCow</code>、<code>NewElephent</code>、<code>NewLLama</code>、<code>NewPig</code>）全都有，边框也照着身子拖过。这一课只做<strong>确认</strong>。</p><ul><li><strong>确认</strong>：双击预制体进去，选中<strong>最外层那个空壳</strong>（跟 <code>AnimalRoam</code> 这些脚本同一层，不是它里面的模型），检查器里能看到<strong>盒型碰撞体</strong>，场景里那圈绿框裹着动物</li><li><strong>万一被删了</strong>：添加组件 → 盒型碰撞体（Box Collider），点「编辑碰撞体（Edit Collider）」把绿框拖到贴合——课件16 做过的动作</li></ul><div class="step-img"><img src="images/课件20/敌人1-盒型碰撞体.png" alt="六个动物预制体的空壳上都有盒型碰撞体，绿框裹住动物" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>② 千万别勾 Is Trigger</h3><p>盒型碰撞体上有一个 <strong>是触发器（Is Trigger）</strong> 勾选框，<strong>不要勾</strong>。</p><p>勾上之后这个碰撞体就不再「挡人」了：玩家会直接从动物身子里穿过去，两只叠在一起，看起来像动物根本没有实体。</p><p><strong>但它管不着掉血</strong>：这一课的伤害按<strong>距离</strong>算，不看碰撞——勾上照样会掉血，只是玩家能穿进动物身子里。别因为「反正还能咬」就去勾它。</p></div>
 <div class="card"><h3>③ 确认玩家身上有 Player 标签</h3><ol><li>在层级（Hierarchy）里选中 <code>Player</code></li><li>看检查器最上方的 <strong>标签（Tag）</strong> 下拉，是不是 <code>Player</code>；不是就选成 <code>Player</code></li></ol><p><code>Player</code> 是 Unity <strong>自带</strong>的标签，不用新建，下拉里直接有。<strong>名字和标签是两回事</strong>：对象可以叫 Player 而标签仍是 <code>Untagged</code>，代码只认标签、不认名字。</p><p>为什么现在要确认它：下一页 <code>EnemyData</code> 里那句 <code>FindGameObjectWithTag("Player")</code> 就是靠它找到你——标签不对，动物找不到玩家，血永远不会掉。课件14 让动物找玩家，用的也是同一个标签。</p><div class="step-img"><img src="images/课件20/玩家0-Player标签.png" alt="选中 Player，检查器顶部的标签下拉选为 Player" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
-<div class="ok-box">⚠️ <strong>预制体</strong>和<strong>场景</strong>是两个地方，改哪边结果不一样：<br>· <strong>双击预制体进去改</strong>（上面两步就是这么做的）：六个各改一次，场景里那几只、以及以后生成中心刷出来的，<strong>全都跟着变</strong>，不用管覆盖。<br>· <strong>在场景里点中某只动物改</strong>：那只是这一只的「覆盖（Overrides）」，预制体本身没动——要在检查器顶部点 <strong>覆盖（Overrides）→ 应用全部（Apply All）</strong> 才写回预制体。<br>· ③ 改的是场景里的 <code>Player</code>，它不是预制体，直接改就生效。</div>
+<div class="ok-box"><span class="eico">⚠️</span> <strong>预制体</strong>和<strong>场景</strong>是两个地方，改哪边结果不一样：<br>· <strong>双击预制体进去改</strong>（上面两步就是这么做的）：六个各改一次，场景里那几只、以及以后生成中心刷出来的，<strong>全都跟着变</strong>，不用管覆盖。<br>· <strong>在场景里点中某只动物改</strong>：那只是这一只的「覆盖（Overrides）」，预制体本身没动——要在检查器顶部点 <strong>覆盖（Overrides）→ 应用全部（Apply All）</strong> 才写回预制体。<br>· ③ 改的是场景里的 <code>Player</code>，它不是预制体，直接改就生效。</div>
 </div></div>
 <div class="slide" data-page="15"><div class="slide-inner markable">
 <h1>敌人攻击力 · EnemyData</h1>
@@ -815,7 +838,7 @@ public class EnemyData : MonoBehaviour
 </div>
 <div class="card"><h3>② 逐段看</h3><ol><li><strong>三个 public 字段</strong>：<code>public</code> 才能在检查器里看到、也才能被别的脚本读到。攻击力决定一口掉多少血，间隔决定多久能咬第二口，范围决定站多远就算咬到。</li><li><strong><code>lastAttackTime</code> 为什么是 private</strong>：它是内部记账的时间，不需要给人调，所以不写 public。</li><li><strong><code>Time.time</code></strong>：游戏从开始跑到现在的秒数，一直在涨。</li><li><strong>为什么一定要有间隔</strong>：<code>Update</code> 是<strong>每一帧都在跑</strong>的——没有间隔，贴着你的那一秒就是几十次扣血，血条一瞬间就空。</li><li><strong><code>Start()</code> 里找一次玩家</strong>：<code>FindGameObjectWithTag("Player")</code> 要遍历整个场景，比较慢（课件14 说过），开局找一次存进变量就行，别放进 <code>Update</code> 里每帧找；万一没找到，就先空着，<code>Update</code> 开头那句 <code>if (player == null) return;</code> 会兜住，不至于一开局就崩。</li><li><strong>为什么只在水平面量距离</strong>：两边 <code>y</code> 都置 0 再算——上下坡、站在坎上时，高度差不会让它误判成「离得远」。<code>AnimalGuard</code> 用的也是这个做法。</li><li><strong>为什么是敌人去调 <code>player.TakeDamage()</code></strong>：谁攻击谁发起，玩家只提供「我扣血了」这个接口；以后加陷阱、毒圈、子弹，也是调同一个方法。</li></ol></div>
 <div class="card"><h3>③ 咬下去的同时，把动作播出来</h3><p>光看血条往下掉，看不出是哪一只在咬你。动物身上早就有 <code>AnimalAnim</code>——课件18 挂上去、专管动画的那个脚本，里面就写着 <code>PlayAttack()</code>。咬的时候喊一声就行，上面的全码里已经加好了，就两处：</p><ul><li><code>Start()</code> 里补 <code>anim = GetComponent&lt;AnimalAnim&gt;();</code>——动画脚本也在自己身上，跟 <code>AnimalGuard</code> 拿它的方式一样</li><li>咬的那一行前面加 <code>anim.PlayAttack();</code>——先动起来，再让玩家掉血</li></ul><p><code>PlayAttack()</code> 里是 <code>SetTrigger("Attack")</code>，靠 Animator 里的 <strong>Attack 触发器</strong>——课件18 加的。<strong>每只动物的控制器都要加过这个参数</strong>：只给猫配了，牛和马咬你就不带动静，缺的回课件18 补上。</p><div class="step-img"><img src="images/课件20/敌人4-Attack过渡.png" alt="动画器窗口里 Idle 到 Attack 的过渡条，检查器条件里勾着 Attack 触发器" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
-<div class="card"><h3>④ 攻击范围为什么填 2.2</h3><p>课件19 的 <code>AnimalGuard</code> 追到「离你 2 米就停」，动物根本不会贴到你身上。所以攻击范围要<strong>略大于 2</strong>——填 <code>2.2</code>，动物停在那圈上就已经能咬到你了。</p><p>这也是大多数游戏的做法：判定用「范围」而不是「模型真的碰上」，看着像被咬到就够了。想让动物必须撞上来才掉血，把范围调到 <code>1.5</code> 以下即可——但那样只有你主动凑过去才会掉血。</p></div><div class="ok-box">💡 调难度只改这几个数：攻击力 20 + 间隔 2 秒 = 疼但慢；攻击力 5 + 间隔 0.5 秒 = 不疼但粘人。玩家脚本一个字都不用动。<br>本课玩家<strong>没有防御力</strong>，所以攻击力就是实际掉的血；以后要是加了护甲，扣血公式写在玩家的 <code>TakeDamage</code> 里，不用回头改敌人。</div>
+<div class="card"><h3>④ 攻击范围为什么填 2.2</h3><p>课件19 的 <code>AnimalGuard</code> 追到「离你 2 米就停」，动物根本不会贴到你身上。所以攻击范围要<strong>略大于 2</strong>——填 <code>2.2</code>，动物停在那圈上就已经能咬到你了。</p><p>这也是大多数游戏的做法：判定用「范围」而不是「模型真的碰上」，看着像被咬到就够了。想让动物必须撞上来才掉血，把范围调到 <code>1.5</code> 以下即可——但那样只有你主动凑过去才会掉血。</p></div><div class="ok-box"><span class="eico">💡</span> 调难度只改这几个数：攻击力 20 + 间隔 2 秒 = 疼但慢；攻击力 5 + 间隔 0.5 秒 = 不疼但粘人。玩家脚本一个字都不用动。<br>本课玩家<strong>没有防御力</strong>，所以攻击力就是实际掉的血；以后要是加了护甲，扣血公式写在玩家的 <code>TakeDamage</code> 里，不用回头改敌人。</div>
 </div></div>
 <div class="slide" data-page="16"><div class="slide-inner markable">
 <h1>玩家扣血 · HealthChange</h1>
@@ -824,8 +847,8 @@ public class EnemyData : MonoBehaviour
 <div class="card"><h3>① 把红条拖进「生命条填充图」槽位</h3><p>脚本挂上之后，检查器里多出一个 <strong>生命条填充图（Health Fill Image）</strong> 槽位。把层级里的 <code>FillImageHealth</code> <strong>拖到这个槽位</strong>——脚本就是靠这个引用找到红条的。</p><p>不拖会怎样：代码里有 <code>if (healthFillImage != null)</code> 挡着，所以不会报错，但<strong>血条一动不动</strong>——血在扣，只是没画出来。</p><div class="step-img"><img src="images/课件20/玩家2-拖入填充图.png" alt="把 FillImageHealth 拖到 HealthChange 的生命条填充图槽位" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>② 逐段看</h3><ol><li><strong><code>using UnityEngine.UI;</code></strong>：<code>Image</code> 这个类型在 <code>UnityEngine.UI</code> 里，不写这一行，字段那一行就报「找不到类型 Image」。</li><li><strong><code>public void TakeDamage(float damage)</code></strong>：这是<strong>给敌人调</strong>的接口，括号里的 <code>damage</code> 就是<strong>这一口扣多少血</strong>——敌人把自己身上的攻击力传进来。所以敌人那边一句 <code>player.TakeDamage(attackPower)</code>，就相当于「咬你一口，扣它攻击力那么多」。写成 <code>public</code>，别的脚本才调得到。</li><li><strong>为什么玩家不自己去检测「谁撞我」</strong>：角色控制器的 <code>OnControllerColliderHit</code> 只在<strong>玩家自己移动撞到东西</strong>时才响——你站着不动、动物蹭过来，它一声都不响；动物又追到离你 2 米就停下，物理上压根没碰上。所以判定放到敌人那边（上一页的攻击范围），玩家这边只管「掉血」。</li><li><strong>为什么不加无敌时间</strong>：<code>TakeDamage</code> 只做「减血 + 刷新」，<strong>谁咬就扣谁那一口</strong>——三只同时扑上来就是一次 <code>−30</code>，血条当场掉三截。频率已经由敌人那边管住了（每只各自隔 1 秒才咬一次），玩家这边不用再拦；六只围满就是每秒 60 血，不到两秒清空。<strong>想扛久一点，改敌人的攻击力或攻击间隔</strong>（比如 5 / 1.5 秒）。</li><li><strong>两条血量保护</strong>：开头 <code>if (CurrentHealth &lt;= 0) return;</code>——血空了就不再吃伤害，动物还在咬也没用（死亡怎么处理是课件21 的事）；扣完 <code>if (CurrentHealth &lt; 0) CurrentHealth = 0;</code>——防一次大伤害扣成负数，<code>fillAmount</code> 拿到负值会反向填充，看着像在回血。</li><li><strong><code>Start()</code> 里先满血</strong>：<code>CurrentHealth</code> 默认为 0，不初始化的话开局血条就是空的。</li><li><strong><code>UpdateHealth()</code></strong>：把当前血量换算成 0～1 填给 <code>fillAmount</code>。扣血、以后回血，都调这一个方法。</li></ol></div>
 <div class="step-img"><img src="images/课件20/玩家掉血.gif" alt="敌人扑上来咬一口，血条短一截" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
-<div class="ok-box">💡 动物不一定一开播就扑上来：它得先<strong>看见</strong>你。上一课的视野角作业做了的话，它只在<strong>正前方 ±60°、中间没有墙</strong>时才算看见——所以它常常要先走完当前巡逻点、转过身来，才跳一下冲过来。等两三秒是正常的，不是卡住。</div>
-<div class="ok-box">⚠️ 血一直不掉，按这个顺序查：① 敌人身上挂没挂 <code>EnemyData</code> ② <strong>攻击范围</strong>够不够——动物追到离你 2 米就停，范围要大于 2 ③ 玩家身上的标签是不是 <code>Player</code>（代码靠它找你） ④「生命条填充图」槽位有没有拖东西 ⑤ 红条的图像类型是不是<strong>已填充</strong>。</div>
+<div class="ok-box"><span class="eico">💡</span> 动物不一定一开播就扑上来：它得先<strong>看见</strong>你。上一课的视野角作业做了的话，它只在<strong>正前方 ±60°、中间没有墙</strong>时才算看见——所以它常常要先走完当前巡逻点、转过身来，才跳一下冲过来。等两三秒是正常的，不是卡住。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 血一直不掉，按这个顺序查：① 敌人身上挂没挂 <code>EnemyData</code> ② <strong>攻击范围</strong>够不够——动物追到离你 2 米就停，范围要大于 2 ③ 玩家身上的标签是不是 <code>Player</code>（代码靠它找你） ④「生命条填充图」槽位有没有拖东西 ⑤ 红条的图像类型是不是<strong>已填充</strong>。</div>
 </div></div>
 <div class="slide" data-page="17"><div class="slide-inner markable">
 <h1>作业 · 血量数字与低血闪烁</h1>
@@ -893,7 +916,7 @@ else
     canvasGroup.alpha = 1f;
 }</code></pre></div>
 <div class="card"><h3>②③ 讲解</h3><ol><li><strong><code>Mathf.PingPong(Time.time * 2f, 1f)</code></strong>：<code>Time.time</code> 只涨不回，<code>PingPong</code> 把它折成 0→1→0 来回走；乘 <code>2</code> 是闪的快慢，嫌快改 <code>1</code>、嫌慢改 <code>3</code>。</li><li><strong><code>Mathf.Lerp(0.35f, 1f, t)</code></strong>：把 0～1 映射到 0.35～1。留 35% 的底线，是因为 alpha 掉到 0 时血条彻底看不见，像突然消失。</li><li><strong>改的是画布组</strong>：<code>canvasGroup.alpha</code> 管的是整个 <code>PlayerHealth</code>——红条、底板、图标、数字一起暗下去。所以这里不用去改每张图的颜色。</li><li><strong>③ 必须是 <code>else</code></strong>：血回到 30 以上时，如果它单独写成 <code>if</code>，两个分支都不成立，<code>alpha</code> 会停在最后那个暗值，血条永远半透明。写成 <code>else</code>，回血那一刻就恢复成 1。</li><li><strong>边界</strong>：这里是「低于 30 才闪」，正好 30 不闪。想让它 30 就闪，把 <code>&lt;</code> 改成 <code>&lt;=</code>。</li></ol></div>
-<div class="ok-box">⚠️ 三个高频错：① <code>healthText</code> 漏拖，数字一动不动（不崩、也不报错）② ③ 写成 <code>if</code> 而不是 <code>else</code>，血回上来还一直半透明 ③ 脚本没挂在 <code>PlayerHealth</code> 上，<code>Start</code> 里 <code>GetComponent&lt;CanvasGroup&gt;()</code> 取到 <code>null</code>，闪烁整段不生效——挂错对象的话，检查器里那个 <code>CanvasGroup</code> 字段会是空的。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 三个高频错：① <code>healthText</code> 漏拖，数字一动不动（不崩、也不报错）② ③ 写成 <code>if</code> 而不是 <code>else</code>，血回上来还一直半透明 ③ 脚本没挂在 <code>PlayerHealth</code> 上，<code>Start</code> 里 <code>GetComponent&lt;CanvasGroup&gt;()</code> 取到 <code>null</code>，闪烁整段不生效——挂错对象的话，检查器里那个 <code>CanvasGroup</code> 字段会是空的。</div>
 <div class="card"><h3>挑战（选做）</h3><ul><li>低血时把红条颜色改成更刺眼的亮红，血量回上来再改回 <code>F92137</code></li><li>加一个「受伤闪红」：被咬的瞬间屏幕边缘红一下（提示：在画布上铺一张全屏红色 Image，Alpha 从 0.4 快速降到 0）</li><li>把血条做成「延迟掉血」：前面一条浅色残影慢慢追上来，看起来更有打击感</li></ul></div>
 
 </div></div>
@@ -1174,30 +1197,59 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

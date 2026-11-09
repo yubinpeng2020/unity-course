@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件5_移动视野与物体 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -341,6 +342,26 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
   border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
 .img-missing button:hover{border-color:var(--accent);color:var(--accent)}
 .img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -359,15 +380,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -454,7 +478,7 @@ function copyImgName(btn){
 <img src="images/课件5/场景窗口-切换物体.gif" alt="切换物体聚焦" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><p><strong>方法二（最常用）</strong>：先在 Hierarchy 或 Scene 中<strong>选中</strong>物体，按键盘 <strong>F 键</strong>，摄像机立刻"飞"到该物体旁边</p></div>
 <img src="images/课件5/物体移动到视野中心 --- F键.gif" alt="物体移动到视野中心 F键" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="ok-box">💡 口诀：找不到物体？选中它，按 F，瞬间回到眼前。</div>
+<div class="ok-box"><span class="eico">💡</span> 口诀：找不到物体？选中它，按 F，瞬间回到眼前。</div>
 <h3>③ 转动视野</h3>
 <div class="card"><p><strong>转视野（绕当前中心）</strong>：按住 <code>ALT</code> + 鼠标左键拖动</p></div>
 <img src="images/课件5/场景窗口 --- 转动视野.gif" alt="ALT+左键转动视野" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
@@ -487,14 +511,14 @@ function copyImgName(btn){
 <img src="images/课件5/场景窗口 --- 拉近拉远 --- 滚轮.gif" alt="滚轮缩放" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><p><strong>精细缩放</strong>：按住 <code>ALT</code> + <strong>鼠标右键</strong>上下拖动，慢慢推拉，适合对齐细节</p></div>
 <img src="images/课件5/场景窗口 --- 拉近拉远 --- 精细化.gif" alt="精细缩放" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="ok-box">💡 快速缩放&quot;粗&quot;，精细缩放&quot;细&quot;。需要毫米级对齐时用 ALT+右键，别只靠滚轮。</div>
+<div class="ok-box"><span class="eico">💡</span> 快速缩放&quot;粗&quot;，精细缩放&quot;细&quot;。需要毫米级对齐时用 ALT+右键，别只靠滚轮。</div>
 <h3>透视 vs 正交视角</h3>
 <div class="card" style="display:flex;gap:16px;align-items:center"><div style="flex:1"><p><strong>透视视角（Persp）</strong>：近大远小，符合人眼，但有<strong>广角畸变</strong>（广角越大，边缘越扭曲）</p></div><img src="images/课件5/placeholder_persp.png" alt="透视视角示意" style="max-width:100px;border-radius:8px;cursor:pointer" onclick="zoomQR(this)" onerror="imgMissing(this)"></div><div class="card" style="display:flex;gap:16px;align-items:center"><div style="flex:1"><p>在 Scene 视图右上角点击 <strong>广角下拉框</strong>（默认约 60°），可手动调整广角大小：</p><ul><li>数值<strong>越小</strong>→广角越窄，畸变越少，但视野范围变小</li><li>数值<strong>越大</strong>→广角越宽，视野更广，但边缘畸变更明显</li><li>常用值：<strong>45°~60°</strong>（自然视角）、<strong>90°+</strong>（夸张广角效果）</li></ul></div><img src="images/课件5/广角调整按钮.png" alt="广角调整按钮" style="max-width:100px;border-radius:8px;cursor:pointer" onclick="zoomQR(this)" onerror="imgMissing(this)"></div>
 <img src="images/课件5/场景窗口 --- 广角.gif" alt="广角畸变" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card" style="display:flex;gap:16px;align-items:center"><div style="flex:1"><p><strong>正交视角（Iso）</strong>：没有近大远小，物体大小不随远近变，<strong>最适合做对齐</strong></p></div><img src="images/课件5/placeholder_iso.png" alt="正交视角示意" style="max-width:100px;border-radius:8px;cursor:pointer" onclick="zoomQR(this)" onerror="imgMissing(this)"></div>
 <img src="images/课件5/场景窗口 --- 正交视角.gif" alt="正交视角" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><p>在 <strong>Gizmo 导航器</strong>（Scene 视图右上角坐标轴）下方，有一个<strong>视角下拉菜单</strong>：</p><ul><li>点击导航器下方的 <strong>Persp</strong> / <strong>Iso</strong> 文字标签，可直接切换透视 / 正交视角</li><li>或点击导航器右上角的 <strong>☰ 菜单按钮</strong>，在弹出菜单中选择「透视」或「正交」</li></ul></div>
-<div class="ok-box">💡 摆放、对齐物体时，一律切到<strong>正交视角</strong>；检查整体效果时再切回透视。</div>
+<div class="ok-box"><span class="eico">💡</span> 摆放、对齐物体时，一律切到<strong>正交视角</strong>；检查整体效果时再切回透视。</div>
 <img src="images/课件5/正交对齐效果.png" alt="正交视角下对齐效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 
 </div></div>
@@ -518,15 +542,15 @@ function copyImgName(btn){
 <h3>一键归位 Reset</h3>
 <div class="card"><p>物体被你拖得乱七八糟？不用手动填 0：在 Inspector 的 Transform 右上角点击<strong>齿轮 / 小菜单</strong> → 选 <strong>Reset</strong>，物体瞬间回到原点、零旋转、单位缩放。</p></div>
 <img src="images/课件5/场景窗口 --- 移动 --- reset.gif" alt="Reset 归位" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="ok-box">💡 调乱了别慌，Reset 一键回出厂设置。</div>
+<div class="ok-box"><span class="eico">💡</span> 调乱了别慌，Reset 一键回出厂设置。</div>
 <h3>重叠处理</h3>
 <div class="card"><p>多个物体叠在一起看不清时，用查看工具或调整视角分开它们</p></div>
 <img src="images/课件5/场景窗口 --- 重叠处理.gif" alt="重叠处理" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="ok-box">💬 验收标准：把一个立方体从 (0,0,0) 精确移到 (3, 1, -2)，用输入框完成。</div>
+<div class="ok-box"><span class="eico">💬</span> 验收标准：把一个立方体从 (0,0,0) 精确移到 (3, 1, -2)，用输入框完成。</div>
 </div></div>
 <div class="slide" data-page="6"><div class="slide-inner markable">
 <h1>作业 — 四个物体并排</h1>
-<div class="ok-box">📌 承接上节课：把你在课件4中创建的 4 个物体（Cube / Sphere / Capsule / Cylinder）移动到 Plane 平面上，并排摆好。</div>
+<div class="ok-box"><span class="eico">📌</span> 承接上节课：把你在课件4中创建的 4 个物体（Cube / Sphere / Capsule / Cylinder）移动到 Plane 平面上，并排摆好。</div>
 <div class="card"><p><strong>要求</strong>：将 4 个物体并排摆在 <strong>Plane 平面上</strong>，满足以下三个条件。</p></div>
 <img src="images/课件5/作业四个物体总览.gif" alt="四个物体并排总览" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><p><strong>要求一：正面横向分布</strong></p><p>正交前视图 X 轴看：底端对齐，间隔 1 个单位</p></div>
@@ -535,9 +559,9 @@ function copyImgName(btn){
 <img src="images/课件5/作业侧面左端对齐.png" alt="侧面左端对齐" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><p><strong>要求三：悬浮于平面上方</strong></p><p>正交顶视图看：全部悬浮于平面上方</p></div>
 <img src="images/课件5/作业悬浮平面上方.png" alt="悬浮于平面上方" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="ok-box">💬 提示：先切到对应正交视图，再用输入框精确给坐标，比纯鼠标拖快得多。</div>
+<div class="ok-box"><span class="eico">💬</span> 提示：先切到对应正交视图，再用输入框精确给坐标，比纯鼠标拖快得多。</div>
 <h3>保存场景</h3>
-<div class="card"><ul><li>新建项目时，本地已有一个工程目录；&quot;保存&quot;实际是保存 <strong>Scene 场景</strong> 文件</li><li>场景文件格式为 <code>.unity</code>，默认放在 <strong><code>Assets/Scenes</code></strong> 目录下（如 <code>SampleScene.unity</code>）</li><li><code>Ctrl + S</code> 随时保存</li></ul></div><img src="images/课件5/保存场景.png" alt="保存场景截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box">⚠️ 实训室电脑每次关机还原，<strong>务必把工程存在不刷新的盘（如 D 盘）</strong>，可以在下课前把成果拷贝走，避免丢失。</div>
+<div class="card"><ul><li>新建项目时，本地已有一个工程目录；&quot;保存&quot;实际是保存 <strong>Scene 场景</strong> 文件</li><li>场景文件格式为 <code>.unity</code>，默认放在 <strong><code>Assets/Scenes</code></strong> 目录下（如 <code>SampleScene.unity</code>）</li><li><code>Ctrl + S</code> 随时保存</li></ul></div><img src="images/课件5/保存场景.png" alt="保存场景截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box"><span class="eico">⚠️</span> 实训室电脑每次关机还原，<strong>务必把工程存在不刷新的盘（如 D 盘）</strong>，可以在下课前把成果拷贝走，避免丢失。</div>
 </div></div>
 <div class="slide" data-page="7"><div class="slide-inner end-page">
 
@@ -702,7 +726,7 @@ function changeFont(d){
 
 let slides=document.querySelectorAll('.slide,.cover'),
     navLinks=document.querySelectorAll('.nav-link'),
-    curr=0,total=14,contentTotal=12;
+    curr=0,total=8,contentTotal=6;
 
 navLinks.forEach((l,i)=>l.addEventListener('click',e=>{e.preventDefault();showSlide(i);}));
 let dotsHtml='';
@@ -790,17 +814,45 @@ function doSearch(){
     });
 }
 
+// ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 hljs.highlightAll();

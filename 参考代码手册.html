@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>数字产品设计 · 参考代码手册</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <style>
   :root{--bg:#0f1115;--bg2:#171a21;--card:#1c2029;--border:#2a2f3a;--text:#e6e9ef;--muted:#9aa3b2;--accent:#00d4aa;--accent2:#4aa8ff;--green:#3ddc84;--warn:#ffb454;}
@@ -736,18 +737,46 @@ class Program
 </div>
 <script src="vendor/highlight.min.js"></script>
 <script>
+// ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(btn){
-  var card = btn.closest('.code-card');
-  var code = card.querySelector('code').innerText;
-  navigator.clipboard.writeText(code).then(function(){
-    btn.textContent='已复制'; btn.classList.add('done');
-    setTimeout(function(){btn.textContent='复制'; btn.classList.remove('done');},1500);
-  }).catch(function(){
-    var ta=document.createElement('textarea'); ta.value=code; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-    btn.textContent='已复制'; btn.classList.add('done');
-    setTimeout(function(){btn.textContent='复制'; btn.classList.remove('done');},1500);
-  });
+    let card=btn.closest('.code-card')||btn.closest('.code-block');
+    let node=card?card.querySelector('code'):null;
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.innerText;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 hljs.highlightAll();
 </script>

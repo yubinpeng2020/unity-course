@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件6_旋转缩放多选 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -339,6 +340,26 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
   border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
 .img-missing button:hover{border-color:var(--accent);color:var(--accent)}
 .img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -357,15 +378,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -439,7 +463,7 @@ function copyImgName(btn){
 
 
 <h3>重置与增量旋转</h3>
-<div class="card"><ul><li><strong>Reset</strong>：Transform 小菜单 → Reset，旋转归零</li></ul></div><img src="images/课件6/场景窗口 --- 旋转 --- reset.gif" alt="旋转 Reset" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><ul><li><strong>增量旋转</strong>：按住 <code>Ctrl</code> 键再拖圆环，按固定<strong>刻度（默认 15°）</strong> 一格一格转，方便对齐</li></ul></div><img src="images/课件6/场景窗口 --- 增量旋转.gif" alt="增量旋转 15°" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box">💡 做规整造型（如 90° 转角）时，按住 Ctrl 旋转，绝不手抖。</div>
+<div class="card"><ul><li><strong>Reset</strong>：Transform 小菜单 → Reset，旋转归零</li></ul></div><img src="images/课件6/场景窗口 --- 旋转 --- reset.gif" alt="旋转 Reset" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><ul><li><strong>增量旋转</strong>：按住 <code>Ctrl</code> 键再拖圆环，按固定<strong>刻度（默认 15°）</strong> 一格一格转，方便对齐</li></ul></div><img src="images/课件6/场景窗口 --- 增量旋转.gif" alt="增量旋转 15°" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box"><span class="eico">💡</span> 做规整造型（如 90° 转角）时，按住 Ctrl 旋转，绝不手抖。</div>
 
 </div></div>
 <div class="slide" data-page="4"><div class="slide-inner markable">
@@ -456,11 +480,11 @@ function copyImgName(btn){
 <div class="card"><p>缩放 / 旋转多个物体时，操作中心有两种算法：</p></div><div class="contest-row"><div class="card" style="flex:1"><ul><li><strong>Center（中心点）</strong>：以&quot;所有选中物体的整体中心&quot;为操作点</li></ul></div><img src="images/课件6/Center按钮.png" alt="Center 按钮" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:10%;height:auto;max-height:none;object-fit:contain" onerror="imgMissing(this)"></div><img src="images/课件6/场景窗口 - center 中心点缩放.gif" alt="Center 中心点缩放" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="contest-row"><div class="card" style="flex:1"><ul><li><strong>Pivot（轴心）</strong>：以&quot;最后一个选中物体的自身中心&quot;为操作点</li></ul></div><img src="images/课件6/Pivot按钮.png" alt="Pivot 按钮" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:10%;height:auto;max-height:none;object-fit:contain" onerror="imgMissing(this)"></div><img src="images/课件6/场景窗口 --- pivot 轴心缩放.gif" alt="Pivot 轴心缩放" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 为什么多选缩放时物体&quot;飞&quot;了？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">多半是 Center / Pivot 模式没选对。想整体一起缩放用 Center，想绕着某个物体转用 Pivot。</div></div>
 </div></div>
 <div class="slide" data-page="6"><div class="slide-inner markable"><h1>作业 — 物体操作造型</h1>
-<div class="ok-box">📌 <strong>新建 5 个立方体（Cube）</strong>，用缩放和旋转组合出一个造型。</div>
+<div class="ok-box"><span class="eico">📌</span> <strong>新建 5 个立方体（Cube）</strong>，用缩放和旋转组合出一个造型。</div>
 <img src="images/课件6/作业总览.png" alt="物体操作造型总览" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><p><strong>要求</strong>：对这 5 个立方体做<strong>缩放</strong>与<strong>旋转</strong>，参照示例或自创一个造型，然后在三个正交视图（Front / Left / Top）下检查是否&quot;站得正&quot;。</p></div>
 <img src="images/课件6/作业正交观察.png" alt="正交视图观察" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="ok-box">💬 验收标准：5 个立方体组成的造型在三个正交视图下都&quot;站得正&quot;，能说出哪个视图用来检查哪个方向的对齐。</div></div></div>
+<div class="ok-box"><span class="eico">💬</span> 验收标准：5 个立方体组成的造型在三个正交视图下都&quot;站得正&quot;，能说出哪个视图用来检查哪个方向的对齐。</div></div></div>
 <div class="slide" data-page="7"><div class="slide-inner end-page">
 
 <div class="end-thanks">
@@ -725,18 +749,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

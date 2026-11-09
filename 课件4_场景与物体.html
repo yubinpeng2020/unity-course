@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件4_场景与物体 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -347,6 +348,26 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
   border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
 .img-missing button:hover{border-color:var(--accent);color:var(--accent)}
 .img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -365,15 +386,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -448,11 +472,11 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="3"><div class="slide-inner markable">
 <h1>界面快速回顾</h1>
-<img src="images/课件4/p3_1.png" alt="Unity六大视图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>六大视图</h3><ul><li><strong>Scene 场景视图</strong>：编辑物体的主舞台，可以看到整个 3D 世界</li><li><strong>Game 游戏视图</strong>：模拟玩家视角，预览游戏运行效果</li><li><strong>Hierarchy 层级视图</strong>：列出场景中所有物体，管理父子关系</li><li><strong>Project 项目视图</strong>：存放所有资源文件（模型、贴图、脚本）</li><li><strong>Inspector 检视视图</strong>：查看/修改选中物体的属性与组件</li><li><strong>工具栏 + 菜单栏</strong>：常用操作入口</li></ul></div><div class="ok-box">💡 记忆口诀：Scene 是&quot;世界&quot;，Game 是&quot;眼睛&quot;，Hierarchy 是&quot;目录&quot;，Project 是&quot;仓库&quot;，Inspector 是&quot;属性面板&quot;。</div><button class="fold-toggle qa no-answer" style="cursor:default;opacity:.85">❓ 如何添加一个立方体呢？</button>
+<img src="images/课件4/p3_1.png" alt="Unity六大视图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>六大视图</h3><ul><li><strong>Scene 场景视图</strong>：编辑物体的主舞台，可以看到整个 3D 世界</li><li><strong>Game 游戏视图</strong>：模拟玩家视角，预览游戏运行效果</li><li><strong>Hierarchy 层级视图</strong>：列出场景中所有物体，管理父子关系</li><li><strong>Project 项目视图</strong>：存放所有资源文件（模型、贴图、脚本）</li><li><strong>Inspector 检视视图</strong>：查看/修改选中物体的属性与组件</li><li><strong>工具栏 + 菜单栏</strong>：常用操作入口</li></ul></div><div class="ok-box"><span class="eico">💡</span> 记忆口诀：Scene 是&quot;世界&quot;，Game 是&quot;眼睛&quot;，Hierarchy 是&quot;目录&quot;，Project 是&quot;仓库&quot;，Inspector 是&quot;属性面板&quot;。</div><button class="fold-toggle qa no-answer" style="cursor:default;opacity:.85">❓ 如何添加一个立方体呢？</button>
 </div></div>
 <div class="slide" data-page="4"><div class="slide-inner markable">
 <h1>新增物体 — 添加立方体</h1>
-<div class="card"><h3>方法一：菜单栏添加</h3><ol><li>点击菜单栏 <code>GameObject（游戏对象）</code> → <code>3D Object（3D对象）</code> → <code>Cube（立方体）</code></li><li>一个立方体立刻出现在场景中</li></ol></div><img src="images/课件4/p4_1.png" alt="添加立方体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>方法二：右键添加（推荐）</h3><ol><li>在 <code>Hierarchy 层级视图</code> 空白处<strong>右键</strong></li><li>选择 <code>3D Object（3D对象）</code> → <code>Cube（立方体）</code></li></ol></div><img src="images/课件4/p4_2.png" alt="右键添加过程" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div style="margin-bottom:16px"><div class="card"><ul><li>Hierarchy 层级视图又名<strong>节点管理器</strong></li><li>场景中每一个物体，都会在层级视图中对应一个<strong>结点</strong></li><li>新增的物体自动出现在层级视图列表末尾</li></ul></div><img src="images/课件4/p5_1.png" alt="层级视图中的结点" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card"><h3>物体出生地：视野中心</h3><ul><li>新增物体默认出现在<strong>视野中心</strong>附近</li><li>移动视野后，新物体仍会出现在<strong>场景原点</strong>附近（而不是新的视野中心）</li></ul></div><img src="images/课件4/场景窗口 --- 视野中心 --- 创建多个物体.gif" alt="连续创建多个物体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box">🎬 操作演示：连续创建多个物体，观察它们都出现在同一位置。</div><div class="card"><h3>让物体回到视野中心：按 F</h3><ul><li>在 Scene 视图中<strong>选中物体</strong>，按键盘 <strong>F 键</strong>，摄像机自动聚焦到该物体</li><li>视野&quot;飞&quot;到物体旁边，方便查看</li></ul></div><img src="images/课件4/场景窗口 - 视野中心 - F.gif" alt="按F聚焦物体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 为什么新增的立方体会出现在&quot;视野中心&quot;，而不是别的位置？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">因为新物体默认生成在场景原点附近，而编辑器视野默认看向原点，所以&quot;看起来&quot;正好在视野中心。</div></div>
+<div class="card"><h3>方法一：菜单栏添加</h3><ol><li>点击菜单栏 <code>GameObject（游戏对象）</code> → <code>3D Object（3D对象）</code> → <code>Cube（立方体）</code></li><li>一个立方体立刻出现在场景中</li></ol></div><img src="images/课件4/p4_1.png" alt="添加立方体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>方法二：右键添加（推荐）</h3><ol><li>在 <code>Hierarchy 层级视图</code> 空白处<strong>右键</strong></li><li>选择 <code>3D Object（3D对象）</code> → <code>Cube（立方体）</code></li></ol></div><img src="images/课件4/p4_2.png" alt="右键添加过程" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div style="margin-bottom:16px"><div class="card"><ul><li>Hierarchy 层级视图又名<strong>节点管理器</strong></li><li>场景中每一个物体，都会在层级视图中对应一个<strong>结点</strong></li><li>新增的物体自动出现在层级视图列表末尾</li></ul></div><img src="images/课件4/p5_1.png" alt="层级视图中的结点" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="card"><h3>物体出生地：视野中心</h3><ul><li>新增物体默认出现在<strong>视野中心</strong>附近</li><li>移动视野后，新物体仍会出现在<strong>场景原点</strong>附近（而不是新的视野中心）</li></ul></div><img src="images/课件4/场景窗口 --- 视野中心 --- 创建多个物体.gif" alt="连续创建多个物体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box"><span class="eico">🎬</span> 操作演示：连续创建多个物体，观察它们都出现在同一位置。</div><div class="card"><h3>让物体回到视野中心：按 F</h3><ul><li>在 Scene 视图中<strong>选中物体</strong>，按键盘 <strong>F 键</strong>，摄像机自动聚焦到该物体</li><li>视野&quot;飞&quot;到物体旁边，方便查看</li></ul></div><img src="images/课件4/场景窗口 - 视野中心 - F.gif" alt="按F聚焦物体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 为什么新增的立方体会出现在&quot;视野中心&quot;，而不是别的位置？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">因为新物体默认生成在场景原点附近，而编辑器视野默认看向原点，所以&quot;看起来&quot;正好在视野中心。</div></div>
 </div></div>
 <div class="slide" data-page="5"><div class="slide-inner markable">
 <h1>原生物体 — 3D Object</h1>
@@ -466,11 +490,11 @@ function copyImgName(btn){
 <h1>摄像机 · 光源 · 新增</h1>
 <div class="card"><ul><li><strong>Main Camera 主摄像机 = 用户的眼睛</strong></li><li>Game 游戏窗口中看到的内容，就是摄像机&quot;看&quot;到的内容</li><li>新建场景默认自带一台主摄像机</li></ul></div><img src="images/课件4/p8_1.png" alt="初始场景：主摄像机与定向光" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>移动摄像机，改变视角</h3><ul><li>在 Scene 中选中摄像机物体，用移动工具拖动</li><li>Game 窗口中的画面会跟着改变</li></ul></div><img src="images/课件4/场景窗口 --- 主摄像机 --- 移动.gif" alt="移动主摄像机" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 如果场景里没有摄像机，运行游戏会看到什么？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">会看到一片黑屏或空白——因为没有任何&quot;眼睛&quot;在观察场景。</div></div>
 <div class="card"><h3>定向光 Directional Light = 太阳</h3><ul><li>光从无穷远处平行照射，场景物体都会受光</li><li>新建场景默认自带一束定向光</li></ul></div><img src="images/课件4/p9_1.png" alt="定向光" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:90%" onerror="imgMissing(this)"><div style="display:flex;gap:12px;width:100%"><div style="flex:1"><p style="text-align:center;margin-bottom:4px;font-weight:600">有平行光源</p><img src="images/课件4/p9_2.png" alt="有光" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;width:100%" onerror='this.style.display="none"'></div><div style="flex:1"><p style="text-align:center;margin-bottom:4px;font-weight:600">无平行光源</p><img src="images/课件4/p9_3.png" alt="无光" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;width:100%" onerror='this.style.display="none"'></div></div><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">删掉光源后，场景会<strong>变暗/变黑</strong>（新物体呈现暗色，材质颜色无法正确显示）。所以光源是场景中不可或缺的&quot;太阳&quot;。</div>
-<div class="card"><h3>新增摄像机与光源</h3><p><strong>新增摄像机</strong>：菜单栏 <code>GameObject（游戏对象）</code> → <code>Camera（摄像机）</code></p><p><strong>新增光源</strong>：菜单栏 <code>GameObject（游戏对象）</code> → <code>Light（光源）</code> → <code>Directional Light（平行光）</code>（或 <code>Point Light（点光源）</code> 等）</p></div><img src="images/课件4/p10_1.png" alt="新增摄像机" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件4/p10_2.png" alt="新增光源" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box">💡 一个场景可以有多台摄像机、多个光源。多摄像机可以切换视角，多光源可以实现丰富的照明效果（本课先用默认的单机单光即可）。</div>
+<div class="card"><h3>新增摄像机与光源</h3><p><strong>新增摄像机</strong>：菜单栏 <code>GameObject（游戏对象）</code> → <code>Camera（摄像机）</code></p><p><strong>新增光源</strong>：菜单栏 <code>GameObject（游戏对象）</code> → <code>Light（光源）</code> → <code>Directional Light（平行光）</code>（或 <code>Point Light（点光源）</code> 等）</p></div><img src="images/课件4/p10_1.png" alt="新增摄像机" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件4/p10_2.png" alt="新增光源" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box"><span class="eico">💡</span> 一个场景可以有多台摄像机、多个光源。多摄像机可以切换视角，多光源可以实现丰富的照明效果（本课先用默认的单机单光即可）。</div>
 </div></div>
 <div class="slide" data-page="8"><div class="slide-inner markable">
 <h1>天空盒 SkyBox</h1>
-<div class="card"><p><strong>天空</strong> 与 <strong>地面</strong>：场景除了物体，还有头顶的天空背景和脚下的地面参考</p></div><img src="images/课件4/p11_1.gif" alt="天空与地面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>什么是天空盒？</h3><ul><li><strong>SkyBox 天空盒</strong>：包裹整个场景的背景，像一张巨大的&quot;天空贴图&quot;</li><li>默认天空盒是蓝色渐变，看起来像白天</li></ul></div><img src="images/课件4/p11_skybox_switch.png" alt="天空盒开关位置" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件4/p11_2.gif" alt="天空盒动态效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>替换天空盒</h3><p>想换一个天空背景？操作步骤：</p><ol><li>菜单栏 <code>Window（窗口）</code> → <code>Rendering（渲染）</code> → <code>Lighting（照明）</code></li><li>打开 <strong>Environment 环境</strong> 面板</li><li>找到 <strong>Skybox Material</strong>，点击圆点选择新的天空盒材质</li></ol></div><div class="contest-row"><img src="images/课件4/p12_1.png" alt="照明窗口" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件4/p12_2.gif" alt="替换天空盒演示" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="ok-box">💡 默认天空盒材质在 <code>Assets</code> 里看不到？可以先从官方资源包或 Asset Store 下载天空盒素材（第 8 课&quot;网格与材质&quot;会详细介绍材质与资源导入）。</div>
+<div class="card"><p><strong>天空</strong> 与 <strong>地面</strong>：场景除了物体，还有头顶的天空背景和脚下的地面参考</p></div><img src="images/课件4/p11_1.gif" alt="天空与地面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>什么是天空盒？</h3><ul><li><strong>SkyBox 天空盒</strong>：包裹整个场景的背景，像一张巨大的&quot;天空贴图&quot;</li><li>默认天空盒是蓝色渐变，看起来像白天</li></ul></div><img src="images/课件4/p11_skybox_switch.png" alt="天空盒开关位置" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件4/p11_2.gif" alt="天空盒动态效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>替换天空盒</h3><p>想换一个天空背景？操作步骤：</p><ol><li>菜单栏 <code>Window（窗口）</code> → <code>Rendering（渲染）</code> → <code>Lighting（照明）</code></li><li>打开 <strong>Environment 环境</strong> 面板</li><li>找到 <strong>Skybox Material</strong>，点击圆点选择新的天空盒材质</li></ol></div><div class="contest-row"><img src="images/课件4/p12_1.png" alt="照明窗口" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件4/p12_2.gif" alt="替换天空盒演示" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div><div class="ok-box"><span class="eico">💡</span> 默认天空盒材质在 <code>Assets</code> 里看不到？可以先从官方资源包或 Asset Store 下载天空盒素材（第 8 课&quot;网格与材质&quot;会详细介绍材质与资源导入）。</div>
 </div></div>
 <div class="slide" data-page="9"><div class="slide-inner markable">
 <h1>场景辅助 — Grid 栅格</h1>
@@ -479,7 +503,7 @@ function copyImgName(btn){
 <div class="slide" data-page="10"><div class="slide-inner markable">
 <h1>课堂练习 — 创建你的第一个场景</h1>
 <div class="card"><h3>要求</h3><ol><li>在上节课创建的 <code>MyUnityLab</code> 工程中，依次创建 <strong>Cube 立方体、Sphere 球体、Capsule 胶囊体、Cylinder 圆柱体</strong>（共 4 个物体，不含 Plane 平面）</li><li>给每个物体<strong>修改命名</strong>（如 <code>MyCube</code>、<code>MySphere</code>…），不要用默认名</li></ol></div>
-<div class="ok-box">⚠️ <strong>重要提醒</strong>：这些物体是后续课程的操作对象——下节课会给它们移动位置，请保留好这个场景。</div>
+<div class="ok-box"><span class="eico">⚠️</span> <strong>重要提醒</strong>：这些物体是后续课程的操作对象——下节课会给它们移动位置，请保留好这个场景。</div>
 </div></div>
 <div class="slide" data-page="11"><div class="slide-inner end-page">
 
@@ -745,18 +769,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========

@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>课件10_资源商店与模型资源 — C#先知课堂</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
 <style>
@@ -349,6 +350,26 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
   border:1px solid var(--border);background:var(--bg-card);color:var(--text);transition:border-color .15s,color .15s}
 .img-missing button:hover{border-color:var(--accent);color:var(--accent)}
 .img-missing .im-dir{width:100%;font-size:11.5px;opacity:.75;margin-top:2px}
+/* ===== UI：右侧拖动轴 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.035);border-radius:5px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00D4AA 0%,#4FC3F7 100%);border-radius:5px;box-shadow:0 0 8px rgba(0,212,170,0.45)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#2EE9C3 0%,#7FD8FF 100%);box-shadow:0 0 12px rgba(0,212,170,0.7)}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#00B894 0%,#2196F3 100%)}
+.light ::-webkit-scrollbar-track{background:rgba(0,0,0,0.05)}
+.light ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0969da 0%,#4FC3F7 100%);box-shadow:0 0 6px rgba(9,105,218,0.35)}
+
+/* ===== UI：卡片图标悬浮跳动 ===== */
+/* 想关掉「待机时轻微浮动」就注释掉下面这条 animation */
+.eico,.goal-icon{animation:iconFloat 3s ease-in-out infinite}
+.eico{display:inline-block}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ok-box:hover .eico,.warn-box:hover .eico,.card:hover .eico,
+.goal-card:hover .goal-icon,.card:hover .goal-icon{animation:iconBounce .6s ease}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-8px) scale(1.2)}100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.eico,.goal-icon{animation:none!important}}
+@media print{.eico,.goal-icon{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -367,15 +388,18 @@ function imgMissing(img){
     if(img.parentNode) img.parentNode.replaceChild(d,img);
 }
 function copyImgName(btn){
-    const name=btn.parentNode.querySelector('.im-name').textContent;
-    const done=()=>{btn.textContent='✅ 已复制';setTimeout(()=>{btn.textContent='复制文件名';},1600);};
-    const fb=()=>{const ta=document.createElement('textarea');ta.value=name;
-        ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);done();};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(name).then(done).catch(fb);
-    }else{fb();}
+    const el=btn.parentNode.querySelector('.im-name');
+    const name=el?el.textContent:'';
+    const done=()=>{btn.textContent='✅ 已复制';clearTimeout(btn.__ft);
+        btn.__ft=setTimeout(()=>{btn.textContent='复制文件名';},1600);};
+    const fail=()=>{if(el)copySelect(el);btn.textContent='已选中';};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(name).then(done,()=>{copyLegacy(name)?done():fail();});
+            return;
+        }
+    }catch(e){}
+    copyLegacy(name)?done():fail();
 }
 </script>
 
@@ -489,7 +513,7 @@ function copyImgName(btn){
 <img src="images/课件10/离线包5-导入完成.png" alt="导入完成后 Project 窗口里多出的资源文件夹" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>两条路，什么时候走哪条</h3>
 <table><tr><th>对比</th><th>资源商店</th><th>本地资源包</th></tr><tr><td>要不要网</td><td>要，还得登录账号</td><td>不要，文件在手就能导</td></tr><tr><td>怎么拿</td><td>网页获取 → 包管理器下载</td><td>别人发给你，自己下载到本地</td></tr><tr><td>进工程的样子</td><td>Assets 下一个资源文件夹</td><td>一模一样</td></tr><tr><td>有没有记录</td><td>账号里的「我的资源」记着获取过的资源</td><td>没有，包丢了就得重找</td></tr></table></div>
-<div class="ok-box">⚠️ <strong>把 .unitypackage 当成压缩包，是最常见的误会</strong><br>它不能解压、双击也没反应，只能在 Unity 里走「导入包」这条路。包里也不带商店的获取记录，换电脑要用，就把包留好。</div>
+<div class="ok-box"><span class="eico">⚠️</span> <strong>把 .unitypackage 当成压缩包，是最常见的误会</strong><br>它不能解压、双击也没反应，只能在 Unity 里走「导入包」这条路。包里也不带商店的获取记录，换电脑要用，就把包留好。</div>
 </div></div>
 <div class="slide" data-page="9"><div class="slide-inner markable">
 <h1>导出资源包 · 导出（Export Package）</h1>
@@ -502,7 +526,7 @@ function copyImgName(btn){
 <img src="images/课件10/导出包3-导出窗口.png" alt="导出窗口：取消包含依赖项后点导出" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>④ 对方怎么用</h3><ul><li>拿到包的人走<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">页面7「离线资源包」</mark>那三步：导入包 → 自定义包 → 全选 → 导入</li></ul></div>
 <div class="card"><h3>三条要注意</h3><ul><li><strong>版本尽量一致</strong>：本课统一用 Unity 2022.3 LTS。高版本导出的包拿到低版本里打开，可能丢组件、报错</li><li><strong>只打自己做的东西</strong>：商店资源有授权限制，别人的包未必能用，体积还特别大</li><li><strong>依赖没打进去，对方会缺东西</strong>：预制体发灰、材质丢失，就是缺依赖；确实要一起发，就把相关文件夹一起选中再导出</li></ul></div>
-<div class="ok-box">💡 <strong>资源包是「离线快递」，不是备份</strong><br>它只装你选中的那几个文件夹。整个工程要留底，还是整份拷贝，或者放进版本管理。</div>
+<div class="ok-box"><span class="eico">💡</span> <strong>资源包是「离线快递」，不是备份</strong><br>它只装你选中的那几个文件夹。整个工程要留底，还是整份拷贝，或者放进版本管理。</div>
 </div></div>
 <div class="slide" data-page="10"><div class="slide-inner markable">
 <h1>使用地形资源</h1>
@@ -577,7 +601,7 @@ function copyImgName(btn){
 <li>场景里的<strong>天空盒已更换</strong>为你导入的材质（不是默认天空）；<strong>人物预制体</strong>和<strong>动物预制体</strong>都确实加入场景并站在地形上</li>
 <li>提交时<strong>截图或录屏</strong>展示场景，能看出是<strong>人物 + 动物 + 天空盒 + 地形</strong>组合</li>
 </ul></div>
-<div class="ok-box">⚠️ 嫌一个个摆太麻烦？很多资源包在 <code>Assets/资源名/Scenes</code> 下附带<strong>做好的 Demo 场景</strong>，双击就能打开参考（做法见<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">页面9 ⑤</mark>）。</div>
+<div class="ok-box"><span class="eico">⚠️</span> 嫌一个个摆太麻烦？很多资源包在 <code>Assets/资源名/Scenes</code> 下附带<strong>做好的 Demo 场景</strong>，双击就能打开参考（做法见<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">页面9 ⑤</mark>）。</div>
 </div></div>
 <div class="slide" data-page="13"><div class="slide-inner end-page">
 
@@ -843,18 +867,44 @@ function doSearch(){
 }
 
 // ========== 复制 ==========
+function copyFlash(btn,txt,ms){
+    btn.textContent=txt;btn.classList.add('copied');
+    clearTimeout(btn.__ft);
+    btn.__ft=setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},ms||2000);
+}
+function copyLegacy(text){
+    try{
+        let ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();ta.setSelectionRange(0,ta.value.length);
+        let ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    }catch(e){return false;}
+}
+function copySelect(node){
+    try{
+        let r=document.createRange();r.selectNodeContents(node);
+        let s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+}
+// 复制分三层兜底：① 剪贴板 API（https / localhost）② execCommand（http / file / 内嵌预览）
+// ③ 都失败时选中代码并提示手动复制 —— 绝不谎报"已复制"
 function copyCode(cid,btn){
-    let code=document.getElementById(cid).textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-        // fallback
-        let ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');document.body.removeChild(ta);
-        btn.textContent='✅ 已复制';btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);
-    });
+    let node=document.getElementById(cid);
+    if(!node){copyFlash(btn,'复制失败',1800);return;}
+    let code=node.textContent;
+    let fail=()=>{copySelect(node);copyFlash(btn,'已选中，按 Ctrl/⌘+C',3200);};
+    let legacy=()=>{copyLegacy(code)?copyFlash(btn,'✅ 已复制'):fail();};
+    try{
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+            navigator.clipboard.writeText(code).then(()=>copyFlash(btn,'✅ 已复制'),legacy);
+            return;
+        }
+    }catch(e){}
+    legacy();
 }
 
 // ========== 初始化 ==========
