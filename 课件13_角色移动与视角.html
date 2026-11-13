@@ -304,7 +304,60 @@ html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microso
 .mobile-more-menu.open{display:block}
 .mobile-more-menu .mm-item{display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--text);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .2s}
 .mobile-more-menu .mm-item:hover{background:var(--accent-dim);color:var(--accent)}
-@media(max-width:768px){.sidebar{display:none}.slide-inner{padding:18px 18px 80px}.cover{padding-left:40px;padding-right:40px}.cover h1{font-size:32px}.nav-buttons{right:12px;bottom:12px}.header-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap}.header-btn[onclick="toggleTheme()"]{padding:6px 6px}.progress-wrap{display:none}.header-dropdown{display:none}.header-btn[onclick^="changeFont"]{display:none}.header-btn[onclick="openSearch()"]{display:none}.header-btn[onclick="toggleHelp()"]{display:none}.mobile-info{display:flex;align-items:center;gap:2px}.mi-page{display:none}.mobile-more{display:inline-block}.slides-container{min-height:calc(100vh - 54px)}}
+@media(max-width:768px){
+.sidebar{display:none}
+.slide-inner{padding:18px 18px 80px}
+.cover{padding-left:40px;padding-right:40px}
+.cover h1{font-size:32px}
+/* 底部导航条：按钮分居两端，页码点居中横向滚动，互不遮挡 */
+.nav-buttons{left:0;right:0;bottom:0;height:56px;padding:0 8px;align-items:center;justify-content:space-between;background:rgba(10,14,39,0.94);border-top:1px solid var(--border);backdrop-filter:blur(10px);z-index:120}
+.light .nav-buttons{background:rgba(255,255,255,0.94)}
+.nav-btn{padding:9px 14px;font-size:12px;border-radius:9px}
+.progress-dots{left:94px;right:94px;bottom:0;height:56px;transform:none;gap:0;align-items:center;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;padding:0 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none;z-index:121}
+.progress-dots::-webkit-scrollbar{display:none}
+.progress-dot{flex:0 0 auto;width:8px;height:8px;margin:0 8px;position:relative}
+.progress-dot::after{content:'';position:absolute;left:50%;top:50%;width:26px;height:26px;transform:translate(-50%,-50%)}
+.header-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap}
+.header-btn[onclick="toggleTheme()"]{padding:6px 6px}
+.progress-wrap{display:none}
+.header-dropdown{display:none}
+.header-btn[onclick^="changeFont"]{display:none}
+.header-btn[onclick="openSearch()"]{display:none}
+.header-btn[onclick="toggleHelp()"]{display:none}
+.mobile-info{display:flex;align-items:center;gap:2px}
+.mi-page{font-variant-numeric:tabular-nums;font-size:12px;color:var(--accent2);flex:0 0 auto}
+.mi-lesson{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mi-sep{flex:0 0 auto}
+.mobile-more{display:inline-block}
+.slides-container{min-height:calc(100vh - 54px)}
+}
+
+/* 超窄屏：藏掉与 ☰ 菜单重复的「平铺 / 图下」，保证信息条和页码不被挤掉 */
+@media(max-width:420px){
+.header-bar{gap:4px;padding:6px 8px}
+.header-btn{padding:6px 7px;font-size:11px}
+.header-btn[onclick="toggleFlat()"],.header-btn[onclick="toggleImgBottom()"]{display:none}
+}
+
+/* ===== 页面跳转面板（手机上快速翻页） ===== */
+.page-sheet{display:none;position:fixed;inset:0;z-index:300}
+.page-sheet.open{display:block}
+.page-sheet-mask{position:absolute;inset:0;background:rgba(0,0,0,0.55);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.page-sheet-panel{position:absolute;left:0;right:0;bottom:0;max-height:72vh;display:flex;flex-direction:column;background:var(--bg-card);border-top:1px solid var(--border);border-radius:16px 16px 0 0;box-shadow:0 -12px 36px rgba(0,0,0,0.45);animation:sheetUp .22s ease-out}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.page-sheet-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;font-size:14px;font-weight:600;color:var(--text);border-bottom:1px solid var(--border)}
+.page-sheet-tip{font-size:12px;font-weight:400;color:var(--text-muted);margin-left:8px}
+.page-sheet-x{font-size:15px;line-height:1;color:var(--text-muted);padding:6px 8px;cursor:pointer;border-radius:6px}
+.page-sheet-x:hover{color:var(--accent);background:var(--accent-dim)}
+.page-sheet-list{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 0 calc(12px + env(safe-area-inset-bottom))}
+.page-sheet-item{display:flex;gap:10px;align-items:baseline;padding:11px 18px;font-size:13px;color:var(--text);cursor:pointer;line-height:1.45;transition:background .15s}
+.page-sheet-item:hover{background:rgba(127,127,127,0.08)}
+.page-sheet-item:active{background:var(--accent-dim)}
+.page-sheet-item .ps-num{flex:0 0 26px;color:var(--text-muted);font-variant-numeric:tabular-nums;font-size:12px}
+.page-sheet-item .ps-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.page-sheet-item.active{background:var(--accent-dim);color:var(--accent);font-weight:600}
+.page-sheet-item.active .ps-num{color:var(--accent)}
+@media print{.page-sheet{display:none!important}}
 /* ===== 平铺模式（连续显示全部页面，用于导出 PDF） ===== */
 html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 .flat-mode .container{height:auto;overflow:visible}
@@ -318,6 +371,7 @@ html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 .flat-mode .cover{position:static;opacity:1!important;transform:none!important;pointer-events:auto;height:auto;overflow:visible;margin:0 0 28px;border:1px solid var(--border);border-radius:14px}
 .flat-mode .nav-buttons{display:none}
 .flat-mode .progress-dots{display:none}
+.flat-mode .page-sheet{display:none!important}
 .flat-mode .header-bar{position:sticky;top:0}
 /* ===== 图片显示模式（右侧小图 / 下方大图） ===== */
 .img-bottom .card .card-img{float:none;display:block;width:100%;max-width:100%;max-height:none;margin:16px auto 4px}
@@ -409,7 +463,7 @@ function copyImgName(btn){
             <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
             <span class="progress-text" id="progressText">0 / 5</span>
         </div>
-        <div class="mobile-info" id="mobileInfo" onclick="mobileInfoTap()" style="cursor:pointer"><span class="mi-lesson"></span><span class="mi-sep">·</span><span class="mi-page"></span></div>
+        <div class="mobile-info" id="mobileInfo" onclick="mobileInfoTap()" title="点击选择页面" style="cursor:pointer"><span class="mi-lesson"></span><span class="mi-sep">·</span><span class="mi-page"></span></div>
                 <button class="header-btn" id="flatBtn" onclick="toggleFlat()" title="切换分页 / 平铺（平铺便于打印导出 PDF）">📄 平铺</button>
         <button class="header-btn" id="imgBtn" onclick="toggleImgBottom()" title="切换图片显示位置（右侧小图 / 下方大图）">🖼️ 图下</button>
 
@@ -430,6 +484,7 @@ function copyImgName(btn){
         <div class="mobile-more">
           <button class="header-btn" onclick="toggleMobileMore()" title="更多">☰</button>
           <div class="mobile-more-menu" id="mobileMoreMenu">
+            <div class="mm-item" onclick="mobileAction('pages')">📑 页面跳转</div>
             <div class="mm-item" onclick="mobileAction('ide')">💻 在线编辑器</div>
             <div class="mm-item" onclick="mobileAction('fontDown')">🔤 A- 缩小字号</div>
             <div class="mm-item" onclick="mobileAction('fontUp')">🔤 A+ 放大字号</div>
@@ -685,12 +740,22 @@ controller.Move(move * speed * Time.deltaTime);</code></pre>
     <button class="nav-btn" id="nextBtn" onclick="goSlide(1)">下一页 ▶</button>
 </div>
 <div class="progress-dots" id="progressDots"></div>
+<div class="page-sheet" id="pageSheet">
+    <div class="page-sheet-mask" onclick="closePageSheet()"></div>
+    <div class="page-sheet-panel">
+        <div class="page-sheet-head">
+            <span>页面跳转<span class="page-sheet-tip" id="pageSheetTip"></span></span>
+            <span class="page-sheet-x" onclick="closePageSheet()">✕</span>
+        </div>
+        <div class="page-sheet-list" id="pageSheetList"></div>
+    </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
 window.__CATALOG__ = [{"file": "课件1_认识Unity与课程介绍.html", "label": "课件1 · 认识Unity与课程介绍"}, {"file": "课件2_注册与安装软件.html", "label": "课件2 · 注册与安装软件"}, {"file": "课件3_Unity引擎概览.html", "label": "课件3 · Unity引擎概览"}, {"file": "课件4_场景与物体.html", "label": "课件4 · 场景与物体"}, {"file": "课件5_移动视野与物体.html", "label": "课件5 · 移动视野与物体"}, {"file": "课件6_旋转缩放多选.html", "label": "课件6 · 旋转缩放多选"}, {"file": "课件7_网格与材质.html", "label": "课件7 · 网格与材质"}, {"file": "课件8_C#核心语法.html", "label": "课件8 · C#核心语法"}, {"file": "课件9_Fbx导入与脚本入门.html", "label": "课件9 · Fbx导入与脚本入门"}, {"file": "课件10_资源商店与模型资源.html", "label": "课件10 · 资源商店与模型资源"}, {"file": "课件11_键盘控制移动.html", "label": "课件11 · 键盘控制移动"}, {"file": "课件12_刚体与碰撞体.html", "label": "课件12 · 刚体与碰撞体"}, {"file": "课件13_角色移动与视角.html", "label": "课件13 · 角色移动与视角"}, {"file": "课件14_访问其他游戏对象.html", "label": "课件14 · 访问其他游戏对象"}, {"file": "课件15_游戏管理器与生成物体.html", "label": "课件15 · 游戏管理器与生成物体"}, {"file": "课件16_动物自由巡游与定点巡逻.html", "label": "课件16 · 动物自由巡游与定点巡逻"}, {"file": "课件17_走近动物跟着走.html", "label": "课件17 · 走近动物跟着走"}, {"file": "课件18_动物交互动画切换.html", "label": "课件18 · 动物交互动画切换"}, {"file": "课件19_视线检测与图层.html", "label": "课件19 · 视线检测与图层"}, {"file": "课件20_玩家血条与被接触攻击.html", "label": "课件20 · 玩家血条与被接触攻击"}, {"file": "课件21_死亡与游戏管理器.html", "label": "课件21 · 死亡与游戏管理器"}, {"file": "课件22_撤离点与粒子系统.html", "label": "课件22 · 撤离点与粒子系统"}, {"file": "课件23_启动页面.html", "label": "课件23 · 启动页面"}, {"file": "课件24_FPS场景玩家武器.html", "label": "课件24 · FPS场景玩家武器"}, {"file": "课件25_射击准心与鼠标锁定.html", "label": "课件25 · 射击准心与鼠标锁定"}, {"file": "课件26_消灭敌人与孵化器.html", "label": "课件26 · 消灭敌人与孵化器"}, {"file": "课件27_拾取物品.html", "label": "课件27 · 拾取物品"}, {"file": "课件28_更换枪械.html", "label": "课件28 · 更换枪械"}, {"file": "课件29_修改动画状态机.html", "label": "课件29 · 修改动画状态机"}, {"file": "课件30_NPC对话.html", "label": "课件30 · NPC对话"}, {"file": "课件31_NPC对话进阶.html", "label": "课件31 · NPC对话进阶"}, {"file": "课件32_任务队列.html", "label": "课件32 · 任务队列"}];
 let LESSON_LABEL='';(function(){
-  let cur=window.location.pathname.split('/').pop();
+  let cur=decodeURIComponent(window.location.pathname.split('/').pop());
   let items=window.__CATALOG__||[];
   for(let i=0;i<items.length;i++){if(items[i].file===cur){LESSON_LABEL=items[i].label;break}}
   if(!LESSON_LABEL)LESSON_LABEL=document.title.split(' — ')[0]||'';
@@ -700,7 +765,8 @@ let LESSON_LABEL='';(function(){
 function toggleMobileMore(){document.getElementById('mobileMoreMenu').classList.toggle('open')}
 function mobileAction(act){
   document.getElementById('mobileMoreMenu').classList.remove('open');
-  if(act==='ide'){let m=document.getElementById('ideMenu');if(m)m.classList.add('show')}
+  if(act==='pages')openPageSheet();
+  else if(act==='ide'){let m=document.getElementById('ideMenu');if(m)m.classList.add('show')}
   else if(act==='fontDown')changeFont(-1);
   else if(act==='fontUp')changeFont(1);
   else if(act==='search')openSearch();
@@ -713,7 +779,64 @@ document.addEventListener('click',function(e){
   if(mm&&mm.classList.contains('open')&&!e.target.closest('.mobile-more'))mm.classList.remove('open');
 });
 // 点击移动端信息条跳转下一页
-function mobileInfoTap(){goSlide(1)}
+// 点击移动端信息条：打开页面跳转面板
+function mobileInfoTap(){openPageSheet()}
+// ========== 页面跳转面板（手机上快速翻页） ==========
+function psEscape(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function buildPageSheet(){
+  const list=document.getElementById('pageSheetList');
+  if(!list||list.children.length)return;
+  let h='';
+  slides.forEach(function(s,i){
+    const t=s.querySelector('h1,h2,h3');
+    let title=t?t.textContent.trim():'第'+(i+1)+'页';
+    title=title.replace(/\s+/g,' ');
+    if(title.length>40)title=title.slice(0,40)+'…';
+    h+='<div class="page-sheet-item" data-idx="'+i+'" onclick="jumpSlide('+i+')">'+
+       '<span class="ps-num">'+(i+1)+'</span>'+
+       '<span class="ps-title">'+psEscape(title)+'</span></div>';
+  });
+  list.innerHTML=h;
+}
+function markPageSheet(){
+  document.querySelectorAll('.page-sheet-item').forEach(function(el){
+    el.classList.toggle('active',Number(el.dataset.idx)===curr);
+  });
+  const tip=document.getElementById('pageSheetTip');
+  if(tip)tip.textContent='· 第 '+(curr+1)+' / '+total+' 页';
+  const act=document.querySelector('.page-sheet-item.active');
+  const box=document.getElementById('pageSheet');
+  if(act&&act.scrollIntoView&&box&&box.classList.contains('open')){
+    try{act.scrollIntoView({block:'center',behavior:'auto'});}catch(e){}
+  }
+}
+function openPageSheet(){buildPageSheet();markPageSheet();document.getElementById('pageSheet').classList.add('open');markPageSheet();}
+function closePageSheet(){const b=document.getElementById('pageSheet');if(b)b.classList.remove('open');}
+function jumpSlide(i){closePageSheet();showSlide(i);}
+// ========== 手机上左右滑动翻页 ==========
+(function(){
+  const box=document.querySelector('.slides-container');
+  if(!box)return;
+  let sx=0,sy=0,st=0,lock=false;
+  box.addEventListener('touchstart',function(e){
+    if(e.touches.length!==1){lock=true;return;}
+    const t=e.target;
+    lock=!!(t&&t.closest&&t.closest('pre,.progress-dots,.table-wrap,table,input,textarea,.page-sheet-panel,.catalog-panel'));
+    sx=e.touches[0].clientX;
+    sy=e.touches[0].clientY;
+    st=Date.now();
+  },{passive:true});
+  box.addEventListener('touchend',function(e){
+    if(lock||!window.matchMedia('(max-width:768px)').matches)return;
+    const t=e.changedTouches[0];
+    if(!t)return;
+    const dx=t.clientX-sx,dy=t.clientY-sy,dt=Date.now()-st;
+    if(dt>800||Math.abs(dx)<60)return;
+    if(Math.abs(dx)<Math.abs(dy)*1.8)return;
+    showSlide(curr+(dx<0?1:-1));
+  },{passive:true});
+})();
+
 
 // ========== localStorage ==========
 const LS=(k,d)=>localStorage.getItem(k)||d;
@@ -807,6 +930,11 @@ function showSlide(idx){
     slides.forEach((s,i)=>s.classList.toggle('active',i===idx));
     navLinks.forEach((l,i)=>l.classList.toggle('active',i===idx));
     dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
+    // 页面跳转面板里同步高亮当前页
+    var _psl=document.getElementById('pageSheetList');
+    if(typeof markPageSheet==='function'&&_psl&&_psl.children.length){markPageSheet();}
+    // 手机上页码点条是横向滚动的：把当前页滚到中间，别让它藏在边上点不到
+    if(dots[idx]&&dots[idx].scrollIntoView&&window.matchMedia('(max-width:768px)').matches){try{dots[idx].scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});}catch(e){}}
     curr=idx;
     let cp=Math.max(0,Math.min(idx,contentTotal));
     document.getElementById('progressFill').style.width=(cp/contentTotal*100)+'%';

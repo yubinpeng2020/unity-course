@@ -296,7 +296,33 @@ html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microso
 .nav-badge.homework{color:var(--orange);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25)}
 
 /* ===== 响应式 ===== */
-@media(max-width:768px){.sidebar{display:none}.slide-inner{padding:18px 18px 80px}.cover{padding-left:40px;padding-right:40px}.cover h1{font-size:32px}.nav-buttons{right:12px;bottom:12px}.slides-container{min-height:calc(100vh - 54px)}}
+@media(max-width:768px){
+.sidebar{display:none}
+.slide-inner{padding:18px 18px 80px}
+.cover{padding-left:40px;padding-right:40px}
+.cover h1{font-size:32px}
+/* 底部导航条：按钮分居两端，页码点居中横向滚动，互不遮挡 */
+.nav-buttons{left:0;right:0;bottom:0;height:56px;padding:0 8px;align-items:center;justify-content:space-between;background:rgba(10,14,39,0.94);border-top:1px solid var(--border);backdrop-filter:blur(10px);z-index:120}
+.light .nav-buttons{background:rgba(255,255,255,0.94)}
+.nav-btn{padding:9px 14px;font-size:12px;border-radius:9px}
+.progress-dots{left:94px;right:94px;bottom:0;height:56px;transform:none;gap:0;align-items:center;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;padding:0 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none;z-index:121}
+.progress-dots::-webkit-scrollbar{display:none}
+.progress-dot{flex:0 0 auto;width:8px;height:8px;margin:0 8px;position:relative}
+.progress-dot::after{content:'';position:absolute;left:50%;top:50%;width:26px;height:26px;transform:translate(-50%,-50%)}
+.header-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap}
+.header-btn[onclick="toggleTheme()"]{padding:6px 6px}
+.progress-wrap{display:none}
+.header-dropdown{display:none}
+.header-btn[onclick^="changeFont"]{display:none}
+.header-btn[onclick="openSearch()"]{display:none}
+.header-btn[onclick="toggleHelp()"]{display:none}
+.mobile-info{display:flex;align-items:center;gap:2px}
+.mi-page{font-variant-numeric:tabular-nums;font-size:12px;color:var(--accent2);flex:0 0 auto}
+.mi-lesson{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mi-sep{flex:0 0 auto}
+.mobile-more{display:inline-block}
+.slides-container{min-height:calc(100vh - 54px)}
+}
 /* ===== 平铺模式（连续显示全部页面，用于导出 PDF） ===== */
 html.flat-mode,body.flat-mode{height:auto;overflow:visible}
 .flat-mode .container{height:auto;overflow:visible}
@@ -857,12 +883,40 @@ let dotsHtml='';
 for(let i=0;i<total;i++)dotsHtml+=`<span class="progress-dot" data-idx="${i}" onclick="showSlide(${i})"></span>`;
 document.getElementById('progressDots').innerHTML=dotsHtml;
 let dots=document.querySelectorAll('.progress-dot');
+// ========== 手机上左右滑动翻页 ==========
+(function(){
+  const box=document.querySelector('.slides-container');
+  if(!box)return;
+  let sx=0,sy=0,st=0,lock=false;
+  box.addEventListener('touchstart',function(e){
+    if(e.touches.length!==1){lock=true;return;}
+    const t=e.target;
+    lock=!!(t&&t.closest&&t.closest('pre,.progress-dots,.table-wrap,table,input,textarea,.page-sheet-panel,.catalog-panel'));
+    sx=e.touches[0].clientX;
+    sy=e.touches[0].clientY;
+    st=Date.now();
+  },{passive:true});
+  box.addEventListener('touchend',function(e){
+    if(lock||!window.matchMedia('(max-width:768px)').matches)return;
+    const t=e.changedTouches[0];
+    if(!t)return;
+    const dx=t.clientX-sx,dy=t.clientY-sy,dt=Date.now()-st;
+    if(dt>800||Math.abs(dx)<60)return;
+    if(Math.abs(dx)<Math.abs(dy)*1.8)return;
+    showSlide(curr+(dx<0?1:-1));
+  },{passive:true});
+})();
 
 function showSlide(idx){
     if(idx<0||idx>=total)return;
     slides.forEach((s,i)=>s.classList.toggle('active',i===idx));
     navLinks.forEach((l,i)=>l.classList.toggle('active',i===idx));
     dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
+    // 页面跳转面板里同步高亮当前页
+    var _psl=document.getElementById('pageSheetList');
+    if(typeof markPageSheet==='function'&&_psl&&_psl.children.length){markPageSheet();}
+    // 手机上页码点条是横向滚动的：把当前页滚到中间，别让它藏在边上点不到
+    if(dots[idx]&&dots[idx].scrollIntoView&&window.matchMedia('(max-width:768px)').matches){try{dots[idx].scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});}catch(e){}}
     curr=idx;
     let cp=Math.max(0,Math.min(idx,contentTotal));
     document.getElementById('progressFill').style.width=(cp/contentTotal*100)+'%';
