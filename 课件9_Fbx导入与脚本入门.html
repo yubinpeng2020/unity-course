@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>课件9_Fbx导入与脚本入门 — C#先知课堂</title>
+<title>课件9_Fbx导入与脚本入门 — 先知课堂</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0E27'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Menlo,Consolas,monospace' font-size='32' font-weight='700' fill='%2300D4AA'%3EU%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/atom-one-dark.min.css">
 <script src="vendor/highlight.min.js"></script>
@@ -50,7 +50,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microso
 .nav-status.seen{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,0.5)}
 
 /* ===== Header ===== */
-.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
 .header-bar{display:flex;align-items:center;gap:16px;padding:10px 24px;background:rgba(10,14,39,0.95);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;position:relative;z-index:5}
 .progress-wrap{flex:1;min-width:200px;display:flex;align-items:center;gap:12px}
 .progress-bar{flex:1;height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,0.3)}
@@ -1295,7 +1295,7 @@ function closePageSheet(){const b=document.getElementById('pageSheet');if(b)b.cl
 function jumpSlide(i){closePageSheet();showSlide(i);}
 // ========== 手机上左右滑动翻页 ==========
 (function(){
-  const box=document.querySelector('.slides-container');
+  const box=document.querySelector('.slides-container')||document.querySelector('.main-area');
   if(!box)return;
   let sx=0,sy=0,st=0,lock=false;
   box.addEventListener('touchstart',function(e){
