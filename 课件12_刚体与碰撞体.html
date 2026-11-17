@@ -243,6 +243,11 @@ html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microso
 .light .code-toolbar{background:rgba(0,0,0,0.05)}
 /* 深色主题下注释颜色调亮（原atom-one-dark太暗） */
 .hljs-comment,.hljs-meta{color:#8b949e!important}
+/* 代码里标 ★ 的注释＝相对课件11 新增的部分，高亮出来方便学生对照 */
+pre code .hljs-comment.c-new{background:rgba(16,185,129,0.16);color:#34d399!important;border-radius:3px;padding:0 2px}
+.light pre code .hljs-comment.c-new{background:rgba(16,185,129,0.16);color:#0b7a53!important}
+.c-new-key{color:#34d399;font-weight:700}
+.light .c-new-key{color:#0b7a53}
 
 /* ===== 封面 ===== */
 .cover{display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;height:100vh;box-sizing:border-box;background:radial-gradient(ellipse at 30% 20%,rgba(0,212,170,0.18) 0%,transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(79,195,247,0.12) 0%,transparent 55%),linear-gradient(180deg,#0A0E27 0%,#0D1430 100%);position:relative;overflow:hidden}
@@ -699,50 +704,73 @@ public class CollisionLogger : MonoBehaviour
 <p>所以跳跃<strong>必须</strong>加一句判断：<strong>只有"站在地面"时，才允许起跳</strong>。那接下来的问题就是——我们要怎么知道"自己有没有站在地面"？</p></div>
 <div class="card"><h3>怎么判断"站在地面"</h3>
 <p>用一个变量<strong>记住"现在是不是站在地面上"</strong>：一起跳，就记成<strong>已离地</strong>；一碰到地面，再记成<strong>站住了</strong>。按空格时先看一眼它——如果还是"已离地"，角色就不会有反应。</p>
-<p>那怎么知道"碰到了地面"？用的正是<strong>前面刚学的碰撞体</strong>：碰撞回调 <code>OnCollisionEnter</code> 会在角色碰到东西的那一刻<strong>自动执行</strong>，我们就在里面把变量记成"站住了"。</p></div>
+<p>那怎么知道"碰到了地面"？用的正是<strong>前面刚学的碰撞体</strong>：碰撞回调 <code>OnCollisionEnter</code> 会在角色碰到东西的那一刻<strong>自动执行</strong>，我们就在里面把变量记成"站住了"。</p>
+<p>但<strong>不能"碰到什么都算落地"</strong>：撞到墙、撞到动物同样会触发这个回调，那样角色贴着墙也能一直按空格往上"连跳"。所以要再看一眼<strong>接触面的朝向</strong>——朝上才说明是<strong>踩在它上面</strong>，那才算地面。</p></div>
 <div class="card"><h3>完整代码：Move2D_Jump</h3>
-<p>在<strong>课件11</strong> 的移动脚本基础上<strong>加一步</strong>——<strong>加上跳跃</strong>（水平移动沿用课件11 的 <code>transform.Translate</code>，不改）。角色要有 <strong>Rigidbody + Collider</strong>、地面要有 <strong>Collider</strong>；<strong>刚体不用手动拖</strong>，脚本会在 <code>Start()</code> 里<strong>自己获取</strong>：</p></div>
+<p>在<strong>课件11</strong> 的移动脚本基础上<strong>加一步</strong>——<strong>加上跳跃</strong>（水平移动沿用课件11 的 <code>transform.Translate</code>，一个字没改）。角色要有 <strong>Rigidbody + Collider</strong>、地面要有 <strong>Collider</strong>；<strong>刚体不用手动拖</strong>，脚本会在 <code>Start()</code> 里<strong>自己获取</strong>。</p>
+<p>下面这份代码里，<span class="c-new-key">★</span> 标出的每一行都是<strong>相对课件11 新增的</strong>——没标的是课件11 原有的，照抄即可。</p></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4347561906',this)">复制</button></div>
-<pre id="c_4347561906"><code class="language-csharp">using UnityEngine;
+<pre id="c_4347561906"><code class="language-csharp">// Move2D_Jump.cs —— 在课件11 的移动脚本上加「跳跃」（完整脚本）
+// 整段可以直接复制、覆盖原文件（是完整脚本，不用再改）
+using UnityEngine;
 
 public class Move2D_Jump : MonoBehaviour
 {
-    private Rigidbody rb;         // 角色的刚体，Start 里自动获取
-    public float disPreSec = 6f;  // 水平移动速度（单位/秒）
-    public float jumpForce = 5f;  // 跳跃冲量：越大跳得越高
+    private Rigidbody rb;         // ★ 角色的刚体：Start 里自动获取，不用手拖
+    public float disPreSec = 6f;  // 水平移动速度（单位/秒）—— 沿用课件11
+    public float jumpForce = 5f;  // ★ 跳跃冲量：越大跳得越高
 
-    private bool isGrounded = true; // 是否站在地面上
+    private bool isGrounded = true; // ★ 是否站在地面上
 
     void Start()
     {
-        rb = GetComponent&lt;Rigidbody&gt;();   // 从"自己身上"取出刚体组件
+        rb = GetComponent&lt;Rigidbody&gt;();   // ★ 从"自己身上"取出刚体组件
     }
 
     void Update()
     {
-        // ① 水平移动：前后左右走（沿用课件11 的 Translate 写法）
+        // 水平移动：前后左右走（沿用课件11 的写法，没改）
         float horizontal = Input.GetAxis("Horizontal"); // A/D 或 ←/→
         float vertical   = Input.GetAxis("Vertical");   // W/S 或 ↑/↓
         Vector3 move = new Vector3(horizontal, 0, vertical);
         transform.Translate(move * disPreSec * Time.deltaTime);
 
-        // ② 跳跃：站在地面时按空格，给刚体一个向上的冲量
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        // ★ 跳跃：站在地面时按空格，给刚体一个向上的冲量
+        if (Input.GetKeyDown(KeyCode.Space) &amp;&amp; isGrounded)
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            isGrounded = false;   // 已离地，空中不能再跳
+            isGrounded = false;   // ★ 已离地，空中不能再跳
         }
     }
 
-    // ③ 落地判定：碰到地面（碰撞体）就重新允许起跳
-    // other：撞上来的那个东西，这里用不到，但 Unity 按这个签名调用，不能删
+    // ★ 落地判定：脚下踩到东西才算站住（撞墙、撞动物不算）
     void OnCollisionEnter(Collision other)
     {
-        isGrounded = true;
+        CheckGround(other);
+    }
+
+    // ★ 还贴着东西时每帧都会调用（贴着墙走开的那一下，靠它把状态纠正回来）
+    void OnCollisionStay(Collision other)
+    {
+        CheckGround(other);
+    }
+
+    // ★ 离开地面（走下平台边缘、被弹开）：马上记成"已离地"
+    void OnCollisionExit(Collision other)
+    {
+        isGrounded = false;
+    }
+
+    // 接触面朝上（法线 normal.y &gt; 0.5）＝ 踩在它上面，才算"站在地面"
+    void CheckGround(Collision other)
+    {
+        if (other.GetContact(0).normal.y &gt; 0.5f)
+            isGrounded = true;
     }
 }</code></pre>
 </div>
+<p><span class="c-new-key">★</span> 绿色高亮的注释就是新增行；复制下来的代码里 <code>★</code> 也会保留，对照课件11 一眼能看出加了什么。</p>
 <div class="card"><h3>代码逐行解释</h3>
 <ul>
 <li><code>private Rigidbody rb;</code> —— 存放角色的<strong>刚体</strong>组件；这里不用 <code>public</code>，因为值由脚本自己取，不需要在 Inspector 里暴露。</li>
@@ -752,7 +780,10 @@ public class Move2D_Jump : MonoBehaviour
 <li><code>Input.GetKeyDown(KeyCode.Space)</code> —— 只在<strong>按下空格的那一帧</strong>返回 true（按住不会连发）；配合 <code>isGrounded</code>，只有<strong>站在地面</strong>时才能起跳。</li>
 <li><code>rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse)</code> —— 给刚体施加一个<strong>向上的冲量</strong>：<code>Vector3.up</code> 是正上方，<code>jumpForce</code> 决定跳多高，<code>ForceMode.Impulse</code> 表示"瞬间一次性"加力，而不是持续地推。</li>
 <li><code>isGrounded = false;</code> —— 起跳后立刻标记"已离地"，这样在空中再按空格也不会重复加力。</li>
-<li><code>void OnCollisionEnter(Collision other)</code> —— <strong>碰撞回调</strong>：脚本所在对象<strong>刚碰到</strong>别的碰撞体时自动调用。角色落回地面时触发，把 <code>isGrounded</code> 设回 <code>true</code>，就又能起跳了。</li>
+<li><code>void OnCollisionEnter(Collision other)</code> —— <strong>碰撞回调</strong>：脚本所在对象<strong>刚碰到</strong>别的碰撞体时自动调用一次。这里不能"碰到什么都算落地"——撞墙、撞动物也会触发，所以要交给下面那个判断。</li>
+<li><code>void OnCollisionStay(Collision other)</code> —— 只要还<strong>贴着</strong>对方，<strong>每一帧</strong>都会调用。它的作用是纠错：角色踩着地面、同时擦到墙，从墙边走开的那一瞬间 <code>OnCollisionExit</code> 会把 <code>isGrounded</code> 设成 false，而有这一条，下一帧就会被改回 true。少了它，角色会莫名其妙"再也跳不起来"。</li>
+<li><code>void CheckGround(Collision other)</code> —— 看<strong>接触面的朝向</strong>（法线 normal）：朝上（y 接近 1）才说明角色是<strong>踩在它身上</strong>，这时才把 <code>isGrounded</code> 设回 <code>true</code>。撞到墙、撞到动物时接触面是<strong>横的</strong>（y 接近 0），不算落地——否则贴着墙一路按空格也能"连跳"上去。<code>GetContact(0)</code> 取的是第一个接触点。</li>
+<li><code>void OnCollisionExit(Collision other)</code> —— <strong>离开</strong>对方时调用：<strong>走下平台边缘</strong>、被撞飞、跳起来离开地面时，把 <code>isGrounded</code> 设回 <code>false</code>。没有它，角色走出平台后在空中还能再跳一次。</li>
 </ul></div>
 <div class="card"><h3>补充：刚体也可以手动拖拽赋值</h3>
 <p>除了让脚本自己获取，还有另一种更直白的写法：把 <code>rb</code> 声明成 <code>public Rigidbody rb;</code>，再在 Inspector 里把角色身上的 Rigidbody <strong>拖</strong>到这个格子上。</p>
@@ -1206,6 +1237,15 @@ function copyCode(cid,btn){
 
 // ========== 初始化 ==========
 hljs.highlightAll();
+// 代码里含 ★ 的注释＝相对课件11 新增的行，给它套上高亮样式
+// （hljs 在 DOM 还没就绪时会把高亮推迟到 DOMContentLoaded，所以这里也等 load 再标）
+function markNewCode(){
+    document.querySelectorAll('pre code .hljs-comment').forEach(function(el){
+        if(el.textContent.indexOf('★')>=0) el.classList.add('c-new');
+    });
+}
+if(document.readyState==='complete'){ markNewCode(); }
+else{ window.addEventListener('load',markNewCode); }
 // 折叠面板
 function toggleFold(btn){
     btn.classList.toggle('open');
