@@ -521,12 +521,12 @@ function copyImgName(btn){
 <div class="slide" data-page="2"><div class="slide-inner">
 <h1>本节学习目标</h1>
 <div class="card"><h3>本课要做出来的效果</h3><p>上一节让玩家<strong>死得回去</strong>，这一节让他<strong>走得出去</strong>：关卡尽头放一个撤离点，走进去就算通关；再用<strong>粒子系统</strong>给这个出口加光柱和爆开特效，让它一眼就能看见。</p></div>
-<div class="goal-grid"><div class="goal-card"><span class="goal-icon">🏁</span><span class="goal-text">在关卡尽头摆一个勾了 <code>Is Trigger</code> 的撤离点 <code>ExitZone</code></span></div><div class="goal-card"><span class="goal-icon">📜</span><span class="goal-text">写 <code>ExitLevel.cs</code>：玩家走进来就加载启动场景</span></div><div class="goal-card"><span class="goal-icon">🧩</span><span class="goal-text">弄清触发器为什么要靠 <code>CharacterController</code> 或刚体</span></div><div class="goal-card"><span class="goal-icon">✨</span><span class="goal-text">认识粒子系统的主模块、发射与形状参数</span></div><div class="goal-card"><span class="goal-icon">📦</span><span class="goal-text">从资源商店导入现成粒子，用 <code>TimedSelfDestruct</code> 自动消失</span></div><div class="goal-card"><span class="goal-icon">🧯</span><span class="goal-text">给撤离点加一道常驻光柱，远远就能看见出口</span></div><div class="goal-card"><span class="goal-icon">💥</span><span class="goal-text">通关瞬间爆开一团粒子，等一秒再切场景</span></div><div class="goal-card"><span class="goal-icon">📝</span><span class="goal-text">作业：给撤离点配一套自己的通关特效</span></div></div>
+<div class="goal-grid"><div class="goal-card"><span class="goal-icon">🏁</span><span class="goal-text">在关卡尽头摆一个勾了<code>是触发器（Is Trigger）</code> 的撤离点 <code>ExitZone</code></span></div><div class="goal-card"><span class="goal-icon">📜</span><span class="goal-text">写 <code>ExitLevel.cs</code>：玩家走进来就加载启动场景</span></div><div class="goal-card"><span class="goal-icon">🧩</span><span class="goal-text">弄清触发器为什么要靠 <code>CharacterController</code> 或刚体</span></div><div class="goal-card"><span class="goal-icon">✨</span><span class="goal-text">认识粒子系统的主模块、发射与形状参数</span></div><div class="goal-card"><span class="goal-icon">📦</span><span class="goal-text">从资源商店导入现成粒子，用 <code>TimedSelfDestruct</code> 自动消失</span></div><div class="goal-card"><span class="goal-icon">🧯</span><span class="goal-text">给撤离点加一道常驻光柱，远远就能看见出口</span></div><div class="goal-card"><span class="goal-icon">💥</span><span class="goal-text">通关瞬间爆开一团粒子，等一秒再切场景</span></div><div class="goal-card"><span class="goal-icon">📝</span><span class="goal-text">作业：给撤离点配一套自己的通关特效</span></div></div>
 </div></div>
 <div class="slide" data-page="3"><div class="slide-inner markable">
 <h1>1. 摆一个撤离点</h1>
 <div class="card"><p>关卡得有个出口。在关卡尽头放一块<strong>触发器区域</strong>，玩家走进去就算通关。它<strong>不挡路</strong>，只负责判定——所以用 Trigger，不用实体墙。</p></div>
-<div class="card"><h3>① 摆出口</h3><ol><li>层级里建空对象 <code>ExitZone</code>，位置挪到关卡出口</li><li>加 <code>Box Collider（盒碰撞体）</code>，勾上 <code>Is Trigger（是否为触发器）</code></li><li>把 <code>Size</code> 拉到能罩住整条通道——玩家走进去时，身体要能碰到它</li></ol><div class="step-img"><img src="images/课件22/撤离点触发器.png" alt="ExitZone 加盒碰撞体并勾上是否为触发器" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>① 摆出口</h3><ol><li>层级里建空对象 <code>ExitZone</code>，位置挪到关卡出口</li><li>加 <code>Box Collider（盒碰撞体）</code>，勾上 <code>是触发器（Is Trigger）</code></li><li>把 <code>Size</code> 拉到能罩住整条通道——玩家走进去时，身体要能碰到它</li></ol><div class="step-img"><img src="images/课件22/撤离点触发器.png" alt="ExitZone 加盒碰撞体并勾上是否为触发器" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="ok-box"><span class="eico">💡</span> 门口最好留个视觉提示：地上一块异色地面、一束光、或者本课后面加的粒子光柱——不然玩家不知道往哪跑。</div>
 </div></div>
 <div class="slide" data-page="4"><div class="slide-inner markable">
@@ -555,8 +555,8 @@ public class ExitLevel : MonoBehaviour
 </div></div>
 <div class="slide" data-page="5"><div class="slide-inner markable">
 <h1>3. 为什么能触发</h1>
-<div class="card"><ul><li>触发器要生效，<strong>至少一方得带刚体</strong>；玩家身上是课件13 加的 <code>CharacterController</code>，它本身就能触发 <code>OnTriggerEnter</code>，<strong>不用再加刚体</strong></li><li>如果玩家用的是普通 <code>Collider</code>，就给玩家加 <code>Rigidbody</code> 并勾上 <code>Is Kinematic</code>，否则走进去毫无反应</li><li>标签必须对得上：玩家标签是 <code>Player</code>，脚本里的 <code>"Player"</code> 一字不差</li><li>两个都是 Trigger 不会触发——触发器只和<strong>实体碰撞体</strong>碰</li></ul></div>
-<div class="card"><h3>排错：走进去了没反应</h3><ol><li>看 <code>ExitZone</code> 的 <code>Is Trigger</code> 有没有勾</li><li>看玩家标签是不是 <code>Player</code>、脚本里写的也是 <code>"Player"</code></li><li>看 <code>ExitZone</code> 的 <code>Size</code> 是不是太小，玩家根本没碰到</li><li>看场景有没有加进生成设置——没加，<code>LoadScene</code> 会报错，画面不动</li></ol></div>
+<div class="card"><ul><li>触发器要生效，<strong>至少一方得带刚体</strong>；玩家身上是课件13 加的 <code>CharacterController</code>，它本身就能触发 <code>OnTriggerEnter</code>，<strong>不用再加刚体</strong></li><li>如果玩家用的是普通 <code>Collider</code>，就给玩家加 <code>Rigidbody</code> 并勾上<code>是运动学的（Is Kinematic）</code>，否则走进去毫无反应</li><li>标签必须对得上：玩家标签是 <code>Player</code>，脚本里的 <code>"Player"</code> 一字不差</li><li>两个都是 Trigger 不会触发——触发器只和<strong>实体碰撞体</strong>碰</li></ul></div>
+<div class="card"><h3>排错：走进去了没反应</h3><ol><li>看 <code>ExitZone</code> 的 <code>是触发器（Is Trigger）</code> 有没有勾</li><li>看玩家标签是不是 <code>Player</code>、脚本里写的也是 <code>"Player"</code></li><li>看 <code>ExitZone</code> 的 <code>Size</code> 是不是太小，玩家根本没碰到</li><li>看场景有没有加进生成设置——没加，<code>LoadScene</code> 会报错，画面不动</li></ol></div>
 <div class="ok-box"><span class="eico">⚠️</span> 想做成「先黑屏再回启动页」，把课件21 <code>GameFlowManager</code> 的黑屏渐变照搬过来，只把最后那句 <code>LoadScene</code> 换成启动场景名。</div>
 </div></div>
 <div class="slide" data-page="6"><div class="slide-inner markable">
@@ -582,7 +582,7 @@ public class ExitLevel : MonoBehaviour
 <div class="slide" data-page="8"><div class="slide-inner markable">
 <h1>6. 给撤离点加一道光柱</h1>
 <div class="card"><p>撤离点光有判定不够，还得让人<strong>远远就看见</strong>。把导入的循环粒子拖成 <code>ExitZone</code> 的<strong>子物体</strong>，就是一根常驻光柱。</p></div>
-<div class="card"><h3>怎么摆</h3><ol><li>把粒子预制体拖到层级里的 <code>ExitZone</code> 上，松手后它变成子物体</li><li>选中它，把 <code>Position</code> 归零，再把 <code>Y</code> 往上抬一点，让光柱从地面升起</li><li>主模块勾上 <code>Looping</code>、保留 <code>Play On Awake</code>，一进关卡它就一直亮</li></ol></div>
+<div class="card"><h3>怎么摆</h3><ol><li>把粒子预制体拖到层级里的 <code>ExitZone</code> 上，松手后它变成子物体</li><li>选中它，把 <code>Position</code> 归零，再把 <code>Y</code> 往上抬一点，让光柱从地面升起</li><li>主模块勾上 <code>循环播放（Looping）</code>、保留 <code>唤醒时播放（Play On Awake）</code>，一进关卡它就一直亮</li></ol></div>
 <div class="card"><h3>调成「光柱感」的三个参数</h3><ul><li><code>Start Speed</code> 调小（0.5~2），粒子才不四散</li><li><code>Start Lifetime</code> 调大（2~4 秒），光柱才立得高</li><li><code>Start Color</code> 用渐变：底部亮、顶部透明，柱体才有淡出感</li></ul></div>
 <div class="step-img"><img src="images/课件22/撤离点光柱.png" alt="撤离点上方的常驻粒子光柱" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
 <div class="ok-box"><span class="eico">💡</span> 光柱是「提示」，不是「判定」：判定还是靠 <code>ExitZone</code> 上那个 Box Collider，粒子不参与碰撞。</div>
@@ -590,7 +590,7 @@ public class ExitLevel : MonoBehaviour
 <div class="slide" data-page="9"><div class="slide-inner markable">
 <h1>7. 通关瞬间爆开</h1>
 <div class="card"><p>光柱负责「看得见」，爆开负责「有反馈」。做法是：通关时在撤离点<strong>生成一份爆炸粒子</strong>，等它播完再切场景——直接 <code>LoadScene</code> 会立刻换场景，特效一帧都看不到。</p></div>
-<div class="card"><h3>① 做一个一次性特效预制体</h3><ol><li>把导入的爆炸粒子拖进场景，主模块<strong>取消</strong> <code>Looping</code>，用 <code>Bursts</code> 在 0 秒突发一团</li><li>挂上 <code>TimedSelfDestruct</code>，<code>LifeTime</code> 填 2 秒（播完自动删，不留在场景里）</li><li>拖进项目窗口存成预制体，比如 <code>ClearEffect</code>，再从场景里删掉</li></ol></div>
+<div class="card"><h3>① 做一个一次性特效预制体</h3><ol><li>把导入的爆炸粒子拖进场景，主模块<strong>取消</strong> <code>循环播放（Looping）</code>，用 <code>Bursts</code> 在 0 秒突发一团</li><li>挂上 <code>TimedSelfDestruct</code>，<code>LifeTime</code> 填 2 秒（播完自动删，不留在场景里）</li><li>拖进项目窗口存成预制体，比如 <code>ClearEffect</code>，再从场景里删掉</li></ol></div>
 <div class="card"><h3>② 在 ExitLevel 里生成它，并等一秒</h3></div>
 <div class="prompt-box"><div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c22_clear',this)">复制</button></div>
 <pre id="c22_clear"><code class="language-csharp">using System.Collections;

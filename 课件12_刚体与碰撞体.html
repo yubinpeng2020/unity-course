@@ -557,7 +557,7 @@ function copyImgName(btn){
 <p>看上面的动图：几只小动物从<strong>空中掉下来</strong>、稳稳落在地形上——我们并没有写"往下掉"的代码，它们却像现实里一样被<strong>重力</strong>拉了下去，落到地面还有碰撞效果，不会穿过去。</p>
 <p>这种<strong>会下落、被地面挡住、站得稳</strong>的真实感，靠的是 Unity 的<strong>两个物理组件</strong>配合：<strong>Rigidbody（刚体）</strong>负责让对象受力与运动，<strong>Collider（碰撞体）</strong>负责检测碰撞、避免穿模。接下来两节，我们先讲<strong>刚体</strong>，再讲<strong>碰撞体</strong>——这一节先认识刚体。</p></div>
 <div class="card"><h3>添加方式</h3>
-<p>选中对象 → <code>Add Component（添加组件）</code> → <code>Rigidbody（刚体）</code>。</p>
+<p>选中对象 → <code>添加组件（Add Component）</code> → <code>刚体（Rigidbody）</code>。</p>
 <p>简单说，<strong>添加刚体组件，就是给游戏对象赋予"物理属性"</strong>：一旦挂上它，这个对象就进入了 Unity 的<strong>物理模拟</strong>——会受重力、能被撞飞、能受力运动。下面这张属性面板里的每一项（质量、阻力、是否受重力……），就是它的"物理参数"。</p></div>
 <img src="images/课件12/添加刚体.gif" alt="添加刚体组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>刚体的物理属性</h3>
@@ -567,7 +567,7 @@ function copyImgName(btn){
 <tr><td><strong>Drag 阻力</strong></td><td>运动时速度衰减（空气阻力）</td></tr>
 <tr><td><strong>Angular Drag 角阻力</strong></td><td>旋转时角速度衰减</td></tr>
 <tr><td><strong>Use Gravity 重力</strong></td><td>是否受重力影响（默认勾选，所以会下落）</td></tr>
-<tr><td><strong>Is Kinematic 运动学</strong></td><td>不受力 / 扭矩影响，但可用脚本直接控制位置旋转</td></tr>
+<tr><td><strong>是运动学的（Is Kinematic）</strong></td><td>不受力 / 扭矩影响，但可用脚本直接控制位置旋转</td></tr>
 </table></div>
 <img src="images/课件12/刚体属性.png" alt="Inspector 中 Rigidbody 刚体的物理属性面板" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="ok-box">给对象加了 Rigidbody，它就"活"了——会下落、会被推。</div>
@@ -582,7 +582,7 @@ function copyImgName(btn){
 <div class="card"><h3>为什么要加碰撞体：让对象"撞得到、挡得住"</h3>
 <p>上一节我们看到：对象<strong>只有刚体、没有碰撞体</strong>时，会<strong>直接穿过地面</strong>（穿模）。<strong>Collider（碰撞体）</strong>就是来解决这个问题的——它负责<strong>检测物体之间的接触或碰撞</strong>：有了它，地面才能"挡住"下落的对象，物体之间也能互相<strong>撞到</strong>而不是穿过彼此。</p></div>
 <div class="card"><h3>添加方式</h3>
-<p>选中对象 → <code>Add Component（添加组件）</code> → <code>Box Collider（盒型碰撞体）</code>。</p></div>
+<p>选中对象 → <code>添加组件（Add Component）</code> → <code>盒型碰撞体（Box Collider）</code>。</p></div>
 <img src="images/课件12/添加碰撞体组件.gif" alt="添加碰撞体组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>常见碰撞体类型</h3>
 <ul><li><strong>Box Collider（盒型碰撞体）</strong>：立方体，适合墙、门、箱子</li><li><strong>Sphere Collider（球形碰撞体）</strong>：球形，适合球类、星球</li><li><strong>Capsule Collider（胶囊形碰撞体）</strong>：胶囊形，适合角色身体（贴合人体，移动自然）</li></ul>
@@ -773,7 +773,7 @@ public class Move2D_Jump : MonoBehaviour
 <p><span class="c-new-key">★</span> 绿色高亮的注释就是新增行；复制下来的代码里 <code>★</code> 也会保留，对照课件11 一眼能看出加了什么。</p>
 <div class="card"><h3>代码逐行解释</h3>
 <ul>
-<li><code>private Rigidbody rb;</code> —— 存放角色的<strong>刚体</strong>组件；这里不用 <code>public</code>，因为值由脚本自己取，不需要在 Inspector 里暴露。</li>
+<li><code>private Rigidbody rb;</code> —— 存放角色的<strong>刚体</strong>组件；这里不用 <code>public</code>，因为值由脚本自己取，不需要在检查器（Inspector）里暴露。</li>
 <li><code>void Start() { rb = GetComponent&lt;Rigidbody&gt;(); }</code> —— 游戏<strong>开始时</strong>，在<strong>脚本所在的这个游戏对象</strong>身上查找 <strong>Rigidbody</strong> 并交给 <code>rb</code>；尖括号里写要找的组件类型。只取一次，之后 Update 里直接用。⚠️ 前提是角色身上<strong>确实挂着 Rigidbody</strong>，否则取到的是空值。</li>
 
 <li><code>transform.Translate(move * disPreSec * Time.deltaTime)</code> —— 按<strong>每秒 disPreSec 个单位</strong>移动：乘 <code>Time.deltaTime</code> 把"每秒"换算成"这一帧该走多少"，这样不同帧率下速度才一致。（垂直方向不用我们管——下落交给重力、起跳交给冲量。）</li>

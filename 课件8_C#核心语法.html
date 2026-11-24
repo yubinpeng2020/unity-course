@@ -1121,12 +1121,12 @@ public class NewBehaviourScript : MonoBehaviour
    ▲ 同一个模板，不同的数据                   ▲</code></pre><div class="card"><ul><li>创建对象（Unity 里脚本挂到物体上）时，就从这个框架&quot;复印&quot;出一份——每个对象字段值自己填，方法共用同一套</li></ul></div>
 <div class="card"><h3>重命名脚本 & 修改类名</h3><p>新建的脚本默认叫 <code>NewBehaviourScript</code>，通常要改成有意义的名字（比如 <code>Player</code>）。<strong>文件名和类名必须一致</strong>，所以要做两步操作：</p></div>
 <div class="card"><ol>
-<li><strong>重命名文件</strong>：在 Project 窗口选中脚本，右键 → <code>Rename（重命名）</code>（或按 <code>F2</code>），改成 <code>Player</code></li>
+<li><strong>重命名文件</strong>：在项目（Project）窗口选中脚本，右键 → <code>Rename（重命名）</code>（或按 <code>F2</code>），改成 <code>Player</code></li>
 <li><strong>修改类名</strong>：双击打开脚本，把类名 <code>NewBehaviourScript</code> 也改成 <code>Player</code>，保存</li>
 </ol></div>
 <img src="images/课件8/重命名脚本.png" alt="重命名脚本" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto;width:50%" onerror="imgMissing(this)">
 <img src="images/课件8/修改类名.png" alt="修改类名" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto;width:50%" onerror="imgMissing(this)">
-<button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 为什么必须一致？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">Unity 是<strong>靠文件名找类</strong>的。只改文件名不改类名（或反过来），Unity 就找不到对应的类：脚本<strong>挂不上</strong>游戏对象，Console 报错；已经挂好的组件会变成红色的 <code>Missing (Script)</code> 直接失效。</div></div>
+<button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 为什么必须一致？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">Unity 是<strong>靠文件名找类</strong>的。只改文件名不改类名（或反过来），Unity 就找不到对应的类：脚本<strong>挂不上</strong>游戏对象，控制台（Console）报错；已经挂好的组件会变成红色的 <code>Missing (Script)</code> 直接失效。</div></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_83000001',this)">复制</button></div>
 <pre id="c_83000001"><code class="language-csharp">class Player          // 蓝图：定义"玩家"有哪些数据和行为
@@ -1161,7 +1161,7 @@ Player p1 = new Player();  // Player 是你定义的"类型"
 player.hp = -5;        // 血量-5？没人拦，游戏直接出 bug
 player.score = 9999;   // 9999 分？同样放行</code></pre>
 </div>
-<div class="card"><p>成员变量前面加什么修饰符，决定了它在 Unity 里的<strong>可见性</strong>：</p><table><tr><th>写法</th><th>叫什么</th><th>Inspector 面板</th><th>什么时候用</th></tr><tr><td><code>public</code></td><td>公有变量</td><td>显示，可随时改</td><td>要被别的脚本访问，或想随时调数值</td></tr><tr><td><code>private</code></td><td>私有变量</td><td>不显示</td><td>只在脚本内部用，防止外部误改</td></tr><tr><td><code>[SerializeField]</code> + <code>private</code></td><td>私有但可序列化</td><td>显示，可改</td><td>又要安全、又想在面板上调（推荐）</td></tr></table></div>
+<div class="card"><p>成员变量前面加什么修饰符，决定了它在 Unity 里的<strong>可见性</strong>：</p><table><tr><th>写法</th><th>叫什么</th><th>检查器（Inspector）面板</th><th>什么时候用</th></tr><tr><td><code>public</code></td><td>公有变量</td><td>显示，可随时改</td><td>要被别的脚本访问，或想随时调数值</td></tr><tr><td><code>private</code></td><td>私有变量</td><td>不显示</td><td>只在脚本内部用，防止外部误改</td></tr><tr><td><code>[SerializeField]</code> + <code>private</code></td><td>私有但可序列化</td><td>显示，可改</td><td>又要安全、又想在面板上调（推荐）</td></tr></table></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_83000002',this)">复制</button></div>
 <pre id="c_83000002"><code class="language-csharp">public  float     speed     = 5f;   // 公有变量：Inspector 显示可调
@@ -1173,7 +1173,7 @@ public  Transform pubTrans;         // 公有组件：Inspector 可拖入其他�
 private Transform priTrans;         // 私有组件：Inspector 不可见</code></pre>
 </div>
 <div class="card"><p>推荐：能<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">private</mark>就 private（防止外部误改），想让 Inspector 显示就加 <code>[SerializeField]</code>——既安全又可调。</p><img src="images/课件8/serializefield_inspector.png" alt="SerializeField 让私有字段在 Inspector 显示" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)"></div>
-<div class="card"><h3>进阶：属性（Property）— 带保安的字段</h3><p>有时你想"外部能读、但只有我自己能改"，或"写入时要检查合法性"。C# 的<strong>属性（Property）</strong>外表像字段、内部有逻辑，用 <code>get</code>/<code>set</code> 包裹读写逻辑：</p><p><strong>get / set 是什么？</strong></p><ul><li><code>get</code>：读取属性时执行，决定外部拿到什么值（读保护）</li><li><code>set</code>：写入属性时执行，决定能不能改、改成什么，可在里面加合法性检查（写保护）</li><li><code>{ get; set; }</code> 读写都公开；<code>{ get; private set; }</code> 外部只读、仅类内部能改</li></ul><div style="margin-top:12px;padding:12px 16px;border-radius:12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.35);border-left:3px solid #F59E0B"><p>⚠️ <strong>Unity 里属性不显示！</strong> 检视视图只序列化<strong>字段（field）</strong>，不认<strong>属性（property）</strong>。写成 <code>{ get; set; }</code> 的纯属性在检视视图里<strong>看不到</strong>。要"既在面板显示、又用属性控制访问"，得用带 <code>[SerializeField]</code> 的<strong>私有字段</strong>做底，再用属性包一层（见下例）。</p></div></div>
+<div class="card"><h3>进阶：属性（Property）— 带保安的字段</h3><p>有时你想"外部能读、但只有我自己能改"，或"写入时要检查合法性"。C# 的<strong>属性（Property）</strong>外表像字段、内部有逻辑，用 <code>get</code>/<code>set</code> 包裹读写逻辑：</p><p><strong>get / set 是什么？</strong></p><ul><li><code>get</code>：读取属性时执行，决定外部拿到什么值（读保护）</li><li><code>set</code>：写入属性时执行，决定能不能改、改成什么，可在里面加合法性检查（写保护）</li><li><code>{ get; set; }</code> 读写都公开；<code>{ get; private set; }</code> 外部只读、仅类内部能改</li></ul><div style="margin-top:12px;padding:12px 16px;border-radius:12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.35);border-left:3px solid #F59E0B"><p>⚠️ <strong>Unity 里属性不显示！</strong> 检查器只序列化<strong>字段（field）</strong>，不认<strong>属性（property）</strong>。写成 <code>{ get; set; }</code> 的纯属性在检查器里<strong>看不到</strong>。要"既在面板显示、又用属性控制访问"，得用带 <code>[SerializeField]</code> 的<strong>私有字段</strong>做底，再用属性包一层（见下例）。</p></div></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_80393002',this)">复制</button></div>
 <pre id="c_80393002"><code class="language-csharp">[SerializeField] private int   hp = 100;        // 私有字段：显示在 Inspector（可改、可拖）
@@ -1303,7 +1303,7 @@ switch (state)
     case GameState.Over:    /* 游戏结束 */   break;
 }</code></pre>
 </div>
-<div class="ok-box"><span class="eico">💡</span> 枚举字段在 Unity 的 <strong>Inspector 里会显示成下拉框</strong>——<code>public GameState state;</code> 或加 <code>[SerializeField]</code> 后，你不用记数字，直接在面板里点选状态。</div>
+<div class="ok-box"><span class="eico">💡</span> 枚举字段在 Unity 的 <strong>检查器（Inspector）里会显示成下拉框</strong>——<code>public GameState state;</code> 或加 <code>[SerializeField]</code> 后，你不用记数字，直接在面板里点选状态。</div>
 <img src="images/课件8/inspector枚举下拉框.png" alt="Inspector 中枚举字段显示成下拉框" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
 <div class="ok-box"><span class="eico">💡</span> 后面做「游戏管理器」时，会用枚举管游戏状态；解析 UI 输入时优先用 <code>TryParse</code> 防止崩溃。</div></div></div><div class="slide" data-page="15"><div class="slide-inner markable">
 <h1>课堂练习 — 九九乘法表</h1>

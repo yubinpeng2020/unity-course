@@ -512,7 +512,7 @@ function copyImgName(btn){
 </div>
 <div class="slide" data-page="1"><div class="slide-inner">
 <h1>学习目标</h1>
-<div class="goal-grid"><div class="goal-card"><span class="goal-icon">🎯</span><span class="goal-text">认识变换工具栏（查看 / 移动 / 旋转 / 缩放），记住对应快捷键 Q / W / E / R</span></div><div class="goal-card"><span class="goal-icon">🔍</span><span class="goal-text">用查看工具平移、转动视野，用 F 键聚焦物体</span></div><div class="goal-card"><span class="goal-icon">📝</span><span class="goal-text">理解 Gizmo 导航器与左手坐标系，会切换正交 / 透视视角</span></div><div class="goal-card"><span class="goal-icon">💻</span><span class="goal-text">选中物体后用移动工具（W）沿坐标轴 / 坐标平面移动物体</span></div><div class="goal-card"><span class="goal-icon">📐</span><span class="goal-text">用 Inspector 精确输入 Position 坐标，用 Reset 一键归位</span></div><div class="goal-card"><span class="goal-icon">✅</span><span class="goal-text">完成四个物体并排作业，保存场景文件</span></div></div>
+<div class="goal-grid"><div class="goal-card"><span class="goal-icon">🎯</span><span class="goal-text">认识变换工具栏（查看 / 移动 / 旋转 / 缩放），记住对应快捷键 Q / W / E / R</span></div><div class="goal-card"><span class="goal-icon">🔍</span><span class="goal-text">用查看工具平移、转动视野，用 F 键聚焦物体</span></div><div class="goal-card"><span class="goal-icon">📝</span><span class="goal-text">理解 Gizmo 导航器与左手坐标系，会切换正交 / 透视视角</span></div><div class="goal-card"><span class="goal-icon">💻</span><span class="goal-text">选中物体后用移动工具（W）沿坐标轴 / 坐标平面移动物体</span></div><div class="goal-card"><span class="goal-icon">📐</span><span class="goal-text">用检查器（Inspector）精确输入位置（Position）坐标，用 Reset 一键归位</span></div><div class="goal-card"><span class="goal-icon">✅</span><span class="goal-text">完成四个物体并排作业，保存场景文件</span></div></div>
 <div class="ok-box">学好"看"，才能"做"。先把眼睛练熟，再把物体摆准。</div>
 </div></div>
 <div class="slide" data-page="2"><div class="slide-inner markable">
@@ -531,7 +531,7 @@ function copyImgName(btn){
 <p>场景中物体很多时，很容易"找不到刚才选的东西"。两个办法：</p>
 <div class="card"><p><strong>方法一</strong>：在查看工具下，左键点击物体，它自动移到视野中心</p></div>
 <img src="images/课件5/场景窗口-切换物体.gif" alt="切换物体聚焦" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="card"><p><strong>方法二（最常用）</strong>：先在 Hierarchy 或 Scene 中<strong>选中</strong>物体，按键盘 <strong>F 键</strong>，摄像机立刻"飞"到该物体旁边</p></div>
+<div class="card"><p><strong>方法二（最常用）</strong>：先在层级（Hierarchy）或场景（Scene）中<strong>选中</strong>物体，按键盘 <strong>F 键</strong>，摄像机立刻"飞"到该物体旁边</p></div>
 <img src="images/课件5/物体移动到视野中心 --- F键.gif" alt="物体移动到视野中心 F键" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="ok-box"><span class="eico">💡</span> 口诀：找不到物体？选中它，按 F，瞬间回到眼前。</div>
 <h3>③ 转动视野</h3>
@@ -579,7 +579,7 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="5"><div class="slide-inner markable">
 <h1>选中物体与移动工具</h1>
-<div class="card"><h3>选中物体</h3><ul><li>在 Scene 或 Hierarchy 中<strong>左键点击</strong>物体，它会出现<strong>橙色边框</strong>，表示已选中</li><li>选中后，右侧 <strong>Inspector 检视视图</strong> 显示它的所有属性</li></ul></div>
+<div class="card"><h3>选中物体</h3><ul><li>在场景（Scene）或层级（Hierarchy）中<strong>左键点击</strong>物体，它会出现<strong>橙色边框</strong>，表示已选中</li><li>选中后，右侧 <strong>检查器（Inspector）</strong> 显示它的所有属性</li></ul></div>
 <img src="images/课件5/选中物体橙色边框.png" alt="选中物体橙色边框" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 橙色边框是什么？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">是 Unity 的"选中标记"。有它，你接下来的移动 / 旋转 / 缩放才会作用在这个物体上。</div></div>
 <div class="contest-row"><div class="card" style="flex:1"><h3>Transform 变换组件</h3><p>选中物体后，Inspector 顶部就是 <strong>Transform</strong> 组件，记录三个信息：</p><table><tr><th>属性</th><th>含义</th></tr><tr><td>Position 位置</td><td>物体在 X/Y/Z 三个方向上的坐标</td></tr><tr><td>Rotation 旋转</td><td>物体绕三轴的旋转角度</td></tr><tr><td>Scale 缩放</td><td>物体在三轴上的大小比例</td></tr></table></div><img src="images/课件5/transform组件面板.png" alt="Transform 组件面板" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>

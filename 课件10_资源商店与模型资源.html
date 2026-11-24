@@ -573,7 +573,7 @@ function copyImgName(btn){
 <div class="slide" data-page="9"><div class="slide-inner markable">
 <h1>导出资源包 · 导出（Export Package）</h1>
 <div class="card"><p>反过来也有用：想把做好的东西<strong>带走</strong>——换台机器接着做、发给同学、交作业、请老师帮忙排查，都可以打包成一个 <code>.unitypackage</code>。</p><p>打包的对象是<strong>工程里的文件夹</strong>，既不是单个场景，也不是整个工程。</p></div>
-<div class="card"><h3>① 在 Project 里选中要打包的文件夹</h3><ul><li>选中 <code>Assets</code> 下<strong>自己做的那个文件夹</strong>（例：<code>Assets/我的场景</code>）</li><li><strong>别直接选 Assets 本身</strong>——那样会把商店下载的资源、导入的模型全部打进去，包从几 MB 变成几百 MB</li></ul></div>
+<div class="card"><h3>① 在项目（Project）里选中要打包的文件夹</h3><ul><li>选中 <code>Assets</code> 下<strong>自己做的那个文件夹</strong>（例：<code>Assets/我的场景</code>）</li><li><strong>别直接选 Assets 本身</strong>——那样会把商店下载的资源、导入的模型全部打进去，包从几 MB 变成几百 MB</li></ul></div>
 <img src="images/课件10/导出包1-选中文件夹.png" alt="在 Project 窗口选中自己要打包的文件夹" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>② 右键 → 导出包</h3><ul><li>在选中的文件夹上右键 → <strong>导出包（Export Package…）</strong></li><li>也可以走菜单栏 <strong>资源（Assets）→ 导出包（Export Package…）</strong></li></ul></div>
 <img src="images/课件10/导出包2-导出包菜单.png" alt="右键菜单里的导出包" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:50%" onerror="imgMissing(this)">
@@ -588,7 +588,7 @@ function copyImgName(btn){
 <div class="card"><p>地形资源导入后（页面6「下载并导入到项目」），先把它<strong>摆进场景</strong>当场地，再顺手把<strong>紫色材质修好</strong>，场地就能用了。</p></div>
 <div class="card"><h3>① 修复材质着色器（解决紫色）</h3><ul>
 <li>导入后材质发紫，是资源自带的 <strong>Shader</strong> 和本项目的渲染管线没对上——这是资源商店资源的常见现象</li>
-<li>在 <strong>Project 窗口</strong>选中发紫的材质，在 <strong>Inspector</strong> 里把 <strong>Shader 改成 Standard</strong></li>
+<li>在 <strong>项目（Project）窗口</strong>选中发紫的材质，在 <strong>检查器（Inspector）</strong> 里把 <strong>Shader 改成 Standard</strong></li>
 <li>所有发紫材质都做同样处理，最后按 <strong>Ctrl + S</strong> 保存修改</li>
 </ul></div>
 <img src="images/课件10/材质Shader改Standard-前.png" alt="选中材质，Inspector 里 Shader 还是旧值（紫色预览）" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
@@ -598,7 +598,7 @@ function copyImgName(btn){
 </ul></div>
 <img src="images/课件10/Prefabs目录.png" alt="Assets/资源名/Prefabs 下的预制体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>③ 使用预制体：把地形摆进场景</h3><ul>
-<li>把 <strong>地形预制体</strong>拖进 <strong>Hierarchy 窗口</strong>或<strong>场景视图</strong>，它就出现在场景里，作为你的<strong>场地地面</strong></li>
+<li>把 <strong>地形预制体</strong>拖进 <strong>层级（Hierarchy）窗口</strong>或<strong>场景视图</strong>，它就出现在场景里，作为你的<strong>场地地面</strong></li>
 </ul></div>
 <img src="images/课件10/地形预制体拖入.gif" alt="把地形预制体拖进场景（动图）" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>预制体的实例与模板关系（类比类与对象）</h3><ul>
@@ -607,7 +607,7 @@ function copyImgName(btn){
 <li><strong>改游戏对象 → 预制体不受影响</strong>：在场景里只改某一个游戏对象，这只是这个<strong>实例自己的覆盖（override）</strong>，<strong>不会写回预制体</strong>——其他实例和模板都不变（就像只改某个对象，类本身不变）</li>
 <li>这节课用到的地形、建筑、树木都是预制体，拖一次就是一个游戏对象实例；想让所有同类物体统一变样，就去改预制体</li>
 </ul>
-<p>下面两张检视器（Inspector）对比着看：左边选中的是<strong>预制体本身</strong>，右边选中的是<strong>场景里的游戏对象</strong>。注意游戏对象的检视器多了一块<strong>Prefab（预制体）区</strong>——它标着这个对象"来自哪个预制体"，还能把改动<strong>应用（Apply）回预制体</strong>；这就是实例和模板之间那条线的直观证据。</p>
+<p>下面两张检查器（Inspector）对比着看：左边选中的是<strong>预制体本身</strong>，右边选中的是<strong>场景里的游戏对象</strong>。注意游戏对象的检查器多了一块<strong>Prefab（预制体）区</strong>——它标着这个对象"来自哪个预制体"，还能把改动<strong>应用（Apply）回预制体</strong>；这就是实例和模板之间那条线的直观证据。</p>
 </div>
 <div class="img-pair"><img src="images/课件10/预制体检视器.png" alt="选中预制体，查看其 Inspector" class="card-img pair" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件10/游戏对象检视器.png" alt="选中场景里的游戏对象，查看其 Inspector（多出 Prefab 区）" class="card-img pair" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
 <div class="card"><h3>④ 添加地形道具：摆建筑 / 环境</h3><ul>
@@ -633,7 +633,7 @@ function copyImgName(btn){
 <li><strong>选三类资源</strong>：在资源商店里选 <code>天空盒资源</code>、<code>角色-人物</code>、<code>角色-动物</code>（免费即可），各至少 1 个</li>
 <li><strong>下载并导入</strong>：按<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">页面6「下载并导入到项目」</mark>把三类资源下到工程</li>
 <li><strong>网络不通怎么办</strong>：用老师发的<strong>离线资源包</strong>导入（做法见<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">页面7「离线资源包」</mark>），判定标准不变——资源进到工程里、能摆进场景就算数</li>
-<li><strong>更换天空盒材质</strong>：在场景里把天空盒换成你导入的那一套（Window → Rendering → Lighting → Environment → Skybox Material 选你的天空盒）</li>
+<li><strong>更换天空盒材质</strong>：在场景里把天空盒换成你导入的那一套——菜单 窗口（Window）→ 渲染（Rendering）→ 照明（Lighting）→ 环境（Environment）→ 天空盒材质（Skybox Material），选你自己的天空盒</li>
 <li><strong>加入角色预制体</strong>：把人物、动物资源里的<strong>预制体</strong>拖进场景，站在地形上（地形做法见<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">页面9「使用地形资源」</mark>）</li>
 <li><strong>组合场景</strong>：让<strong>人物 + 动物 + 天空盒 + 地形</strong>同时出现在场景里，比例自然、角色不悬空，按 <code>Ctrl + S</code> 保存</li>
 </ul></div>

@@ -526,7 +526,7 @@ function copyImgName(btn){
 <div class="card"><p>把 <code>Character Controller</code> 加到 Player 上，最直观的变化是：<strong>模型外面多出了一个胶囊形的线框</strong>——看着就像给角色套了个椭圆边框。它就是 Character Controller 自带的碰撞体，角色会被什么挡住，都由这个线框说了算。</p><p>这个组件是 Unity <strong>专门为角色</strong>准备的，适合第一 / 第三人称的角色——它把角色的<strong>碰撞体</strong>和<strong>移动</strong>都接管了过来。具体有什么特点，接着往下看。</p></div>
 <img src="images/课件13/角色控制器胶囊边框.png" alt="角色身上加上 Character Controller 后出现的胶囊形碰撞体线框" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>它的特点</h3><ul><li><strong>不参与物理模拟</strong>：不会被撞飞，也不会自己滑走</li><li><strong>Move 方法精确控制</strong>：走多远、往哪走，完全由代码决定</li><li><strong>自带碰撞检测</strong>：挡得住墙，又不会像刚体那样弹开</li><li><strong>台阶与斜坡</strong>：用 <code>Step Offset</code> 跨越台阶，用 <code>Slope Limit</code> 控制可攀爬的坡度</li></ul></div>
-<div class="card"><h3>添加与参数</h3><p>选中 Player → <code>Add Component</code> → <code>Character Controller</code>。它<strong>内置胶囊碰撞体</strong>，所以原来的 <code>Capsule Collider</code> 可以移除。下面是它各项参数的作用，逐个认识一下：</p><table>
+<div class="card"><h3>添加与参数</h3><p>选中 Player → <code>添加组件（Add Component）</code> → <code>角色控制器（Character Controller）</code>。它<strong>内置胶囊碰撞体</strong>，所以原来那个 <code>Capsule Collider</code>（胶囊碰撞体）可以移除。下面是它各项参数的作用，逐个认识一下：</p><table>
 <tr><th>参数</th><th>作用</th></tr>
 <tr><td><strong>斜度限制（Slope Limit）</strong></td><td>能爬上去的最大坡度。超过这个角度，角色会滑下来、上不去。默认 <code>45</code></td></tr>
 <tr><td><strong>每步偏移量（Step Offset）</strong></td><td>能自动迈上去的台阶高度（米）。<code>0.3</code> ≈ 30cm 以下的台阶直接走过去，不用跳</td></tr>
