@@ -561,6 +561,42 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="4"><div class="slide-inner markable">
 <h1>游戏管理器</h1>
+<div class="card"><h3>游戏管理器是什么</h3><ul><li>一个场景里<strong>只放一个</strong>的「总管」：不管某只动物咬了几口、某把枪打了几发，只管<strong>全局的、整体的事</strong>——这一局有没有结束、接下来该去哪</li><li>课件15 建的 <code>GameManager</code> 就是它：身上已经挂着主控脚本 <code>MainLogic</code>，全局的脚本都往它身上挂，各管一摊</li></ul></div>
+<div class="card"><h3>它和「死亡事件」是什么关系</h3><ul><li>「血被打空」这件事只发生在<strong>血条脚本</strong>里，它<strong>管不了整个游戏</strong>——它能知道的只有「这个玩家血没了」</li><li>「这一局该收场了」是<strong>全局</strong>的事：压黑屏、停操作、回启动场景，只有游戏管理器有资格做</li><li>两头靠<strong>事件</strong>接起来：血条脚本喊一声「他死了」（抛出死亡事件），游戏管理器听见就接手——<strong>喊的人不必认识听的人</strong>，这就是下一页要讲的解耦</li></ul></div>
+<svg viewBox="0 0 680 274" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:4px auto 14px;font-family:inherit" role="img" aria-label="死亡事件流向示意：血条脚本 HealthChange 把血扣到 0，抛出一次死亡事件，游戏管理器 GameFlowManager 订阅到后接管全局，先让黑屏 Alpha 从 0 渐变到 1，再等 3 秒加载回启动场景">
+<rect x="1" y="1" width="678" height="272" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
+<text x="24" y="30" font-size="14" font-weight="700" fill="var(--accent2)">一次死亡事件，怎么走到游戏管理器手里</text>
+<text x="24" y="50" font-size="12" fill="var(--text-muted)">血条脚本只报告「血没了」，什么时候收场由游戏管理器定</text>
+<rect x="24" y="66" width="172" height="78" rx="10" fill="var(--bg-card)" stroke="var(--accent)" stroke-width="1.3"/>
+<rect x="24" y="72" width="4" height="66" rx="2" fill="var(--accent)"/>
+<text x="40" y="88" font-size="12" font-weight="700" fill="var(--text)">血条脚本</text>
+<text x="40" y="104" font-size="10.5" fill="var(--text-muted)">HealthChange</text>
+<text x="40" y="127" font-size="10.5" fill="var(--text)">血扣到 0</text>
+<path d="M198 104 H216" stroke="var(--text-muted)" stroke-width="1.4"/>
+<path d="M225 104 L214 98.6 V109.4 Z" fill="var(--text-muted)"/>
+<text x="212" y="92" font-size="9.5" fill="var(--text-muted)" text-anchor="middle">抛出</text>
+<rect x="228" y="66" width="168" height="78" rx="10" fill="var(--bg-card)" stroke="var(--accent2)" stroke-width="1.3"/>
+<rect x="228" y="72" width="4" height="66" rx="2" fill="var(--accent2)"/>
+<text x="244" y="88" font-size="12" font-weight="700" fill="var(--text)">死亡事件</text>
+<text x="244" y="104" font-size="10.5" fill="var(--text-muted)">一次广播</text>
+<text x="244" y="127" font-size="10.5" fill="var(--text)">谁订阅谁收到</text>
+<path d="M398 104 H414" stroke="var(--text-muted)" stroke-width="1.4"/>
+<path d="M423 104 L412 98.6 V109.4 Z" fill="var(--text-muted)"/>
+<text x="410" y="92" font-size="9.5" fill="var(--text-muted)" text-anchor="middle">订阅</text>
+<rect x="424" y="66" width="232" height="78" rx="10" fill="var(--bg-card)" stroke="var(--green)" stroke-width="1.3"/>
+<rect x="424" y="72" width="4" height="66" rx="2" fill="var(--green)"/>
+<text x="440" y="88" font-size="12" font-weight="700" fill="var(--text)">游戏管理器</text>
+<text x="440" y="104" font-size="10.5" fill="var(--text-muted)">GameFlowManager</text>
+<text x="440" y="127" font-size="10.5" fill="var(--text)">收到就接管全局</text>
+<path d="M540 144 V170" stroke="var(--text-muted)" stroke-width="1.4"/>
+<path d="M540 176 L534.6 165 H545.4 Z" fill="var(--text-muted)"/>
+<rect x="24" y="176" width="632" height="78" rx="10" fill="none" stroke="var(--border)" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="40" y="196" font-size="11" font-weight="700" fill="var(--accent2)">接管之后，按顺序做两件事</text>
+<rect x="40" y="204" width="282" height="36" rx="8" fill="var(--bg-card)" stroke="var(--accent)" stroke-width="1"/>
+<text x="56" y="227" font-size="11.5" fill="var(--text)">① 黑屏 Alpha 从 0 渐变到 1</text>
+<rect x="346" y="204" width="294" height="36" rx="8" fill="var(--bg-card)" stroke="var(--accent)" stroke-width="1"/>
+<text x="362" y="227" font-size="11.5" fill="var(--text)">② 等 3 秒，LoadScene 回启动场景</text>
+</svg>
 <div class="card"><p>这里<strong>不用再新建空对象</strong>——直接用<strong>课件15 建好的 <code>GameManager</code></strong>：在<strong>层级（Hierarchy）</strong>里找到它，把 <code>GameFlowManager.cs</code> 挂上去。</p><p>它身上已经挂着课件15 的主控脚本 <code>MainLogic</code>，现在再加一个管游戏流程的脚本——<strong>全局的脚本都交给这一个 GameManager</strong>，各管一摊，这正是课件15 里把它命名成 <code>GameManager</code> 的原因。</p></div><div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4334923840',this)">复制</button></div>
 <pre id="c_4334923840"><code class="language-csharp">public class GameFlowManager : MonoBehaviour {
