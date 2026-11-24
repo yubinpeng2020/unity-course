@@ -513,7 +513,7 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="3"><div class="slide-inner markable">
 <h1>添加黑屏画布</h1>
-<div class="card"><ol><li>创建 UI 画布，命名 <code>EndGameFadeCanvas</code></li><li>画布的<strong>排序次序（Sort Order）</strong>设为 <code>1</code>——GameUI 是 <code>0</code>，黑屏要压在它上面</li><li>建全黑图像：全拉伸、颜色 <code>0,0,0</code></li><li>取消勾选画布显示（平时不挡画面），再加画布组（Canvas Group），Alpha 设 <code>0</code>——黑屏靠 Alpha 0→1 淡出来</li></ol></div>
+<div class="card"><h3>第 1 步 · 创建画布</h3><ol><li>创建 UI 画布，命名 <code>EndGameFadeCanvas</code></li><li>画布的<strong>排序次序（Sort Order）</strong>设为 <code>1</code>——GameUI 是 <code>0</code>，黑屏要压在它上面</li></ol></div>
 <img src="images/课件21/创建黑屏画布.png" alt="创建黑屏画布" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>排序次序（Sort Order）：决定谁盖住谁</h3><ul><li>屏幕上的画布是<strong>一层压一层</strong>画出来的，画布组件的<strong>排序次序</strong>就是这个层号：<strong>数字越大越晚画，越盖在上面</strong></li><li>GameUI 是 <code>0</code>、黑屏画布设 <code>1</code> → 黑屏盖住血条，死亡时连血条一起遮住</li><li>只调<strong>层级（Hierarchy）</strong>里的先后<strong>不管用</strong>：UI 谁在上面，只看排序次序</li><li>⚠️ 设反了（黑屏 <code>0</code>、GameUI <code>1</code>）→ 血条浮在黑屏上，看着像黑屏没生效</li></ul></div>
 <svg viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:4px auto 14px;font-family:inherit" role="img" aria-label="排序次序示意：左边是三块叠放，3D 场景在最下，GameUI 排序次序 0，黑屏画布排序次序 1 在最上；右边对比两种设定，黑屏设 0 时血条浮在黑屏上，黑屏设 1 时全黑、血条被盖住">
@@ -552,6 +552,9 @@ function copyImgName(btn){
 <text x="508" y="222" font-size="10.5" fill="var(--text-muted)">全黑，这才是死亡黑屏</text>
 <text x="344" y="252" font-size="10.5" fill="var(--text-muted)">排序次序只在画布之间比大小</text>
 </svg>
+<div class="card"><h3>第 2 步 · 添加全黑图像</h3><ol><li>在画布下创建 <strong>UI → 图像（Image）</strong></li><li>矩形变换选<strong>全拉伸</strong>（左、右、上、下都填 <code>0</code>），铺满整块屏幕</li><li>把图像的<strong>颜色</strong>改成 <code>0,0,0</code>——纯黑</li></ol></div>
+<img src="images/课件21/添加黑屏图像.png" alt="添加全黑图像：矩形变换选全拉伸、图像颜色调成 0,0,0" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>第 3 步 · 平时别挡画面</h3><ol><li>取消勾选画布的<strong>显示</strong>——平时不挡画面</li><li>给它加<strong>画布组（Canvas Group）</strong>，<code>Alpha</code> 设 <code>0</code>；黑屏靠 Alpha 0→1 淡出来</li></ol></div>
 </div></div>
 <div class="slide" data-page="4"><div class="slide-inner markable">
 <h1>游戏管理器</h1>
