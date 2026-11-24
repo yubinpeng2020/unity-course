@@ -602,7 +602,9 @@ public class PlayerMove : MonoBehaviour {
 <div class="card"><p>先看这一节要做成的效果：<strong>镜头始终跟着角色走</strong>，鼠标一动还能<strong>自由环视</strong>——左右转头、抬头低头，画面都跟着变，人走到哪儿镜头就跟到哪儿。这就是我们在游戏里熟悉的<strong>第一人称视角</strong>。接下来分两步把它做出来：先让摄像机跟住角色，再让鼠标把视角转起来。</p></div>
 <img src="images/课件13/最终效果.gif" alt="效果：第一人称视角下镜头跟随角色，鼠标自由环视，角色能走能跳" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 
-<div class="card"><p>最简单的跟随方式：<strong>把 Main Camera 直接作为 Player 的子节点</strong>，并把摄像机位置重置到合适高度（第一人称一般放在角色眼睛的高度）。</p></div><div class="card"><p>为什么这样就够了？因为<strong>子对象会跟着父对象一起移动、旋转</strong>——Player 走到哪，挂在它下面的摄像机自然就跟到哪，一行代码都不用写。</p></div><img src="images/课件13/摄像机挂载.png" alt="摄像机直接挂载" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><p>最简单的跟随方式：<strong>把 Main Camera 直接作为 Player 的子节点</strong>，再把摄像机位置调到合适高度（第一人称一般放在角色眼睛的高度）。</p></div><div class="card"><p>为什么这样就够了？因为<strong>子对象会跟着父对象一起移动、旋转</strong>——Player 走到哪，挂在它下面的摄像机自然就跟到哪，一行代码都不用写。</p></div><img src="images/课件13/摄像机挂载.png" alt="摄像机直接挂载" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<div class="card"><h3>挂好之后：先重置，再调高度</h3><ol><li>拖成子节点后，摄像机会<strong>保留它原来的坐标</strong>（相对于角色的一段偏移），数值看不出意思。先点检查器里 <strong>Transform</strong> 右上角的 <strong>⋮</strong> → <strong>重置（Reset）</strong>，位置归零——归零的位置就是<strong>角色身上那个原点</strong>。</li><li>再把 <code>Position</code> 的 <code>Y</code> 往上调，让镜头落在<strong>角色眼睛的高度</strong>（<code>X</code>、<code>Z</code> 保持 0，别左右偏）。调完进游戏看一眼：太低会看到角色后脑勺，太高像飘在半空。</li></ol></div>
+<img src="images/课件13/摄像机位置调整.png" alt="调整摄像机位置：先重置 Transform 归零，再把 Position 的 Y 调到眼睛高度" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><p>不过，摄像机只是跟着角色<strong>平移</strong>，镜头朝向一直是固定的——想看看左右两边，还得让角色自己转过去。要像游戏里那样用鼠标自由环视，就得再加一个脚本，让鼠标的移动变成旋转。</p></div>
 <div class="card"><h3>用鼠标转动视角</h3><p><code>PlayerRotate</code> 脚本：鼠标<strong>左右移动</strong>时旋转玩家，实现水平环视；鼠标<strong>上下移动</strong>时转动摄像机，并用 <code>Mathf.Clamp</code> 把俯仰角限制在 <strong>±60°</strong>，防止镜头翻过去。脚本<strong>挂在 Player 上</strong>，玩家和摄像机都在脚本里<strong>自动拿到</strong>，不用手动拖。</p></div>
 <div class="prompt-box">
