@@ -452,9 +452,9 @@ function copyImgName(btn){
     <div class="sidebar-title">📘 课件21_死亡与游戏管理器</div>
     <a href="#" class="nav-link nav-special" data-page="1"><span class="nav-status"></span>封面</a>
 <a href="#" class="nav-link" data-page="2"><span class="nav-status"></span>1. 本节学习目标 </a>
-<a href="#" class="nav-link" data-page="3"><span class="nav-status"></span>2. 1. 黑屏画布 </a>
-<a href="#" class="nav-link" data-page="4"><span class="nav-status"></span>3. 2. 游戏管理器 </a>
-<a href="#" class="nav-link" data-page="5"><span class="nav-status"></span>4. 3. 事件系统（解耦） </a>
+<a href="#" class="nav-link" data-page="3"><span class="nav-status"></span>2. 添加黑屏画布 </a>
+<a href="#" class="nav-link" data-page="4"><span class="nav-status"></span>3. 游戏管理器 </a>
+<a href="#" class="nav-link" data-page="5"><span class="nav-status"></span>4. 事件系统（解耦） </a>
 <a href="#" class="nav-link nav-special" data-page="6"><span class="nav-status"></span>结束页</a>
 
 </nav>
@@ -512,11 +512,49 @@ function copyImgName(btn){
 
 </div></div>
 <div class="slide" data-page="3"><div class="slide-inner markable">
-<h1>1. 黑屏画布</h1>
-<div class="card"><ol><li>创建 UI 画布 <code>EndGameFadeCanvas</code>，Canvas 排序次序设为 1（高于 GameUI）</li><li>建全黑图像（全拉伸、颜色 0,0,0）</li><li>取消勾选画布显示（不挡画面），加 CanvasGroup 设 Alpha=0（初始透明），靠 Alpha 0→1 实现渐变</li></ol></div><img src="images/课件21/创建黑屏画布.png" alt="创建黑屏画布" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<h1>添加黑屏画布</h1>
+<div class="card"><ol><li>创建 UI 画布，命名 <code>EndGameFadeCanvas</code></li><li>画布的<strong>排序次序（Sort Order）</strong>设为 <code>1</code>——GameUI 是 <code>0</code>，黑屏要压在它上面</li><li>建全黑图像：全拉伸、颜色 <code>0,0,0</code></li><li>取消勾选画布显示（平时不挡画面），再加画布组（Canvas Group），Alpha 设 <code>0</code>——黑屏靠 Alpha 0→1 淡出来</li></ol></div>
+<div class="card"><h3>排序次序（Sort Order）：决定谁盖住谁</h3><ul><li>屏幕上的画布是<strong>一层压一层</strong>画出来的，画布组件的<strong>排序次序</strong>就是这个层号：<strong>数字越大越晚画，越盖在上面</strong></li><li>GameUI 是 <code>0</code>、黑屏画布设 <code>1</code> → 黑屏盖住血条，死亡时连血条一起遮住</li><li>只调<strong>层级（Hierarchy）</strong>里的先后<strong>不管用</strong>：UI 谁在上面，只看排序次序</li><li>⚠️ 设反了（黑屏 <code>0</code>、GameUI <code>1</code>）→ 血条浮在黑屏上，看着像黑屏没生效</li></ul></div>
+<svg viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;max-width:680px;margin:4px auto 14px;font-family:inherit" role="img" aria-label="排序次序示意：左边是三块叠放，3D 场景在最下，GameUI 排序次序 0，黑屏画布排序次序 1 在最上；右边对比两种设定，黑屏设 0 时血条浮在黑屏上，黑屏设 1 时全黑、血条被盖住">
+<rect x="1" y="1" width="678" height="278" rx="14" fill="var(--bg-input)" stroke="var(--border)"/>
+<text x="24" y="28" font-size="14" font-weight="700" fill="var(--accent2)">排序次序（Sort Order）：数字越大，越晚画 → 越盖在上面</text>
+<text x="24" y="50" font-size="12" fill="var(--text-muted)">同一块屏幕上，画布是一层层叠着画的</text>
+<path d="M30 238 V84" stroke="var(--text-muted)" stroke-width="1.4" opacity="0.55"/>
+<path d="M30 70 L25 85 H35 Z" fill="var(--text-muted)" opacity="0.55"/>
+<rect x="48" y="64" width="276" height="50" rx="9" fill="var(--bg-card)" stroke="var(--accent2)" stroke-width="1.2"/>
+<rect x="48" y="70" width="4" height="38" rx="2" fill="var(--accent2)"/>
+<text x="64" y="86" font-size="11.5" font-weight="700" fill="var(--text)">EndGameFadeCanvas</text>
+<text x="64" y="103" font-size="10.5" fill="var(--text-muted)">全黑图像，平时 Alpha=0</text>
+<text x="313" y="90" font-size="11" font-weight="700" fill="var(--accent2)" text-anchor="end">排序 1</text>
+<rect x="48" y="122" width="276" height="50" rx="9" fill="var(--bg-card)" stroke="var(--accent)" stroke-width="1.2"/>
+<rect x="48" y="128" width="4" height="38" rx="2" fill="var(--accent)"/>
+<text x="64" y="144" font-size="11.5" font-weight="700" fill="var(--text)">GameUI</text>
+<text x="64" y="161" font-size="10.5" fill="var(--text-muted)">血条底板、填充、图标</text>
+<text x="313" y="148" font-size="11" font-weight="700" fill="var(--accent)" text-anchor="end">排序 0</text>
+<rect x="48" y="180" width="276" height="50" rx="9" fill="var(--bg-secondary)" stroke="var(--border)" stroke-width="1.2" stroke-dasharray="5 4"/>
+<rect x="48" y="186" width="4" height="38" rx="2" fill="var(--green)" opacity="0.6"/>
+<text x="64" y="202" font-size="11.5" font-weight="700" fill="var(--text-muted)">3D 场景画面</text>
+<text x="64" y="219" font-size="10.5" fill="var(--text-muted)">玩家、动物、地形</text>
+<text x="313" y="206" font-size="10.5" fill="var(--text-muted)" text-anchor="end">不是画布</text>
+<text x="48" y="252" font-size="11" fill="var(--accent)">↑ 越靠上 = 越晚画 = 盖住下面的</text>
+<text x="344" y="76" font-size="12" font-weight="700" fill="var(--text)">Game 视图（Game）里看到的</text>
+<rect x="344" y="88" width="148" height="100" rx="8" fill="#000000" stroke="var(--border)"/>
+<rect x="356" y="102" width="100" height="14" rx="3" fill="#2A2F45" stroke="var(--border)"/>
+<rect x="358" y="104" width="64" height="10" rx="2" fill="#F92137"/>
+<text x="470" y="113" font-size="10" fill="var(--text-muted)">血条</text>
+<text x="344" y="206" font-size="10.5" font-weight="700" fill="var(--red)">黑屏 0 / 血条 1 ✗</text>
+<text x="344" y="222" font-size="10.5" fill="var(--text-muted)">血条浮在黑屏上</text>
+<rect x="508" y="88" width="148" height="100" rx="8" fill="#000000" stroke="var(--border)"/>
+<rect x="520" y="102" width="100" height="14" rx="3" fill="none" stroke="var(--text-muted)" stroke-dasharray="3 3" opacity="0.45"/>
+<text x="582" y="138" font-size="10" fill="var(--text-muted)">血条被盖住</text>
+<text x="508" y="206" font-size="10.5" font-weight="700" fill="var(--green)">黑屏 1 / 血条 0 ✓</text>
+<text x="508" y="222" font-size="10.5" fill="var(--text-muted)">全黑，这才是死亡黑屏</text>
+<text x="344" y="252" font-size="10.5" fill="var(--text-muted)">排序次序只在画布之间比大小</text>
+</svg>
+<img src="images/课件21/创建黑屏画布.png" alt="创建黑屏画布" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 </div></div>
 <div class="slide" data-page="4"><div class="slide-inner markable">
-<h1>2. 游戏管理器</h1>
+<h1>游戏管理器</h1>
 <div class="card"><p>这里<strong>不用再新建空对象</strong>——直接用<strong>课件15 建好的 <code>GameManager</code></strong>：在<strong>层级（Hierarchy）</strong>里找到它，把 <code>GameFlowManager.cs</code> 挂上去。</p><p>它身上已经挂着课件15 的主控脚本 <code>MainLogic</code>，现在再加一个管游戏流程的脚本——<strong>全局的脚本都交给这一个 GameManager</strong>，各管一摊，这正是课件15 里把它命名成 <code>GameManager</code> 的原因。</p></div><div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4334923840',this)">复制</button></div>
 <pre id="c_4334923840"><code class="language-csharp">public class GameFlowManager : MonoBehaviour {
@@ -544,7 +582,7 @@ function copyImgName(btn){
 </div><div class="ok-box"><code>GameIsEnding</code> 由死亡事件触发修改（见下页）。⚠️ 启动场景<strong>还没建</strong>（在后面的「启动页面」那节建）：本节先把黑屏渐变跑通，加载场景那一行先留着——建好启动页再回来把检查器里的场景名填对，死亡才真正回得去。</div>
 </div></div>
 <div class="slide" data-page="5"><div class="slide-inner markable">
-<h1>3. 事件系统（解耦）</h1>
+<h1>事件系统（解耦）</h1>
 <div class="card"><p>用事件让「死亡」与「黑屏」互不硬依赖：</p></div><div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4334923136',this)">复制</button></div>
 <pre id="c_4334923136"><code class="language-csharp">public class GameEvent { }                       // 事件基类
