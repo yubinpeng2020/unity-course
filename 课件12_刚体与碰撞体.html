@@ -569,7 +569,7 @@ function copyImgName(btn){
 <tr><td><strong>Use Gravity 重力</strong></td><td>是否受重力影响（默认勾选，所以会下落）</td></tr>
 <tr><td><strong>是运动学的（Is Kinematic）</strong></td><td>不受力 / 扭矩影响，但可用脚本直接控制位置旋转</td></tr>
 </table></div>
-<img src="images/课件12/刚体属性.png" alt="Inspector 中 Rigidbody 刚体的物理属性面板" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<img src="images/课件12/刚体属性.png" alt="检查器中 Rigidbody 刚体的物理属性面板" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="ok-box">给对象加了 Rigidbody，它就"活"了——会下落、会被推。</div>
 <div class="card"><h3>但有个问题：对象只有刚体、没有碰撞体，会"穿模"</h3>
 <p>刚体让对象<strong>受重力下坠</strong>，可如果对象<strong>只有刚体、没有碰撞体</strong>，就会<strong>直接穿过地面</strong>一直往下掉——物理引擎根本不知道"地面在哪、该在哪被挡住"。这种现象叫<strong>穿模</strong>。</p>
@@ -621,7 +621,7 @@ function copyImgName(btn){
 <p>刚体让对象<strong>受重力下坠</strong>，碰撞体让对象<strong>不穿模</strong>——把两者合起来，对象就会<strong>落到地面并稳稳站住</strong>：重力一直往下拉，地面的碰撞体把它挡住，于是停在接触面上。</p>
 <img src="images/课件12/落地.gif" alt="效果：人物/动物受重力落到地面、被碰撞体挡住并稳稳站住（不穿模）" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <p>注意组件的搭配：<strong>人物和动物</strong>都要加 <strong>刚体 + 碰撞体</strong>——既能受力下落、又能被地面挡住；而<strong>地面只要碰撞体</strong>就够了，它本来就不用动，只负责"挡住"掉下来的对象。</p>
-<img src="images/课件12/三者检视器截图.png" alt="截图（合并一张）：人物、动物、地面的检视器——人物与动物都有刚体+碰撞体，地面只有碰撞体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
+<img src="images/课件12/三者检视器截图.png" alt="截图（合并一张）：人物、动物、地面的检查器——人物与动物都有刚体+碰撞体，地面只有碰撞体" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
 <div class="card"><h3>碰撞发生的那一刻，Unity 会自动"喊"你一声</h3>
 <p>角色落到地面上、或者撞到别的物体——这个"碰上了"的瞬间，Unity 会<strong>自动调用</strong>一个固定名字的函数，叫 <code>OnCollisionEnter</code>：</p>
 <div class="prompt-box">
@@ -639,7 +639,7 @@ public class CollisionLogger : MonoBehaviour
     }
 }</code></pre>
 </div>
-<p>把这段脚本挂到角色上再运行：角色一碰到东西，Console（控制台）窗口就会打印出对方的名字。</p>
+<p>把这段脚本挂到角色上再运行：角色一碰到东西，控制台（Console）窗口就会打印出对方的名字。</p>
 <ul>
 <li><strong>不用我们去调用</strong>——只要把名字写成 <code>OnCollisionEnter</code>，Unity 自己会在碰撞发生的那一刻调用它（这类"到点自动执行"的函数叫<strong>回调</strong>）。</li>
 <li><strong>触发条件就是上一张卡的两个条件</strong>：两个对象都有碰撞体，且至少一方有刚体；否则碰不上，也就不会调用。</li>
@@ -786,10 +786,10 @@ public class Move2D_Jump : MonoBehaviour
 <li><code>void OnCollisionExit(Collision other)</code> —— <strong>离开</strong>对方时调用：<strong>走下平台边缘</strong>、被撞飞、跳起来离开地面时，把 <code>isGrounded</code> 设回 <code>false</code>。没有它，角色走出平台后在空中还能再跳一次。</li>
 </ul></div>
 <div class="card"><h3>补充：刚体也可以手动拖拽赋值</h3>
-<p>除了让脚本自己获取，还有另一种更直白的写法：把 <code>rb</code> 声明成 <code>public Rigidbody rb;</code>，再在 Inspector 里把角色身上的 Rigidbody <strong>拖</strong>到这个格子上。</p>
+<p>除了让脚本自己获取，还有另一种更直白的写法：把 <code>rb</code> 声明成 <code>public Rigidbody rb;</code>，再在检查器里把角色身上的 Rigidbody <strong>拖</strong>到这个格子上。</p>
 <ul>
 <li>两种写法<strong>效果完全一样</strong>——都是让 <code>rb</code> 指向角色自己的刚体组件。</li>
-<li>区别只在<strong>谁来赋值</strong>：拖拽是在 Inspector 里<strong>手动</strong>做；<code>GetComponent</code> 是脚本在 <code>Start()</code> 里<strong>自己</strong>做。</li>
+<li>区别只在<strong>谁来赋值</strong>：拖拽是在检查器里<strong>手动</strong>做；<code>GetComponent</code> 是脚本在 <code>Start()</code> 里<strong>自己</strong>做。</li>
 <li>用代码获取更省心：脚本挂上去就能跑，<strong>不怕漏拖</strong>——一旦忘拖，<code>rb</code> 就是空的，用到它就会报<strong>空引用</strong>错误。</li>
 </ul></div>
 <div class="ok-box"><span class="eico">💡</span> 跳跃的"上"和"下"都交给物理引擎——我们只在按空格那一瞬间给一个<strong>向上的冲量</strong>，其余由<strong>重力</strong>和<strong>地面的碰撞体</strong>完成。动手前记得：① 角色要有 <strong>Rigidbody + Collider</strong>、地面要有 <strong>Collider</strong>；② 把课件11 挂在角色上的旧移动脚本<strong>移除或取消勾选</strong>，免得两个脚本同时控制角色。</div>
@@ -818,7 +818,7 @@ public class Move2D_Jump : MonoBehaviour
 <li><strong>搭场景</strong>：一个地面（Plane，自带 Mesh Collider）+ 一个角色（Cube / Capsule），角色<strong>悬空</strong>摆放（离地一段距离）</li>
 <li><strong>加刚体</strong>：给角色加 <code>Rigidbody</code>，运行后角色受重力<strong>下落</strong>，并<strong>稳稳落在地面上</strong>（不穿模、不掉下去）</li>
 <li><strong>加碰撞体</strong>：给角色加合适的 <code>Collider</code>（记得点"编辑碰撞器"<strong>调整边框</strong>包裹模型）；地面本身就是碰撞体</li>
-<li><strong>参数可调</strong>：把跳跃冲量 <code>jumpForce</code> 用 <code>public</code> 暴露到 Inspector，能现场调跳多高</li>
+<li><strong>参数可调</strong>：把跳跃冲量 <code>jumpForce</code> 用 <code>public</code> 暴露到检查器（Inspector），能现场调跳多高</li>
 </ul></div>
 <img src="images/课件12/脚本 --- 运行 --- 跳跃.gif" alt="基础效果：角色能用键盘移动，按空格跳起、受重力稳稳落回地面" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>核心要求</h3><ul>

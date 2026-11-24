@@ -639,7 +639,7 @@ public class Move2D : MonoBehaviour
 <div class="card"><h3>③ 把脚本挂到人物对象上</h3>
 <p>两种方式：（1）在层级（Hierarchy）选中<strong>人物对象</strong>，把项目（Project）里的 <code>Move2D</code> 脚本<strong>拖到右侧检查器（Inspector）</strong>；（2）在检查器（Inspector）点 <code>添加组件（Add Component）</code>，搜索 <code>Move2D</code> 添加。挂好后检查器里会多出一个 <code>Move2D</code> 组件。</p>
 </div>
-<img src="images/课件11/挂载脚本给人物.png" alt="把 Move2D 脚本拖到人物对象的 Inspector" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<img src="images/课件11/挂载脚本给人物.png" alt="把 Move2D 脚本拖到人物对象的检查器" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>🎥 操作教学：对齐到视图（Align With View）</h3><p>挂好脚本、运行前，建议先把<strong>摄像头（Main Camera）</strong>的视角对齐成你当前在场景里看的角度，否则一按播放，<strong>游戏视图</strong>可能和你想看的角度不一样、甚至看不到人物。做法：</p>
 <ul>
 <li>① 在 <strong>层级（Hierarchy）</strong> 窗口里<strong>选中 Main Camera</strong>（摄像头）；</li>
@@ -744,11 +744,11 @@ public class Move3D : MonoBehaviour
 <div class="card"><h3>动手前：先处理上一节的旧脚本组件</h3>
 <p>上一节（二维运动）挂的是脚本 <code>Move2D</code>，这一节换成了<strong>新的脚本</strong> <code>Move3D</code>。两个脚本都挂在角色身上，就会<strong>同时控制同一个对象</strong>——前后左右被动一次、又被动一次，速度翻倍、行为打架。动手前先把旧的 <code>Move2D</code> 处理掉，二选一：</p>
 <ul>
-<li><strong>做法一 · 移除组件</strong>：在 Inspector 里找到 <code>Move2D</code> 组件，点组件右上角 <strong>⋮ → 移除组件（Remove Component）</strong> 把它删掉；</li>
+<li><strong>做法一 · 移除组件</strong>：在检查器里找到 <code>Move2D</code> 组件，点组件右上角 <strong>⋮ → 移除组件（Remove Component）</strong> 把它删掉；</li>
 <li><strong>做法二 · 取消勾选</strong>：取消勾选 <code>Move2D</code> 组件名左边的复选框，脚本就不再启用（想留着旧写法做对比时很方便）。</li>
 </ul>
 <p style="margin-top:.6rem"><strong>做法一</strong>的操作示意（点组件右上角 ⋮ → 移除组件）：</p>
-<img src="images/课件11/移除Move2D组件.png" alt="在 Inspector 中移除 Move2D 组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<img src="images/课件11/移除Move2D组件.png" alt="在检查器中移除 Move2D 组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <p style="margin-top:.6rem"><strong>做法二</strong>的操作示意（取消勾选组件名左边复选框）：</p>
 <img src="images/课件11/取消勾选Move2D组件.png" alt="取消勾选 Move2D 组件使其不启用" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 </div>
@@ -866,7 +866,7 @@ public class Move2D : MonoBehaviour
 </div>
 <div class="card"><h3>代码逐行解释</h3>
 <ul>
-<li><code>float disPreSec = 6f;</code> —— 移动速度（单位 / 秒），数值越大走得越快，可在 Inspector 调；改默认值后需 Reset 组件才生效。</li>
+<li><code>float disPreSec = 6f;</code> —— 移动速度（单位 / 秒），数值越大走得越快，可在检查器调；改默认值后需 Reset 组件才生效。</li>
 <li><code>float horizontal = Input.GetAxis("Horizontal");</code> —— 取 <strong>X 轴（左右）</strong>的输入值，范围 -1~1：按 <code>D</code> 趋近 1、按 <code>A</code> 趋近 -1（也兼容 ← / →）。</li>
 <li><code>float vertical = Input.GetAxis("Vertical");</code> —— 取 <strong>Z 轴（前后）</strong>的输入值，-1~1：<code>W</code> 为正、<code>S</code> 为负（兼容 ↑ / ↓）。</li>
 <li><code>Vector3 move = new Vector3(horizontal, 0, vertical);</code> —— 把两个轴线值组装成位移向量：X 用 <code>horizontal</code>、<strong>Y 用 0</strong>（这一版只做水平移动，先不上下）、Z 用 <code>vertical</code>。</li>
@@ -914,7 +914,7 @@ public class Move3D : MonoBehaviour
 <li><strong>搭一个简单场景</strong>：一个地面（Plane 或 Cube）+ 一个角色（Cube / Capsule 即可），角色摆在地面上、不悬空</li>
 <li><strong>二维移动</strong>：用 <code>Input.GetAxis</code> 写前后左右走（W/S 前后、A/D 左右，也兼容方向键），速度用 <code>public float disPreSec</code></li>
 <li><strong>三维升降</strong>：在输入管理器新增 <code>VerticalY</code> 轴线（正向 <code>j</code>、负向 <code>k</code>），让角色能上升 / 下降（做法见<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">第 4 节</mark>）</li>
-<li><strong>参数可调</strong>：<code>disPreSec</code> 用 <code>public</code> 暴露到 Inspector，能现场调快慢</li>
+<li><strong>参数可调</strong>：<code>disPreSec</code> 用 <code>public</code> 暴露到检查器（Inspector），能现场调快慢</li>
 </ul></div>
 <img src="images/课件11/作业_基础效果.gif" alt="作业基础效果：角色用键盘前后左右移动并上下升降" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>核心要求</h3><ul>

@@ -956,7 +956,7 @@ foreach (int s in scores)   // 自动取每个元素
 <div class="card">
 <p>先按下面的流程在 Unity 工程里<strong>新建一个脚本</strong>：</p>
 <ol>
-<li>在 Project 窗口 <code>Assets</code> 下新建文件夹 <code>Scripts</code></li>
+<li>在项目（Project）窗口 <code>Assets</code> 下新建文件夹 <code>Scripts</code></li>
 <li>右键 <code>Scripts</code> → <code>Create（创建）</code> → <code>C# Script（C# 脚本）</code></li>
 <li>双击脚本，自动启动 Visual Studio 编写代码</li>
 </ol>
@@ -1172,7 +1172,7 @@ private float     jumpForce = 3f;
 public  Transform pubTrans;         // 公有组件：Inspector 可拖入其他对象
 private Transform priTrans;         // 私有组件：Inspector 不可见</code></pre>
 </div>
-<div class="card"><p>推荐：能<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">private</mark>就 private（防止外部误改），想让 Inspector 显示就加 <code>[SerializeField]</code>——既安全又可调。</p><img src="images/课件8/serializefield_inspector.png" alt="SerializeField 让私有字段在 Inspector 显示" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)"></div>
+<div class="card"><p>推荐：能<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">private</mark>就 private（防止外部误改），想让检查器显示就加 <code>[SerializeField]</code>——既安全又可调。</p><img src="images/课件8/serializefield_inspector.png" alt="SerializeField 让私有字段在检查器显示" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)"></div>
 <div class="card"><h3>进阶：属性（Property）— 带保安的字段</h3><p>有时你想"外部能读、但只有我自己能改"，或"写入时要检查合法性"。C# 的<strong>属性（Property）</strong>外表像字段、内部有逻辑，用 <code>get</code>/<code>set</code> 包裹读写逻辑：</p><p><strong>get / set 是什么？</strong></p><ul><li><code>get</code>：读取属性时执行，决定外部拿到什么值（读保护）</li><li><code>set</code>：写入属性时执行，决定能不能改、改成什么，可在里面加合法性检查（写保护）</li><li><code>{ get; set; }</code> 读写都公开；<code>{ get; private set; }</code> 外部只读、仅类内部能改</li></ul><div style="margin-top:12px;padding:12px 16px;border-radius:12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.35);border-left:3px solid #F59E0B"><p>⚠️ <strong>Unity 里属性不显示！</strong> 检查器只序列化<strong>字段（field）</strong>，不认<strong>属性（property）</strong>。写成 <code>{ get; set; }</code> 的纯属性在检查器里<strong>看不到</strong>。要"既在面板显示、又用属性控制访问"，得用带 <code>[SerializeField]</code> 的<strong>私有字段</strong>做底，再用属性包一层（见下例）。</p></div></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_80393002',this)">复制</button></div>
@@ -1185,7 +1185,7 @@ public           int   Hp                   // 属性：外部只读，类内可
 // 外部只能读 Hp；要改只能调类内部方法（如受伤）→ 杜绝 hp = -5
 void TakeDamage(int d) { Hp -= d; }</code></pre>
 </div>
-<div class="ok-box"><span class="eico">💡</span> 大多数情况用 <code>[SerializeField]</code> 让私有字段在 Inspector 显示就够用了；<strong>属性</strong>适合"读写要带逻辑 / 想限制访问"的场合（如血量、金币）。下节课写第一个脚本，Inspector 里看到的是带 <code>[SerializeField]</code> 的<strong>私有字段</strong>；属性本身不显示，它只是代码里受控访问的"保安"。</div></div></div><div class="slide" data-page="13"><div class="slide-inner markable"><h1>List 集合 — 管理多个对象</h1>
+<div class="ok-box"><span class="eico">💡</span> 大多数情况用 <code>[SerializeField]</code> 让私有字段在检查器显示就够用了；<strong>属性</strong>适合"读写要带逻辑 / 想限制访问"的场合（如血量、金币）。下节课写第一个脚本，检查器里看到的是带 <code>[SerializeField]</code> 的<strong>私有字段</strong>；属性本身不显示，它只是代码里受控访问的"保安"。</div></div></div><div class="slide" data-page="13"><div class="slide-inner markable"><h1>List 集合 — 管理多个对象</h1>
 <div class="card"><p>List = <mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">会自动变长的数组</mark>：创建后可以随时增删，长度自动跟着变。先引入：<code>using System.Collections.Generic;</code></p></div>
 <div class="card"><h3>为什么不直接用数组？</h3><p>普通数组长度<strong>固定</strong>（<code>new int[3]</code> 就只能装 3 个，想加第 4 个就得新建）；而 <strong>List 能动态增删</strong>，不知道要存多少个时最方便——比如敌人一波波生成、道具拾取不断变多。</p></div>
 <div class="prompt-box">
@@ -1304,7 +1304,7 @@ switch (state)
 }</code></pre>
 </div>
 <div class="ok-box"><span class="eico">💡</span> 枚举字段在 Unity 的 <strong>检查器（Inspector）里会显示成下拉框</strong>——<code>public GameState state;</code> 或加 <code>[SerializeField]</code> 后，你不用记数字，直接在面板里点选状态。</div>
-<img src="images/课件8/inspector枚举下拉框.png" alt="Inspector 中枚举字段显示成下拉框" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
+<img src="images/课件8/inspector枚举下拉框.png" alt="检查器中枚举字段显示成下拉框" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
 <div class="ok-box"><span class="eico">💡</span> 后面做「游戏管理器」时，会用枚举管游戏状态；解析 UI 输入时优先用 <code>TryParse</code> 防止崩溃。</div></div></div><div class="slide" data-page="15"><div class="slide-inner markable">
 <h1>课堂练习 — 九九乘法表</h1>
 <div class="ok-box">用 for 循环嵌套，输出 9×9 乘法表。先自己写，再对照。</div>
