@@ -310,7 +310,8 @@ html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microso
 .mobile-more-menu .mm-item:hover{background:var(--accent-dim);color:var(--accent)}
 @media(max-width:768px){
 .sidebar{display:none}
-.slide-inner{padding:18px 18px 80px}
+/* 顶栏在这个模板里位于主区域内部（不是独立一行），幻灯片从顶部开始，得让出顶栏高度，否则中文大标题会被压住 */
+.slide-inner{padding:69px 18px 80px}
 .cover{padding-left:40px;padding-right:40px}
 .cover h1{font-size:32px}
 /* 底部导航条：按钮分居两端，页码点居中横向滚动，互不遮挡 */
@@ -339,6 +340,8 @@ html,body{height:100%;overflow:hidden;font-family:'Inter','PingFang SC','Microso
 /* 超窄屏：藏掉与 ☰ 菜单重复的「平铺 / 图下」，保证信息条和页码不被挤掉 */
 @media(max-width:420px){
 .header-bar{gap:4px;padding:6px 8px}
+/* 顶栏在这个模板里位于主区域内部，420 以下它矮了 6px，正文跟着下移一点 */
+.slide-inner{padding-top:63px}
 .header-btn{padding:6px 7px;font-size:11px}
 .header-btn[onclick="toggleFlat()"],.header-btn[onclick="toggleImgBottom()"]{display:none}
 }
@@ -471,7 +474,7 @@ function copyImgName(btn){
 <a href="#" class="nav-link" data-page="12"><span class="nav-status"></span>11. 脚本的生命周期 · 谁在调用 Start 与 Update</a>
 <a href="#" class="nav-link" data-page="13"><span class="nav-status"></span>12. 用日志看清脚本在干什么 · Debug.Log</a>
 <a href="#" class="nav-link" data-page="14"><span class="nav-status"></span>13. 游戏对象、组件与常用 API</a>
-<a href="#" class="nav-link" data-page="15"><span class="nav-status"></span>14. 让船动起来 · 移动的本质与向量</a>
+<a href="#" class="nav-link" data-page="15"><span class="nav-status"></span>14. 让船动起来 · 移动的本质与向量 Vector3</a>
 <a href="#" class="nav-link" data-page="16"><span class="nav-status"></span>15. transform · 改位置与旋转</a>
 <a href="#" class="nav-link" data-page="17"><span class="nav-status"></span>16. Time.time 与 Time.deltaTime</a>
 <a href="#" class="nav-link" data-page="18"><span class="nav-status"></span>17. 匀速移动 · 每帧走 速度 × deltaTime</a>
@@ -816,7 +819,7 @@ public class MoveObject : MonoBehaviour {
 <div class="ok-box"><span class="eico">💡</span> 记法：<code>transform</code> = 不用写 GetComponent 的"常驻快捷方式"；其它组件 = <code>GetComponent&lt;组件类型&gt;()</code> 现取现用。</div>
 
 </div></div>
-<div class="slide" data-page="15"><div class="slide-inner markable"><h1>让船动起来 · 移动的本质与向量</h1>
+<div class="slide" data-page="15"><div class="slide-inner markable"><h1>让船动起来 · 移动的本质与向量 Vector3</h1>
 <div class="card"><p><strong>本页要做什么：</strong>上一页认识了「对象由组件拼成、能从脚本读取它的信息」。这一页先弄清「让船动起来」到底在改什么，再认识改它要用的 <strong>向量 Vector3</strong>——位置、方向、速度在脚本里都是它。先看效果：</p></div>
 <img src="images/课件9/脚本 --- 运行 --- 绕圈移动.gif" alt="船绕圈移动效果" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card">
