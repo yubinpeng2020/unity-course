@@ -537,7 +537,7 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="3"><div class="slide-inner markable">
 <h1>Fbx 三要素</h1>
-<div class="card"><p>一个 Fbx 模型文件，最少包含三样东西：</p></div><div class="card"><table><tr><th>要素</th><th>定义</th><th>决定什么</th></tr><tr><td>Mesh 网格</td><td>顶点 + 三角面</td><td>物体的<strong>形状</strong></td></tr><tr><td>Material 材质</td><td>表面光学属性</td><td>物体的<strong>质感</strong></td></tr><tr><td>Texture 贴图</td><td>像素颜色图（如 tga）</td><td>物体表面的<strong>图案</strong></td></tr></table></div><img src="images/课件9/fbx文件截图.png" alt="Fbx 文件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件9/场景窗口 - fbx.gif" alt="Fbx 在场景中使用" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 为什么导入后模型&quot;没贴图&quot;或&quot;全白&quot;？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">多半是 Material / Texture 没一起带进来，或路径丢了。后面教你补。</div></div>
+<div class="card"><p>一个 Fbx 模型文件，最少包含三样东西：</p></div><div class="card"><table><tr><th>要素</th><th>定义</th><th>决定什么</th></tr><tr><td>网格（Mesh）</td><td>顶点 + 三角面</td><td>物体的<strong>形状</strong></td></tr><tr><td>材质（Material）</td><td>表面光学属性</td><td>物体的<strong>质感</strong></td></tr><tr><td>Texture 贴图</td><td>像素颜色图（如 tga）</td><td>物体表面的<strong>图案</strong></td></tr></table></div><img src="images/课件9/fbx文件截图.png" alt="Fbx 文件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><img src="images/课件9/场景窗口 - fbx.gif" alt="Fbx 在场景中使用" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><button class="fold-toggle qa" onclick="toggleFold(this)"><span class="arrow">▶</span> ❓ 为什么导入后模型&quot;没贴图&quot;或&quot;全白&quot;？</button><div class="fold-content"><div class="ok-box" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.04),var(--bg-card))">多半是 Material / Texture 没一起带进来，或路径丢了。后面教你补。</div></div>
 
 </div></div>
 <div class="slide" data-page="4"><div class="slide-inner markable">
@@ -579,7 +579,7 @@ function copyImgName(btn){
 <div class="card"><ul><li><strong>步骤三</strong>：在模型列表里选一个目标模型，可按<strong>类别</strong>筛选，比如「交通工具与运输」→「水上交通工具」→「帆船」</li></ul></div>
 <img src="images/课件9/polyhaven筛选模型.png" alt="按类别筛选模型" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="slide" data-page="9"><div class="slide-inner markable"><h1>下载、解压、导入工程</h1>
-<div class="card"><ul><li><strong>步骤四</strong>：进入详情页，点 <strong>Download（下载）</strong>，<strong>格式选 fbx</strong>，分辨率任选（如 1K / 2K）</li></ul></div>
+<div class="card"><ul><li><strong>步骤四</strong>：进入详情页，点 <strong>下载（Download）</strong>，<strong>格式选 fbx</strong>，分辨率任选（如 1K / 2K）</li></ul></div>
 <img src="images/课件9/polyhaven下载选fbx.png" alt="下载模型并选 fbx 格式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><ul><li><strong>步骤五</strong>：解压下载包，把 fbx 与配套贴图放进项目 <code>Assets</code> 或 <code>Models</code> 文件夹；若弹出<strong>「NormalMap 设置」</strong>窗口，点击 <strong>Fix now</strong></li></ul></div>
 <img src="images/课件9/polyhaven解压与FixNow.png" alt="解压并修复 NormalMap 设置" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
@@ -588,9 +588,9 @@ function copyImgName(btn){
 <div class="ok-box"><span class="eico">✅</span> 模型自带材质与贴图，导入后可直接用；想换皮肤，按「替换导入模型的材质与贴图」操作。</div>
 <img src="images/课件9/polyhaven模型自带贴图.png" alt="模型自带的材质与贴图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div><div class="slide" data-page="10"><div class="slide-inner markable"><h1>写第一个 C# 脚本 · 从建文件夹到类名一致</h1>
 <div class="card"><p>前面讲完模型与贴图，接下来让模型<strong>动起来、有逻辑</strong>。做法是：写一段 <strong>C# 脚本</strong>，<strong>挂载（Mount）</strong>到游戏对象上，脚本就成了它的「<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">行为组件</mark>」——每一帧告诉引擎这个对象该往哪走、该做什么。</p></div>
-<div class="card"><h3>① 新建 Scripts 文件夹</h3><p>在项目（Project）窗口 <code>Assets</code> 下，右键 → <code>Create（创建）</code> → <code>Folder（文件夹）</code>，命名为 <code>Scripts</code>。</p></div>
+<div class="card"><h3>① 新建 Scripts 文件夹</h3><p>在项目（Project）窗口 <code>Assets</code> 下，右键 → <code>创建（Create）</code> → <code>文件夹（Folder）</code>，命名为 <code>Scripts</code>。</p></div>
 <img src="images/课件9/新建Scripts文件夹.png" alt="新建 Scripts 文件夹" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
-<div class="card"><h3>② 创建 C# 脚本</h3><p>在 <code>Scripts</code> 文件夹里右键 → <code>Create（创建）</code> → <code>C# Script（C# 脚本）</code>，<strong>命名为 <code>MoveObject</code></strong>。</p></div>
+<div class="card"><h3>② 创建 C# 脚本</h3><p>在 <code>Scripts</code> 文件夹里右键 → <code>创建（Create）</code> → <code>C# Script（C# 脚本）</code>，<strong>命名为 <code>MoveObject</code></strong>。</p></div>
 <img src="images/课件9/创建CSharp脚本.png" alt="创建 C# 脚本" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
 <div class="card"><h3>③ 重命名 + 类名必须与文件名一致</h3><p>创建时直接重命名（可连点两次脚本文件名进行重命名）。Unity 靠<strong>文件名</strong>找类——<strong>类名（class 后的名字）必须和文件名完全相同</strong>，否则挂载时会<strong>控制台报错</strong>；改了文件名，也要回代码把 <code>class</code> 后的名字一起改掉。<mark style="background:rgba(16,185,129,.16);color:#34d399;padding:1px 5px;border-radius:4px;font-weight:600">双击脚本文件</mark>可打开编辑器查看脚本内容。</p></div>
 <img src="images/课件9/重命名脚本与类名一致.png" alt="重命名脚本并检查类名与文件名一致" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;display:block;margin:8px auto" onerror="imgMissing(this)">
@@ -712,10 +712,10 @@ public class MoveObject : MonoBehaviour {
 <div style="border:1px dashed rgba(255,255,255,.28);border-radius:12px;padding:14px 16px;margin:10px 0;background:rgba(255,255,255,.03)">
 <div style="font-weight:600;color:#e2e8f0;margin-bottom:10px">🚢 游戏对象（Game Object）<span style="font-weight:400;color:#94a3b8;font-size:.9em">　＝ 装组件的容器</span></div>
 <div style="display:flex;flex-wrap:wrap;gap:8px">
-<span style="padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.92em">Transform 变换</span>
+<span style="padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.92em">变换（Transform）</span>
 <span style="padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.92em">Mesh Renderer 网格渲染</span>
-<span style="padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.92em">Rigidbody 刚体</span>
-<span style="padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.92em">Collider 碰撞器</span>
+<span style="padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.92em">刚体（Rigidbody）</span>
+<span style="padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.92em">碰撞体（Collider）</span>
 <span style="padding:6px 12px;border-radius:8px;border:1px solid #34d399;background:rgba(16,185,129,.18);color:#34d399;font-weight:600;font-size:.92em">脚本组件 MonoBehaviour <span style="font-style:normal;font-weight:400;opacity:.9">★ 继承它 → 获得生命周期</span></span>
 </div>
 </div>
@@ -757,10 +757,10 @@ public class MoveObject : MonoBehaviour {
 <div class="card"><p>一个模型在 Unity 里就是个<strong>游戏对象（Game Object）</strong>——本质是个"容器"。想赋予它能力，就是往上面<strong>加组件</strong>：控制位姿的是 <strong>Transform</strong>，加行为的是 <strong>Script</strong>（就是上一页的 MonoBehaviour），其它组件各管一摊（参考原课件）：</p></div>
 <table>
 <tr><th>组件</th><th>负责的能力</th><th>组件截图</th></tr>
-<tr><td><code>Transform</code></td><td>位置（Position）/ 旋转（Rotation）/ 缩放（Scale）——物体的"位姿"</td><td><img src="images/课件9/组件_Transform.png" alt="Transform 组件截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td><code>Transform</code></td><td>位置（Position）/ 旋转（Rotation）/ 缩放（Scale）——物体的"位姿"</td><td><img src="images/课件9/组件_Transform.png" alt="变换组件（Transform）截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
 <tr><td><code>Mesh Renderer</code></td><td>把网格（Mesh）渲染成可见物体，并设置材质</td><td><img src="images/课件9/组件_MeshRenderer.png" alt="Mesh Renderer 组件截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
-<tr><td><code>Rigidbody</code></td><td>物理效果：重力、碰撞、动力学</td><td><img src="images/课件9/组件_Rigidbody.png" alt="Rigidbody 组件截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
-<tr><td><code>Collider</code></td><td>碰撞检测，让物体能互相碰到</td><td><img src="images/课件9/组件_Collider.png" alt="Collider 组件截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td><code>Rigidbody</code></td><td>物理效果：重力、碰撞、动力学</td><td><img src="images/课件9/组件_Rigidbody.png" alt="刚体组件（Rigidbody）截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td><code>Collider</code></td><td>碰撞检测，让物体能互相碰到</td><td><img src="images/课件9/组件_Collider.png" alt="碰撞体组件（Collider）截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
 <tr><td><code>Script</code>（MonoBehaviour）</td><td>用 C# 写自定义行为，挂到对象上就生效</td><td><img src="images/课件9/组件_Script.png" alt="Script 组件截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
 </table>
 <div class="ok-box"><span class="eico">💡</span> 记住一句话：<strong>能力来自组件</strong>。后面让船移动、旋转，用的就是 <code>Transform</code>；让它有逻辑，用的就是 <code>Script</code>。</div>
@@ -771,7 +771,7 @@ public class MoveObject : MonoBehaviour {
 <tr><th>写法</th><th>代表什么</th><th>截图</th></tr>
 <tr><td><code>this</code></td><td>当前这个脚本组件自身（MonoBehaviour）</td><td><img src="images/课件9/对象信息_this.png" alt="this 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
 <tr><td><code>gameObject</code></td><td>它所属的游戏对象</td><td><img src="images/课件9/对象信息_gameObject.png" alt="gameObject 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
-<tr><td><code>transform</code></td><td>它所属的游戏对象上的 Transform 组件（最常用）</td><td><img src="images/课件9/对象信息_transform.png" alt="transform 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
+<tr><td><code>transform</code></td><td>它所属的游戏对象上的变换组件（Transform，最常用）</td><td><img src="images/课件9/对象信息_transform.png" alt="transform 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
 <tr><td style="padding-left:24px"><span style="color:#64748b">↳ </span><code>transform.position</code></td><td>世界坐标（Vector3）—— 物体在场景里的"地址"：从世界原点 (0,0,0) 指向它的三维坐标 (x,y,z)</td><td><img src="images/课件9/对象信息_position.png" alt="position 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
 <tr><td style="padding-left:24px"><span style="color:#64748b">↳ </span><code>transform.eulerAngles</code></td><td>旋转角度（单位：度）—— 物体绕 X / Y / Z 轴各转了多少度，眼睛能直接看出来</td><td><img src="images/课件9/对象信息_rotation.png" alt="rotation 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
 <tr><td style="padding-left:24px"><span style="color:#64748b">↳ </span><code>transform.localScale</code></td><td>本地缩放（Vector3）—— 物体的"大小倍率"：相对原始模型放大 / 缩小多少倍（x,y,z 三轴可独立）</td><td><img src="images/课件9/对象信息_localScale.png" alt="localScale 截图" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></td></tr>
@@ -873,9 +873,9 @@ public class MoveObject : MonoBehaviour {
 <li><code>Vector3.ClampMagnitude(v, max)</code>：限制向量长度不超过 max</li>
 </ul></div></div></div>
 <div class="slide" data-page="16"><div class="slide-inner markable"><h1>transform · 改位置与旋转</h1>
-<div class="card"><p>回到 Unity 看一眼就明白了：每个对象都挂着 <strong>Transform 组件</strong>，里面的 <strong>Position（位置）、Rotation（旋转）、Scale（缩放）</strong>，每个都是 (x, y, z) 三个数——它们正是三个<strong>向量</strong>。</p></div>
-<img src="images/课件9/Transform组件.png" alt="检查器中的 Transform 组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<h3>Transform 组件方法（改位置 / 旋转）</h3>
+<div class="card"><p>回到 Unity 看一眼就明白了：每个对象都挂着 <strong>变换组件（Transform）</strong>，里面的 <strong>位置（Position）、旋转（Rotation）、缩放（Scale）</strong>，每个都是 (x, y, z) 三个数——它们正是三个<strong>向量</strong>。</p></div>
+<img src="images/课件9/Transform组件.png" alt="检查器中的变换组件（Transform）" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<h3>变换组件（Transform）方法（改位置 / 旋转）</h3>
 <div class="card"><p><strong>所有位移、旋转都通过修改 Transform 实现，且按帧计算</strong>。脚本里用 <code>transform</code> 就能拿到它；常用写法：</p></div>
 <div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_trans_methods',this)">复制</button></div>

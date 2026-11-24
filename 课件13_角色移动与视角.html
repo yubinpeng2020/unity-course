@@ -536,9 +536,9 @@ function copyImgName(btn){
 <tr><td><strong>半径（Radius）</strong></td><td>胶囊的粗细（半径），取 <code>0.5</code></td></tr>
 <tr><td><strong>高度（Height）</strong></td><td>胶囊的总高度（含上下两端的半球）。默认 <code>2</code> 比角色还高，调到 <code>1.85</code> 刚好贴住角色</td></tr>
 </table></div>
-<img src="images/课件13/中心参数修改效果.png" alt="修改 Center 中心参数后，胶囊线框的位置随之上下移动" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<img src="images/课件13/中心参数修改效果.png" alt="修改中心（Center）参数后，胶囊线框的位置随之上下移动" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="ok-box"><span class="eico">⚠️</span> 上一节给角色加的<strong>刚体（Rigidbody）</strong>和 <strong>Capsule Collider</strong> 要一起移除——Character Controller <strong>本身就是个胶囊碰撞体</strong>，位移也由它自己算：留着刚体会和它抢着算位移，再挂碰撞体则容易让角色卡住。</div>
-<img src="images/课件13/移除刚体与碰撞体.png" alt="在 Player 上移除刚体与 Capsule Collider 组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<img src="images/课件13/移除刚体与碰撞体.png" alt="在 Player 上移除刚体与 胶囊碰撞体组件（Capsule Collider）" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>移除组件的流程</h3><p>想把刚体、Capsule Collider 删掉，两步就行：</p><ol><li>点组件右上角的<strong>设置按钮（⋮）</strong></li><li>在弹出的菜单里选<strong>「移除组件」</strong>，组件就没了</li></ol></div>
 <img src="images/课件13/移除组件操作.png" alt="点击设置按钮并选择移除组件，删除组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:50%" onerror="imgMissing(this)">
 <div class="card"><h3>Character Controller 的好处</h3><p>把上面的特点连起来看：角色<strong>想怎么走就怎么走</strong>，撞墙被稳稳挡住而不会穿模，遇到台阶和斜坡还能自己上去——这几件事，正是上一节用刚体时最别扭的地方。</p></div>

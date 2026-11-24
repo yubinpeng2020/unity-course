@@ -526,7 +526,7 @@ function copyImgName(btn){
 <div class="slide" data-page="3"><div class="slide-inner markable">
 <h1>1. 摆一个撤离点</h1>
 <div class="card"><p>关卡得有个出口。在关卡尽头放一块<strong>触发器区域</strong>，玩家走进去就算通关。它<strong>不挡路</strong>，只负责判定——所以用 Trigger，不用实体墙。</p></div>
-<div class="card"><h3>① 摆出口</h3><ol><li>层级里建空对象 <code>ExitZone</code>，位置挪到关卡出口</li><li>加 <code>Box Collider（盒碰撞体）</code>，勾上 <code>是触发器（Is Trigger）</code></li><li>把 <code>Size</code> 拉到能罩住整条通道——玩家走进去时，身体要能碰到它</li></ol><div class="step-img"><img src="images/课件22/撤离点触发器.png" alt="ExitZone 加盒碰撞体并勾上是否为触发器" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
+<div class="card"><h3>① 摆出口</h3><ol><li>层级里建空对象 <code>ExitZone</code>，位置挪到关卡出口</li><li>加 <code>盒碰撞体（Box Collider）</code>，勾上 <code>是触发器（Is Trigger）</code></li><li>把 <code>Size</code> 拉到能罩住整条通道——玩家走进去时，身体要能碰到它</li></ol><div class="step-img"><img src="images/课件22/撤离点触发器.png" alt="ExitZone 加盒碰撞体并勾上是否为触发器" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div></div>
 <div class="ok-box"><span class="eico">💡</span> 门口最好留个视觉提示：地上一块异色地面、一束光、或者本课后面加的粒子光柱——不然玩家不知道往哪跑。</div>
 </div></div>
 <div class="slide" data-page="4"><div class="slide-inner markable">
@@ -562,7 +562,7 @@ public class ExitLevel : MonoBehaviour
 <div class="slide" data-page="6"><div class="slide-inner markable">
 <h1>4. 粒子系统参数</h1>
 <div class="card"><p>粒子系统（Particle System）用一个组件管成千上万个小点：参数决定它们<strong>什么时候出现、活多久、往哪飞、长什么样</strong>。常用三块：</p></div>
-<div class="card"><ul><li><strong>主模块</strong>：Duration（一次播放时长）、Looping（循环）、Start Delay（延迟）、Start Lifetime（粒子寿命）、Start Speed（初速）、Start Size（初大小）、Start Color（颜色/渐变）</li><li><strong>发射</strong>：Rate Over Time（每秒数量）、Rate Over Distance（每距离数量）、Bursts（特定时刻突发，适合爆炸）</li><li><strong>形状</strong>：决定粒子从何处发射（发射区域形状）</li></ul></div>
+<div class="card"><ul><li><strong>主模块</strong>：持续时间（Duration）、循环播放（Looping）、延迟（Start Delay）、粒子寿命（Start Lifetime）、初速（Start Speed）、初大小（Start Size）、颜色/渐变（Start Color）</li><li><strong>发射</strong>：每秒数量（Rate Over Time）、每距离数量（Rate Over Distance）、突发（Bursts，特定时刻一次性发射）</li><li><strong>形状</strong>：决定粒子从何处发射（发射区域形状）</li></ul></div>
 <img src="images/课件22/粒子参数.png" alt="粒子参数" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="ok-box"><span class="eico">💡</span> 记住一句：<strong>Looping + Rate Over Time 是「一直冒」</strong>（光柱、烟雾），<strong>不勾 Looping + Bursts 是「炸一次」</strong>（爆炸、通关特效）。</div>
 </div></div>

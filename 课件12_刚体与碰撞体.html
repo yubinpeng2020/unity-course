@@ -488,8 +488,8 @@ function copyImgName(btn){
     <div class="sidebar-title">📘 课件12_刚体与碰撞体</div>
     <a href="#" class="nav-link nav-special" data-page="1"><span class="nav-status"></span>封面</a>
 <a href="#" class="nav-link" data-page="2"><span class="nav-status"></span>1. 本节学习目标 </a>
-<a href="#" class="nav-link" data-page="3"><span class="nav-status"></span>2. Rigidbody 刚体 </a>
-<a href="#" class="nav-link" data-page="4"><span class="nav-status"></span>3. Collider 碰撞体 </a>
+<a href="#" class="nav-link" data-page="3"><span class="nav-status"></span>2. 刚体（Rigidbody） </a>
+<a href="#" class="nav-link" data-page="4"><span class="nav-status"></span>3. 碰撞体（Collider） </a>
 <a href="#" class="nav-link" data-page="5"><span class="nav-status"></span>4. 刚体 + 碰撞体 · 物体碰撞与落地 </a>
 <a href="#" class="nav-link" data-page="6"><span class="nav-status"></span>5. 刚体 + 碰撞体 · 实现跳跃 </a>
 <a href="#" class="nav-link" data-page="7"><span class="nav-status"></span>6. 刚体 + 碰撞体 · 撞到东西会倒 </a>
@@ -547,15 +547,15 @@ function copyImgName(btn){
 </div>
 <div class="slide" data-page="2"><div class="slide-inner">
 <h1>本节学习目标</h1>
-<div class="goal-grid"><div class="goal-card"><span class="goal-icon">🎯</span><span class="goal-text">理解 Rigidbody 刚体：让对象进入物理模拟（重力、受力）</span></div><div class="goal-card"><span class="goal-icon">📝</span><span class="goal-text">理解 Collider 碰撞体：检测碰撞、避免穿模</span></div><div class="goal-card"><span class="goal-icon">✅</span><span class="goal-text">把刚体 + 碰撞体结合，实现对象落地站稳</span></div><div class="goal-card"><span class="goal-icon">🚀</span><span class="goal-text">综合应用：用刚体实现跳跃</span></div></div>
+<div class="goal-grid"><div class="goal-card"><span class="goal-icon">🎯</span><span class="goal-text">理解刚体（Rigidbody）：让对象进入物理模拟（重力、受力）</span></div><div class="goal-card"><span class="goal-icon">📝</span><span class="goal-text">理解碰撞体（Collider）：检测碰撞、避免穿模</span></div><div class="goal-card"><span class="goal-icon">✅</span><span class="goal-text">把刚体 + 碰撞体结合，实现对象落地站稳</span></div><div class="goal-card"><span class="goal-icon">🚀</span><span class="goal-text">综合应用：用刚体实现跳跃</span></div></div>
 
 </div></div>
 <div class="slide" data-page="3"><div class="slide-inner markable">
-<h1>Rigidbody 刚体</h1>
+<h1>刚体（Rigidbody）</h1>
 <img src="images/课件12/物体碰撞 --- 掉落.gif" alt="效果：几只小动物加上刚体后，从空中受重力掉落到地形上" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>先看效果：小动物为什么会自己掉下来？</h3>
 <p>看上面的动图：几只小动物从<strong>空中掉下来</strong>、稳稳落在地形上——我们并没有写"往下掉"的代码，它们却像现实里一样被<strong>重力</strong>拉了下去，落到地面还有碰撞效果，不会穿过去。</p>
-<p>这种<strong>会下落、被地面挡住、站得稳</strong>的真实感，靠的是 Unity 的<strong>两个物理组件</strong>配合：<strong>Rigidbody（刚体）</strong>负责让对象受力与运动，<strong>Collider（碰撞体）</strong>负责检测碰撞、避免穿模。接下来两节，我们先讲<strong>刚体</strong>，再讲<strong>碰撞体</strong>——这一节先认识刚体。</p></div>
+<p>这种<strong>会下落、被地面挡住、站得稳</strong>的真实感，靠的是 Unity 的<strong>两个物理组件</strong>配合：<strong>刚体（Rigidbody）</strong>负责让对象受力与运动，<strong>碰撞体（Collider）</strong>负责检测碰撞、避免穿模。接下来两节，我们先讲<strong>刚体</strong>，再讲<strong>碰撞体</strong>——这一节先认识刚体。</p></div>
 <div class="card"><h3>添加方式</h3>
 <p>选中对象 → <code>添加组件（Add Component）</code> → <code>刚体（Rigidbody）</code>。</p>
 <p>简单说，<strong>添加刚体组件，就是给游戏对象赋予"物理属性"</strong>：一旦挂上它，这个对象就进入了 Unity 的<strong>物理模拟</strong>——会受重力、能被撞飞、能受力运动。下面这张属性面板里的每一项（质量、阻力、是否受重力……），就是它的"物理参数"。</p></div>
@@ -569,24 +569,24 @@ function copyImgName(btn){
 <tr><td><strong>Use Gravity 重力</strong></td><td>是否受重力影响（默认勾选，所以会下落）</td></tr>
 <tr><td><strong>是运动学的（Is Kinematic）</strong></td><td>不受力 / 扭矩影响，但可用脚本直接控制位置旋转</td></tr>
 </table></div>
-<img src="images/课件12/刚体属性.png" alt="检查器中 Rigidbody 刚体的物理属性面板" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
+<img src="images/课件12/刚体属性.png" alt="检查器中刚体（Rigidbody）的物理属性面板" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="ok-box">给对象加了 Rigidbody，它就"活"了——会下落、会被推。</div>
 <div class="card"><h3>但有个问题：对象只有刚体、没有碰撞体，会"穿模"</h3>
 <p>刚体让对象<strong>受重力下坠</strong>，可如果对象<strong>只有刚体、没有碰撞体</strong>，就会<strong>直接穿过地面</strong>一直往下掉——物理引擎根本不知道"地面在哪、该在哪被挡住"。这种现象叫<strong>穿模</strong>。</p>
 <img src="images/课件12/刚体穿模.gif" alt="效果：只有刚体没有碰撞体，小动物直接穿过地面往下掉（穿模）" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<p>要解决"穿过去"的问题，还需要一个组件——<strong>Collider（碰撞体）</strong>：它负责<strong>检测碰撞、把物体挡在地上</strong>。下一节我们就讲碰撞体。</p></div>
+<p>要解决"穿过去"的问题，还需要一个组件——<strong>碰撞体（Collider）</strong>：它负责<strong>检测碰撞、把物体挡在地上</strong>。下一节我们就讲碰撞体。</p></div>
 </div></div>
 <div class="slide" data-page="4"><div class="slide-inner markable">
-<h1>Collider 碰撞体</h1>
+<h1>碰撞体（Collider）</h1>
 <img src="images/课件12/物体碰撞 --- 掉落.gif" alt="效果：加上碰撞体后，小动物稳稳落在地形上（不穿模）" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>为什么要加碰撞体：让对象"撞得到、挡得住"</h3>
-<p>上一节我们看到：对象<strong>只有刚体、没有碰撞体</strong>时，会<strong>直接穿过地面</strong>（穿模）。<strong>Collider（碰撞体）</strong>就是来解决这个问题的——它负责<strong>检测物体之间的接触或碰撞</strong>：有了它，地面才能"挡住"下落的对象，物体之间也能互相<strong>撞到</strong>而不是穿过彼此。</p></div>
+<p>上一节我们看到：对象<strong>只有刚体、没有碰撞体</strong>时，会<strong>直接穿过地面</strong>（穿模）。<strong>碰撞体（Collider）</strong>就是来解决这个问题的——它负责<strong>检测物体之间的接触或碰撞</strong>：有了它，地面才能"挡住"下落的对象，物体之间也能互相<strong>撞到</strong>而不是穿过彼此。</p></div>
 <div class="card"><h3>添加方式</h3>
 <p>选中对象 → <code>添加组件（Add Component）</code> → <code>盒型碰撞体（Box Collider）</code>。</p></div>
 <img src="images/课件12/添加碰撞体组件.gif" alt="添加碰撞体组件" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <div class="card"><h3>常见碰撞体类型</h3>
-<ul><li><strong>Box Collider（盒型碰撞体）</strong>：立方体，适合墙、门、箱子</li><li><strong>Sphere Collider（球形碰撞体）</strong>：球形，适合球类、星球</li><li><strong>Capsule Collider（胶囊形碰撞体）</strong>：胶囊形，适合角色身体（贴合人体，移动自然）</li></ul>
-<div style="display:flex; gap:12px; flex-wrap:wrap;"><img src="images/课件12/Box碰撞体.png" alt="Box Collider 盒型碰撞体效果：包裹立方体、墙、门、箱子" class="card-img" style="flex:1 1 0; min-width:160px; max-width:none; margin:0;" onclick="zoomQR(this)" onerror="imgMissing(this)"><img src="images/课件12/Sphere碰撞体.png" alt="Sphere Collider 球形碰撞体效果：包裹球类、星球" class="card-img" style="flex:1 1 0; min-width:160px; max-width:none; margin:0;" onclick="zoomQR(this)" onerror="imgMissing(this)"><img src="images/课件12/Capsule碰撞体.png" alt="Capsule Collider 胶囊形碰撞体效果：贴合角色身体" class="card-img" style="flex:1 1 0; min-width:160px; max-width:none; margin:0;" onclick="zoomQR(this)" onerror="imgMissing(this)"></div></div>
+<ul><li><strong>盒碰撞体（Box Collider）</strong>：立方体，适合墙、门、箱子</li><li><strong>球形碰撞体（Sphere Collider）</strong>：球形，适合球类、星球</li><li><strong>胶囊碰撞体（Capsule Collider）</strong>：胶囊形，适合角色身体（贴合人体，移动自然）</li></ul>
+<div style="display:flex; gap:12px; flex-wrap:wrap;"><img src="images/课件12/Box碰撞体.png" alt="盒碰撞体（Box Collider）效果：包裹立方体、墙、门、箱子" class="card-img" style="flex:1 1 0; min-width:160px; max-width:none; margin:0;" onclick="zoomQR(this)" onerror="imgMissing(this)"><img src="images/课件12/Sphere碰撞体.png" alt="球形碰撞体（Sphere Collider）效果：包裹球类、星球" class="card-img" style="flex:1 1 0; min-width:160px; max-width:none; margin:0;" onclick="zoomQR(this)" onerror="imgMissing(this)"><img src="images/课件12/Capsule碰撞体.png" alt="胶囊碰撞体（Capsule Collider）效果：贴合角色身体" class="card-img" style="flex:1 1 0; min-width:160px; max-width:none; margin:0;" onclick="zoomQR(this)" onerror="imgMissing(this)"></div></div>
 <div class="card"><h3>碰撞体是什么：一层看不见的边框</h3>
 <p>换个好懂的说法：碰撞体就是给对象套上一层<strong>看不见的边框（碰撞范围）</strong>。上面这些形状（盒子 / 球 / 胶囊），就是不同对象用的边框。物理引擎其实<strong>不看模型的精细外形</strong>，只判断这些边框有没有碰到一起——边框挨上了，就算"撞到"；没挨上，就当没接触。所以碰撞准不准，全看这层边框<strong>包得合不合理</strong>。</p></div>
 <div class="card"><h3>常见属性</h3>
@@ -602,7 +602,7 @@ function copyImgName(btn){
 <p>给<strong>人物模型</strong>也加上碰撞体后，常常发现<strong>边框没有很好地包裹住人物</strong>——比如四肢露在外面、或整体偏大偏小。</p>
 <img src="images/课件12/人物碰撞体调整.png" alt="调整前后对比：左为边框没包好人物，右为调整后正好贴住" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
 <p>这时就用到上面说的"<strong>编辑碰撞器</strong>"：点按钮进入编辑，按住每个面的中心点拖动，把边框调到正好贴住人物。</p>
-<p>小技巧：把视图切到<strong>正交（iso）视角</strong>，再配合右上角的 <strong>Gizmo 导航器</strong> 转动观察角度，从各个方向确认边框是否贴住人物，调整起来会非常方便。</p>
+<p>小技巧：把视图切到<strong>正交（iso）视角</strong>，再配合右上角的 <strong>导航器（Gizmo）</strong> 转动观察角度，从各个方向确认边框是否贴住人物，调整起来会非常方便。</p>
 <img src="images/课件12/人物碰撞体调整.gif" alt="调整碰撞体边框的动图演示：点编辑碰撞器，按住面中心点拖动调整" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
 <div class="card"><h3>试试看：人物去撞动物，却"穿模"了</h3>
 <p>给人物加上碰撞体和 <code>Move3D</code> 脚本组件后，操纵它<strong>移动去撞动物模型</strong>，却发现人物<strong>直接穿了过去</strong>——明明都有碰撞体，为什么还会穿模？</p>
@@ -804,10 +804,10 @@ public class Move2D_Jump : MonoBehaviour
 <p>刚体负责的是角色整个<strong>"物理身体"</strong>——不只是<strong>位置</strong>和<strong>速度</strong>，还有<strong>旋转</strong>。碰撞的那一刻会<strong>产生力</strong>，这个力不只把人<strong>弹开</strong>，也会让身体<strong>绕轴转起来</strong>；而角色模型是"站着"的，一转头脚就翻过去，看起来就是<strong>倒下</strong>。</p>
 <p>我们要的效果是：角色<strong>只平移、不翻滚</strong>。</p></div>
 <div class="card"><h3>解决：用约束（Constraints）冻结旋转</h3>
-<p>选中角色，在 <strong>Rigidbody</strong> 组件里找到 <strong>Constraints（约束）</strong>，展开后有两组：<strong>冻结位置（Freeze Position）</strong>、<strong>冻结旋转（Freeze Rotation）</strong>。</p>
+<p>选中角色，在 <strong>Rigidbody</strong> 组件里找到 <strong>约束（Constraints）</strong>，展开后有两组：<strong>冻结位置（Freeze Position）</strong>、<strong>冻结旋转（Freeze Rotation）</strong>。</p>
 <p>勾选<strong>冻结旋转的 X 和 Z</strong>——角色就不会再前后、左右翻倒，只剩下平移。</p>
 <p><strong>Y 轴先留着</strong>：以后要让角色转身、朝向移动方向时，就靠它。</p>
-<img src="images/课件12/刚体Constraints.png" alt="Rigidbody 组件里的 Constraints（约束）面板：冻结位置 / 冻结旋转各三项" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:50%" onerror="imgMissing(this)">
+<img src="images/课件12/刚体Constraints.png" alt="刚体组件（Rigidbody）里的约束（Constraints）面板：冻结位置 / 冻结旋转各三项" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:50%" onerror="imgMissing(this)">
 <img src="images/课件12/冻结旋转.gif" alt="效果：勾选冻结旋转 X / Z 之后，角色撞到物体不再翻倒" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"></div>
 <div class="ok-box"><span class="eico">⚠️</span> 别去勾"冻结位置（Freeze Position）"——那是把角色的<strong>移动</strong>锁死，勾上之后连走都走不了。</div>
 </div>
