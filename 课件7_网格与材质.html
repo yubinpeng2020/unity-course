@@ -523,7 +523,7 @@ function copyImgName(btn){
 </div></div>
 <div class="slide" data-page="3"><div class="slide-inner markable">
 <h1>渲染模式</h1>
-<div class="card"><p>场景视图左上角下拉框，控制场景的显示方式：</p></div><img src="images/课件7/渲染模式下拉框.png" alt="渲染模式下拉框" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><p><strong>Shaded（着色）</strong>：正常实体显示，能看到材质颜色与光影</p></div><img src="images/课件7/shaded着色.png" alt="Shaded 着色模式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><p><strong>Wireframe（线框）</strong>：只显示网格线框，看物体结构</p></div><img src="images/课件7/wireframe线框.png" alt="Wireframe 线框模式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><p><strong>Shaded Wireframe（着色线框）</strong>：实体 + 线框叠加</p></div><img src="images/课件7/shaded_wireframe着色线框.png" alt="Shaded Wireframe 着色线框模式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box"><span class="eico">💡</span> 想看清楚一个复杂模型的&quot;骨架&quot;时，切到 Wireframe 最直观。</div>
+<div class="card"><p>场景视图（Scene）左上角下拉框，控制场景的显示方式：</p></div><img src="images/课件7/渲染模式下拉框.png" alt="渲染模式下拉框" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><p><strong>Shaded（着色）</strong>：正常实体显示，能看到材质颜色与光影</p></div><img src="images/课件7/shaded着色.png" alt="Shaded 着色模式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><p><strong>Wireframe（线框）</strong>：只显示网格线框，看物体结构</p></div><img src="images/课件7/wireframe线框.png" alt="Wireframe 线框模式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><p><strong>Shaded Wireframe（着色线框）</strong>：实体 + 线框叠加</p></div><img src="images/课件7/shaded_wireframe着色线框.png" alt="Shaded Wireframe 着色线框模式" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="ok-box"><span class="eico">💡</span> 想看清楚一个复杂模型的&quot;骨架&quot;时，切到 Wireframe 最直观。</div>
 </div></div>
 <div class="slide" data-page="4"><div class="slide-inner markable">
 <h1>Mesh 网格</h1>
@@ -592,7 +592,7 @@ function copyImgName(btn){
 <div class="ok-box"><span class="eico">💡</span> Procedural 天空盒不依赖图片，调几个滑块就能换一整天色，课堂最方便。</div>
 
 <h3>课堂实操二：添加 HDRI 资源，设置真实天空盒</h3>
-<div class="card"><ul><li><strong>操作 1 · 导入 HDRI 资源</strong>：把老师提供的 <code>golden_gate_hills_2k.hdr</code> 拖进项目窗口的 <strong>Assets 文件夹</strong> 导入。</li></ul></div>
+<div class="card"><ul><li><strong>操作 1 · 导入 HDRI 资源</strong>：把老师提供的 <code>golden_gate_hills_2k.hdr</code> 拖进项目窗口（Project）的 <strong>Assets 文件夹</strong> 导入。</li></ul></div>
 <img src="images/课件7/实操4导入HDRI.png" alt="导入 HDRI" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:50%" onerror="imgMissing(this)">
 <div class="card"><ul><li><strong>操作 2 · 创建天空盒新材质</strong>：右键 → <strong>创建（Create）→ 材质（Material）</strong>，新建材质并命名为 <code>Skybox_HDRI</code>，把 Shader 设为 <code>Skybox → Panoramic</code>（全景）。</li></ul></div>
 <img src="images/课件7/实操5创建HDRI材质.png" alt="创建 HDRI 天空盒材质" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:50%" onerror="imgMissing(this)">

@@ -640,12 +640,12 @@ public class Move2D : MonoBehaviour
 <p>两种方式：（1）在层级（Hierarchy）选中<strong>人物对象</strong>，把项目（Project）里的 <code>Move2D</code> 脚本<strong>拖到右侧检查器（Inspector）</strong>；（2）在检查器（Inspector）点 <code>添加组件（Add Component）</code>，搜索 <code>Move2D</code> 添加。挂好后检查器里会多出一个 <code>Move2D</code> 组件。</p>
 </div>
 <img src="images/课件11/挂载脚本给人物.png" alt="把 Move2D 脚本拖到人物对象的检查器" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
-<div class="card"><h3>🎥 操作教学：对齐到视图（Align With View）</h3><p>挂好脚本、运行前，建议先把<strong>摄像头（Main Camera）</strong>的视角对齐成你当前在场景里看的角度，否则一按播放，<strong>游戏视图</strong>可能和你想看的角度不一样、甚至看不到人物。做法：</p>
+<div class="card"><h3>🎥 操作教学：对齐到视图（Align With View）</h3><p>挂好脚本、运行前，建议先把<strong>摄像头（Main Camera）</strong>的视角对齐成你当前在场景里看的角度，否则一按播放，<strong>游戏视图（Game）</strong>可能和你想看的角度不一样、甚至看不到人物。做法：</p>
 <ul>
 <li>① 在 <strong>层级（Hierarchy）</strong> 窗口里<strong>选中 Main Camera</strong>（摄像头）；</li>
 <li>② 顶部菜单栏 <strong>游戏对象（GameObject）→ 对齐到视图（Align With View）</strong>。</li>
 </ul>
-<p>执行后，摄像头的位姿会<strong>瞬间跳到场景视图当前的视角</strong>——也就是<strong>游戏视图</strong>对齐到了<strong>场景视图</strong>：你场景里怎么看，运行时就怎么看（快捷键 Ctrl / Cmd + Shift + F）。</p></div>
+<p>执行后，摄像头的位姿会<strong>瞬间跳到场景视图（Scene）当前的视角</strong>——也就是<strong>游戏视图</strong>对齐到了<strong>场景视图</strong>：你场景里怎么看，运行时就怎么看（快捷键 Ctrl / Cmd + Shift + F）。</p></div>
 <img src="images/课件11/对齐到视图_操作步骤.png" alt="对齐到视图操作步骤" class="card-img" onclick="zoomQR(this)" style="cursor:pointer;max-width:66.67%" onerror="imgMissing(this)">
 <div class="ok-box"><span class="eico">💡</span> 记住这套动作：<strong>建脚本 → 类名与文件名一致 → 拖到对象上</strong>。以后写任何新功能，都是先建脚本、再挂到对应的对象上。</div>
 <img src="images/课件11/脚本 --- 运行 --- 键盘控制.gif" alt="效果：按住 WASD，游戏对象在地面上前后左右移动" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)">
