@@ -554,6 +554,34 @@ function copyImgName(btn){
 <text x="386" y="328" font-size="10.5" fill="#9AA0A6">生成几只、生成什么，全由它说了算</text>
 <text x="350" y="386" font-size="12" fill="#F5A623" text-anchor="middle">局部的事各有各的主人；全局的事不属于任何对象——统一交给游戏管理器</text>
 </svg></div>
+<svg viewBox="0 0 700 330" style="width:100%;height:auto;display:block;font-family:inherit;margin:16px 0 4px" role="img" aria-label="游戏管理器在场景里的位置：左边是层级窗口的树状结构，GameManager 和 Player、主摄像机、猫、狗一样直接挂在场景根下，身上挂着主控脚本 MainLogic；右边三条说明——平级、独立、唯一">
+<rect x="0" y="0" width="700" height="330" rx="12" fill="#0D1430"/>
+<rect x="24" y="44" width="300" height="254" rx="8" fill="#102B3A" stroke="#2A4A66" stroke-width="1.2"/>
+<text x="38" y="66" font-size="11.5" fill="#9AA0A6">层级（Hierarchy）窗口</text>
+<line x1="24" y1="78" x2="324" y2="78" stroke="#2A4A66" stroke-width="1"/>
+<text x="40" y="102" font-size="12.5" font-weight="600" fill="#E8EAED">▾ SampleScene</text>
+<rect x="38" y="112" width="272" height="34" rx="6" fill="#16324A" stroke="#00D4AA" stroke-width="1.2"/>
+<text x="54" y="134" font-size="13" font-weight="700" fill="#E8EAED">GameManager</text>
+<text x="298" y="133" font-size="10.5" fill="#34D399" text-anchor="end">MainLogic</text>
+<text x="54" y="176" font-size="12.5" fill="#E8EAED">Player</text>
+<text x="54" y="204" font-size="12.5" fill="#E8EAED">Main Camera</text>
+<text x="54" y="232" font-size="12.5" fill="#E8EAED">Cat</text>
+<text x="54" y="260" font-size="12.5" fill="#E8EAED">Dog</text>
+<text x="54" y="288" font-size="10.5" fill="#9AA0A6">……其他角色、道具，都在同一级</text>
+<rect x="344" y="44" width="332" height="76" rx="8" fill="#16324A" stroke="#2A4A66"/>
+<text x="360" y="70" font-size="12.5" font-weight="700" fill="#00D4AA">① 平级</text>
+<text x="360" y="92" font-size="11" fill="#9AA0A6">和 Player、猫、狗一样，都直接挂在场景根下</text>
+<text x="360" y="110" font-size="11" fill="#9AA0A6">——谁也不在谁下面</text>
+<rect x="344" y="132" width="332" height="76" rx="8" fill="#16324A" stroke="#2A4A66"/>
+<text x="360" y="158" font-size="12.5" font-weight="700" fill="#00D4AA">② 独立</text>
+<text x="360" y="180" font-size="11" fill="#9AA0A6">角色被移动、被销毁，它都不受影响</text>
+<text x="360" y="198" font-size="11" fill="#9AA0A6">——不跟着动，也不跟着没</text>
+<rect x="344" y="220" width="332" height="76" rx="8" fill="#16324A" stroke="#2A4A66"/>
+<text x="360" y="246" font-size="12.5" font-weight="700" fill="#00D4AA">③ 唯一</text>
+<text x="360" y="268" font-size="11" fill="#9AA0A6">整个场景只放一个；以后写的流程、事件脚本</text>
+<text x="360" y="286" font-size="11" fill="#9AA0A6">全挂在它身上</text>
+<text x="350" y="314" font-size="12" fill="#F5A623" text-anchor="middle">全局的对象不用挂在谁身上——它自己就是场景里的一个根</text>
+</svg>
 <div class="card"><h3>空对象（Empty GameObject）是什么</h3><p>空对象就是一个<strong>什么都没有的游戏对象</strong>：没有网格、没有材质，也就没有形状可以被渲染出来——在<strong>场景（Scene）</strong>视图里，它<strong>完全看不见</strong>。</p><p>但它仍然是一个<strong>正常的游戏对象</strong>：有名字、有 <code>transform</code>、能挂脚本、也能被查找。点开它的<strong>检查器（Inspector）</strong>会看到——只有 <code>transform</code> 一个组件，没有网格、没有渲染器，这就是它&quot;空&quot;的地方。</p><p>所以它常被用来做两件事：</p><ul><li><strong>当父对象</strong>：把一组东西归到一起，整体移动 / 隐藏 / 删除</li><li><strong>挂全局脚本</strong>：就是这一节要用的地方——让全局的事有个落脚点</li></ul></div><img src="images/课件15/空对象_检查器.png" alt="空对象的检查器：只有 Transform 一个组件，没有网格，也没有渲染器" class="card-img" onclick="zoomQR(this)" style="cursor:pointer" onerror="imgMissing(this)"><div class="card"><h3>怎么新建一个空对象</h3><ol><li>菜单栏 <strong>游戏对象（GameObject）</strong> → <strong>创建空对象（Create Empty）</strong><img src="images/课件15/添加空对象_菜单与场景.png" alt="菜单栏：游戏对象（GameObject）→ 创建空对象（Create Empty）；新建出来的空对象在场景里看不见" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:100%; max-height:none; float:none; display:block; margin:14px auto 4px" onerror="imgMissing(this)"></li><li>也可以在<strong>层级（Hierarchy）</strong>窗口的空白处<strong>右键</strong> → <strong>创建空对象（Create Empty）</strong></li><li>新对象会出现在层级（Hierarchy）里，默认名字是 <code>GameObject</code>；把它<strong>改名成 <code>GameManager</code></strong>，后面把主控脚本挂在它身上<img src="images/课件15/空对象_出现在层级.png" alt="新对象出现在层级（Hierarchy）窗口里，默认名字是 GameObject，把它改名成 GameManager" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:100%; max-height:none; float:none; display:block; margin:14px auto 4px" onerror="imgMissing(this)"></li></ol><p><strong>为什么取名 <code>GameManager</code>？</strong>——它是整个游戏<strong>唯一的&quot;全局管理者&quot;</strong>：这一节它管全局设置和随机生成，后面再写的全局脚本（游戏流程、事件……）也照样挂在它身上，所以直接叫 <code>GameManager</code>（游戏管理器），一路认到课程结束。名字其实随意，取个好认的就行，但<strong>别留着默认的 <code>GameObject</code></strong>——场景里多几个空对象就分不清谁是谁了。</p></div><div class="card"><h3>看不见怎么办：给它挂个图标</h3><p>空对象在场景（Scene）视图里没有形状，想移动它、对齐它都不好下手——<strong>给它挂一个&quot;标记图标&quot;就看得见了</strong>；而且这个图标<strong>只在编辑器里显示，游戏运行时不会出现</strong>，不影响任何玩法。</p><p>选中这个空对象，点<strong>检查器里对象名字左边那个小方块</strong>（GameObject 就是蓝色立方体）——这就是<strong>「选择图标（Select Icon）」</strong>按钮；在弹出的图标面板里挑一个：<strong>标签图标</strong>会把<strong>名字</strong>一起标在场景里（推荐给 GameManager，一眼就知道那是谁），<strong>仅图像图标</strong>只显示一个色点。挂好之后，场景视图里对象上方就出现这个标记，<strong>还能直接点它来选中、拖动本来不可见的对象</strong>。</p><img src="images/课件15/给空对象挂图标.png" alt="在检查器里点对象名字左边的小方块，在「选择图标（Select Icon）」面板里挑一个标记图标" class="card-img" onclick="zoomQR(this)" style="cursor:pointer; max-width:100%; max-height:none; float:none; display:block; margin:14px auto 4px" onerror="imgMissing(this)"><p>⚠️ 如果场景里还是看不到，检查<strong>场景（Scene）视图工具栏的 Gizmos 开关</strong>有没有被关掉——图标归它管（课件3 学过）。</p></div><div class="card"><h3>主控脚本 MainLogic 是干什么的</h3><p>它<strong>就是个很普通的脚本</strong>：一样是 <code>MonoBehaviour</code>，写法、挂法和前面几节的 <code>PlayerMove</code>、<code>CatBrain</code> 没有区别——一样能挂、能跑，一样有 <code>Awake</code> 和 <code>Start</code>。</p><p>区别只在<strong>管什么</strong>：那些脚本挂在角色身上，只管<strong>那一个角色</strong>；它挂在<strong>空对象</strong>上，管的是<strong>整个游戏层面</strong>的事。<strong>这就是"主控"的意思</strong>——控的是全局，不是某一个角色。</p></div><div class="prompt-box">
 <div class="code-toolbar"><span class="code-lang">CSHARP</span><button class="copy-btn" onclick="copyCode('c_4310164928',this)">复制</button></div>
 <pre id="c_4310164928"><code class="language-csharp">using UnityEngine;
